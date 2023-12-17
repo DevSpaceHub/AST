@@ -32,7 +32,6 @@ public class MashupServiceImpl {
         }
 */
         // 2. 주식 주문 (TradingService)
-        // 필요한 dto 생성??
         tradingService.buyOrder();
     }
 }

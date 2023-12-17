@@ -10,6 +10,7 @@ package com.devspacehub.ast.domain.trading.dto;
 
 import com.devspacehub.ast.common.dto.WebClientRequestDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -20,26 +21,28 @@ import java.util.function.Consumer;
 /**
  * OpenApi 호출 - 국내 주식 주문 DTO
  */
-//@NoArgsConstructor
-//@AllArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
-@Component
 @Builder
-@lombok.Value
 public class DomesticStockBuyOrderExternalDto extends WebClientRequestDto {
-    @Value("${my.comprehensive-accountnumber}")
-    private String CANO;    // 종합계좌번호
-    @Value("${my.accountnumber-product-code}")
-    private String ACNT_PRDT_CD;         // 계좌번호 체계(8-2)의 뒤 2자리
-    private String PDNO;        // 종목코드
-    private String ORD_DVSN;       // 주문 구분
-    private String ORD_QTY;
-    private String ORD_UNPR;        // 주문 단가
+    @JsonProperty("CANO")
+    private String accntNumber;    // 종합계좌번호
+    @JsonProperty("ACNT_PRDT_CD")
+    private String accntProductCode;         // 계좌번호 체계(8-2)의 뒤 2자리
+    @JsonProperty("PDNO")
+    private String stockCode;        // 종목코드
+    @JsonProperty("ORD_DVSN")
+    private String orderDivision;       // 주문 구분
+    @JsonProperty("ORD_QTY")
+    private String orderQuantity;
+    @JsonProperty("ORD_UNPR")
+    private String orderPrice;        // 주문 단가
 
 //    @Builder
     /*public DomesticStockBuyOrderExternalDto(
-
-            @Value("${my.comprehensive-accountnumber}") String accntNumber,
+            String accntNumber,
+            @Value("${my.accountnumber-product-code}") String accntProductCode,
             String stockCode, String orderCategory, String orderQuantity, String orderPrice) {
         super();
         this.PDNO = stockCode;
@@ -50,12 +53,7 @@ public class DomesticStockBuyOrderExternalDto extends WebClientRequestDto {
 
     @Override
     public DomesticStockBuyOrderExternalDto getBody() {
-        return DomesticStockBuyOrderExternalDto.builder()
-                .PDNO(PDNO)
-                .ORD_DVSN(ORD_DVSN)
-                .ORD_QTY(ORD_QTY)
-                .ORD_UNPR(ORD_UNPR)
-                .build();
+        return this;
     }
 
     /**
@@ -77,11 +75,11 @@ public class DomesticStockBuyOrderExternalDto extends WebClientRequestDto {
     }
     @Override
     public String toString() {
-        return "{\"CANO\":\""+ this.CANO + "\"," +
-                "\"ACNT_PRDT_CD\":\""+ this.ACNT_PRDT_CD + "\"," +
-                "\"PDNO\":\""+ this.PDNO + "\"," +
-                "\"ORD_DVSN\":\""+ this.ORD_DVSN + "\"," +
-                "\"ORD_QTY\":\""+ this.ORD_QTY + "\"," +
-                "\"ORD_UNPR\":\"" + this.ORD_UNPR + "}";
+        return "{\"CANO\":\""+ this.accntNumber + "\"," +
+                "\"ACNT_PRDT_CD\":\""+ this.accntProductCode + "\"," +
+                "\"PDNO\":\""+ this.stockCode + "\"," +
+                "\"ORD_DVSN\":\""+ this.orderDivision + "\"," +
+                "\"ORD_QTY\":\""+ this.orderQuantity + "\"," +
+                "\"ORD_UNPR\":\"" + this.orderPrice + "}";
     }
 }

@@ -8,6 +8,7 @@
 
 package com.devspacehub.ast.domain.trading.service;
 
+import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.dto.WebClientResponseDto;
 import com.devspacehub.ast.domain.oauth.service.OAuthService;
 import com.devspacehub.ast.domain.trading.dto.DomesticStockBuyOrderExternalDto;
@@ -30,6 +31,7 @@ import static com.devspacehub.ast.common.constant.OpenApiUri.DOMESTIC_STOCK_BUY_
 @Service
 public class TradingServiceImpl implements TradingService {
     private final OpenApiCall openApiCall;
+    private final OpenApiProperties openApiProperties;
     private final OAuthService oAuthService;
 
     @Value("${openapi.rest.header.transaction-id.buy-order}")
@@ -51,20 +53,22 @@ public class TradingServiceImpl implements TradingService {
         // 호출 url
         // 종목코드(6자리), 주문구분(지정가,00), 주문수량, 주문단가 설정
         String stockCode = "000020"; // TODO 쿼리문 생성 필요
-        String orderCategory = "00";
+        String orderDivision = "00";
         String orderQuantity = "1";
         String orderPrice = "53000";
 
         Consumer<HttpHeaders> httpHeaders = DomesticStockBuyOrderExternalDto.setHeaders(oauth, txIdBuyOrder);
         DomesticStockBuyOrderExternalDto bodyDto = DomesticStockBuyOrderExternalDto.builder()
-                .PDNO(stockCode)
-                .ORD_DVSN(orderCategory)
-                .ORD_QTY(orderQuantity)
-                .ORD_UNPR(orderPrice)
+                .accntNumber(openApiProperties.getAccntNumber())
+                .accntProductCode(openApiProperties.getAccntProductCode())
+                .stockCode(stockCode)
+                .orderDivision(orderDivision)
+                .orderQuantity(orderQuantity)
+                .orderPrice(orderPrice)
                 .build();
         WebClientResponseDto response = openApiCall.httpPostRequest(DOMESTIC_STOCK_BUY_ORDER.getUri(), httpHeaders, bodyDto);
         /*
-        // body를 각 dto로 뺄지..
+        // body를 String으로 반환시키고 각 상황에 맞게 dto로 변환?
         try {
             responseDto = objectMapper.readValue(
                     response.getOutput() != null ? response.getOutput() : null,

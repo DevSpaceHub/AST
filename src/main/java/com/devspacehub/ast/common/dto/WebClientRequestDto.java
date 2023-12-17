@@ -28,7 +28,7 @@ public abstract class WebClientRequestDto {
      * @param <T> the type parameter
      * @return the body
      */
-    public abstract <T extends WebClientRequestDto> T getBody();
+    public abstract <T extends WebClientRequestDto> T getBody() throws CloneNotSupportedException;
 
 //    public abstract Consumer<HttpHeaders> setHeaders();
 }

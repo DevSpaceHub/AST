@@ -27,7 +27,7 @@ public class OpenApiCall {
     private final WebClient webClient;
 
     /**
-     * OpenApi 호출 <Post 메서드>
+     * OpenApi 호출 (Post)
      * @param <T>        the type parameter
      * @param uri        the uri
      * @param headers    the headers
