@@ -15,7 +15,7 @@ public interface TradingService {
     /**
      * 주식 주문 (매수).
      */
-    void buyOrder();
+    void buyOrder(String stockCode, String orderDivision, String orderQuantity, String orderPrice);
 
     /**
      * 주식 주문 (매도).

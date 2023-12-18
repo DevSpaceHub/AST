@@ -9,6 +9,7 @@
 package com.devspacehub.ast.common.config;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 @Getter
@@ -18,5 +19,8 @@ public class OpenApiProperties {
     private String accntNumber;
     @Value("${my.accountnumber-product-code}")
     private String accntProductCode;
+
+    @Setter
+    private String oauth;
 
 }

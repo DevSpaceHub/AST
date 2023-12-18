@@ -12,9 +12,7 @@ import com.devspacehub.ast.common.dto.WebClientRequestDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Component;
 
 import java.util.function.Consumer;
 
@@ -26,6 +24,8 @@ import java.util.function.Consumer;
 @Getter
 @Builder
 public class DomesticStockBuyOrderExternalDto extends WebClientRequestDto {
+    private String txId;
+
     @JsonProperty("CANO")
     private String accntNumber;    // 종합계좌번호
     @JsonProperty("ACNT_PRDT_CD")
@@ -38,23 +38,6 @@ public class DomesticStockBuyOrderExternalDto extends WebClientRequestDto {
     private String orderQuantity;
     @JsonProperty("ORD_UNPR")
     private String orderPrice;        // 주문 단가
-
-//    @Builder
-    /*public DomesticStockBuyOrderExternalDto(
-            String accntNumber,
-            @Value("${my.accountnumber-product-code}") String accntProductCode,
-            String stockCode, String orderCategory, String orderQuantity, String orderPrice) {
-        super();
-        this.PDNO = stockCode;
-        this.ORD_DVSN = orderCategory;
-        this.ORD_QTY = orderQuantity;
-        this.ORD_UNPR = orderPrice;
-    }*/
-
-    @Override
-    public DomesticStockBuyOrderExternalDto getBody() {
-        return this;
-    }
 
     /**
      * OpenApi 호출에 필요한 헤더 세팅.

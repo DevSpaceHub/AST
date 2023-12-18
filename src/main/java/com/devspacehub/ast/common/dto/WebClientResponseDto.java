@@ -10,6 +10,8 @@ package com.devspacehub.ast.common.dto;
 
 import lombok.Getter;
 
+import java.util.List;
+
 /**
  * WebClient 의 공통 Response dto.
  */
@@ -18,6 +20,6 @@ public class WebClientResponseDto {
     private String rt_cd;   // result code (0)
     private String msg_cd;  // message code
     private String msg1;    // message in Korea
-    private String output;  // concrete result body
+    private List<String> output;  // concrete result body
 
 }

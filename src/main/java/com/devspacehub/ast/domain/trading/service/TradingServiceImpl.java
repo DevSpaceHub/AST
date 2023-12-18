@@ -32,7 +32,6 @@ import static com.devspacehub.ast.common.constant.OpenApiUri.DOMESTIC_STOCK_BUY_
 public class TradingServiceImpl implements TradingService {
     private final OpenApiCall openApiCall;
     private final OpenApiProperties openApiProperties;
-    private final OAuthService oAuthService;
 
     @Value("${openapi.rest.header.transaction-id.buy-order}")
     private String txIdBuyOrder;
@@ -40,24 +39,22 @@ public class TradingServiceImpl implements TradingService {
     /**
      * 매수 주문
      * - 국내주식주문 API 호출
-     * - 변환 필드 : 종목코드(6자리), 주문구분(지정가,00), 주문수량, 주문단가
-    */
+     *
+     * @param stockCode     종목코드(6자리)
+     * @param orderDivision 주문구분(지정가,00)
+     * @param orderQuantity 주문수량
+     * @param orderPrice    주문단가
+     */
     @Override
-    public void buyOrder() {
+    public void buyOrder(String stockCode, String orderDivision, String orderQuantity, String orderPrice) {
         // 1. 조건 체크
 
-        // 2. oauth
-        String oauth = oAuthService.issueAccessToken();
 
         // 3. 주식 주문
         // 호출 url
         // 종목코드(6자리), 주문구분(지정가,00), 주문수량, 주문단가 설정
-        String stockCode = "000020"; // TODO 쿼리문 생성 필요
-        String orderDivision = "00";
-        String orderQuantity = "1";
-        String orderPrice = "53000";
 
-        Consumer<HttpHeaders> httpHeaders = DomesticStockBuyOrderExternalDto.setHeaders(oauth, txIdBuyOrder);
+        Consumer<HttpHeaders> httpHeaders = DomesticStockBuyOrderExternalDto.setHeaders(openApiProperties.getOauth(), txIdBuyOrder);
         DomesticStockBuyOrderExternalDto bodyDto = DomesticStockBuyOrderExternalDto.builder()
                 .accntNumber(openApiProperties.getAccntNumber())
                 .accntProductCode(openApiProperties.getAccntProductCode())
@@ -67,6 +64,10 @@ public class TradingServiceImpl implements TradingService {
                 .orderPrice(orderPrice)
                 .build();
         WebClientResponseDto response = openApiCall.httpPostRequest(DOMESTIC_STOCK_BUY_ORDER.getUri(), httpHeaders, bodyDto);
+
+        if (isStockMarketClosed(response)) {
+
+        }
         /*
         // body를 String으로 반환시키고 각 상황에 맞게 dto로 변환?
         try {
@@ -77,12 +78,18 @@ public class TradingServiceImpl implements TradingService {
             System.out.println("error");
         }*/
 
-        log.info(response.getOutput());
-        log.info(response.getRt_cd());
-        log.info(response.getMsg1());
-        log.info(response.getMsg_cd());
+        for (String output : response.getOutput()) {
+            log.info(output);   // body : 성공 시 null
+        }
+        log.info(response.getRt_cd());  // rt_cd : 1 (실패), 0 (성공)
+        log.info(response.getMsg1());   // msg
+        log.info(response.getMsg_cd()); // 실패 : 40100000,  성공 : APBK0013
         // 4. ..
         log.info("====finish====");
+    }
+
+    private boolean isStockMarketClosed(WebClientResponseDto response) {
+        return "40100000".equals(response.getMsg_cd());
     }
 
     /**
@@ -91,9 +98,25 @@ public class TradingServiceImpl implements TradingService {
      */
     @Override
     public void sellOrder() {
+        // 1. 조건 체크
+
+        //
+        String stockCode = "000020"; // TODO 쿼리문 생성 필요
+        String orderDivision = "00";
+        String orderQuantity = "1";
+        String orderPrice = "53000";
+
+        Consumer<HttpHeaders> httpHeaders = DomesticStockBuyOrderExternalDto.setHeaders(openApiProperties.getOauth(), txIdBuyOrder);
+        DomesticStockBuyOrderExternalDto bodyDto = DomesticStockBuyOrderExternalDto.builder()
+                .accntNumber(openApiProperties.getAccntNumber())
+                .accntProductCode(openApiProperties.getAccntProductCode())
+                .stockCode(stockCode)
+                .orderDivision(orderDivision)
+                .orderQuantity(orderQuantity)
+                .orderPrice(orderPrice)
+                .build();
+        WebClientResponseDto response = openApiCall.httpPostRequest(DOMESTIC_STOCK_BUY_ORDER.getUri(), httpHeaders, bodyDto);
 
     }
-
-    // 직접 dto 전환 서비스 호출과 연결된 서비스 메서드
 
 }
