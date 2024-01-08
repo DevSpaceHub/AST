@@ -6,7 +6,7 @@
  author : Yoonji Moon
  */
 
-package com.devspacehub.ast.domain.trading.dto;
+package com.devspacehub.ast.domain.orderTrading.dto;
 
 import com.devspacehub.ast.common.dto.WebClientRequestDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -23,9 +23,7 @@ import java.util.function.Consumer;
 @NoArgsConstructor
 @Getter
 @Builder
-public class DomesticStockBuyOrderExternalDto extends WebClientRequestDto {
-    private String txId;
-
+public class DomesticStockOrderExternalReqDto extends WebClientRequestDto {
     @JsonProperty("CANO")
     private String accntNumber;    // 종합계좌번호
     @JsonProperty("ACNT_PRDT_CD")

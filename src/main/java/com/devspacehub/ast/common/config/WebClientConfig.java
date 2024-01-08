@@ -10,6 +10,7 @@ package com.devspacehub.ast.common.config;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,7 +43,6 @@ public class WebClientConfig {
                 .defaultHeader("appkey", appKey)
                 .defaultHeader("appsecret", appSecret)
                 .build();
-        // TODO 여기에 OAuth 넣어야하나?
     }
 
     /**
@@ -54,6 +54,7 @@ public class WebClientConfig {
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.registerModule(new JavaTimeModule());
         return objectMapper;
     }
 }
