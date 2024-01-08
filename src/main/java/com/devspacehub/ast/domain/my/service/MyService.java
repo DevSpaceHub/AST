@@ -13,7 +13,9 @@ package com.devspacehub.ast.domain.my.service;
  */
 public interface MyService {
     /**
-     * 매수 가능 조회 (Get)
+     * 매수 가능 금액 조회 (Get)
      */
-    void getBuyPossibleCash();
+    int getBuyOrderPossibleCash(String stockCode, Integer orderPrice, String orderDivision);
+
+    boolean BuyOrderPossibleCheck(String stockCode, String orderDivision, Integer orderPrice);
 }
