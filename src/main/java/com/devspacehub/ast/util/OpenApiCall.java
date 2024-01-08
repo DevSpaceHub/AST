@@ -8,12 +8,19 @@
 
 package com.devspacehub.ast.util;
 
+import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.dto.WebClientRequestDto;
-import com.devspacehub.ast.common.dto.WebClientResponseDto;
-import com.devspacehub.ast.domain.oauth.service.dto.AccessTokenIssueExternalReqDto;
+import com.devspacehub.ast.common.dto.WebClientCommonResDto;
+import com.devspacehub.ast.domain.my.dto.response.BuyPossibleCheckExternalResDto;
+import com.devspacehub.ast.domain.my.dto.response.StockBalanceExternalResDto;
+import com.devspacehub.ast.domain.oauth.dto.AccessTokenIssueExternalReqDto;
+import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.function.Consumer;
@@ -21,45 +28,25 @@ import java.util.function.Consumer;
 /**
  * OpenApi 호출 클래스.
  */
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class OpenApiCall {
     private final WebClient webClient;
 
-    /**
-     * OpenApi 호출 (Post)
-     * @param <T>        the type parameter
-     * @param uri        the uri
-     * @param headers    the headers
-     * @param requestDto the request dto
-     * @return the web client response dto
-     */
-    public <T extends WebClientRequestDto> WebClientResponseDto httpPostRequest(String uri, Consumer<HttpHeaders> headers, T requestDto) {
-        return webClient
-                .mutate()
-                .build()
-                .post()
-                .uri(uri)
-                .headers(headers)
-                .bodyValue(requestDto)
-                .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        clientResponse ->  clientResponse.bodyToMono(String.class)
-                                .map(body -> new RuntimeException(body)))
-                .bodyToMono(WebClientResponseDto.class)
-                .block();
-    }
+    @Value("${openapi.rest.domain}")
+    private String openApiDomain;
 
     /**
-     * OpenApi 접근 위한 OAuth 호출 <Post 메서드>
+     * 접근 토큰 발급 OpenApi Api 호출 (Post)
      *
      * @param uri        the uri
      * @param requestDto the request dto
      * @return the string
      */
     public String httpOAuthRequest(String uri, AccessTokenIssueExternalReqDto requestDto) {
-        return webClient
-                .mutate()
+        return WebClient.builder()
+                .baseUrl(openApiDomain)
                 .build()
                 .post()
                 .uri(uri)
@@ -67,8 +54,88 @@ public class OpenApiCall {
                 .retrieve()
                 .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
                         clientResponse ->  clientResponse.bodyToMono(String.class)
-                                .map(body -> new RuntimeException(body)))
+                                .map(RuntimeException::new))
                 .bodyToMono(String.class)
                 .block();
+    }
+
+    /**
+     * web client 통해 OpenApi 호출 (Get)
+     *
+     * @param openApiType the open api type
+     * @param headers     the headers
+     * @param queryParams the query params
+     * @return the web client common res dto
+     */
+    public WebClientCommonResDto httpGetRequest(OpenApiType openApiType, Consumer<HttpHeaders> headers, MultiValueMap<String, String> queryParams) {
+        Class<? extends WebClientCommonResDto> implResDtoClass = implyReturnType(openApiType);
+        WebClientCommonResDto response =  null;
+        try {
+            response = webClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(openApiType.getUri())
+                        .queryParams(queryParams).build()
+                )
+                .headers(headers)
+                .retrieve()
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                        clientResponse -> clientResponse.bodyToMono(String.class)
+                                .map(RuntimeException::new))
+                .bodyToMono(implResDtoClass)
+                .block();
+        } catch (RuntimeException ex) {
+            log.error("OpenApi Call 중 RuntimeException 발생");
+        }
+        return response;
+}
+
+    /**
+     * OpenApi 호출 (Post)
+     *
+     * @param <T>         the type parameter
+     * @param openApiType the open api type
+     * @param headers     the headers
+     * @param requestDto  the request dto
+     * @return the web client response dto
+     */
+    public <T extends WebClientRequestDto> WebClientCommonResDto httpPostRequest(OpenApiType openApiType, Consumer<HttpHeaders> headers, T requestDto) {
+
+        Class<? extends WebClientCommonResDto> implResDtoClass = implyReturnType(openApiType);
+        WebClientCommonResDto response =  null;
+        try {
+            response = webClient
+                    .mutate()
+                    .build()
+                    .post()
+                    .uri(openApiType.getUri())
+                    .headers(headers)
+                    .bodyValue(requestDto)
+                    .retrieve()
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                            clientResponse ->  clientResponse.bodyToMono(String.class)
+                                    .map(RuntimeException::new))
+                    .bodyToMono(implResDtoClass)
+                    .block();
+        } catch (RuntimeException ex) {
+            // rt_cd : 1, msg_cd : EGW00203, msg1 : OPS라우팅 중 오류가 발생했습니다.  => 이게 response에 담겼나?
+            log.error("OpenApi Call 중 RuntimeException 발생");
+        }
+        return response;
+    }
+
+    private Class<? extends WebClientCommonResDto> implyReturnType(OpenApiType openApiType) {
+        switch (openApiType) {
+            case DOMESTIC_STOCK_BUY_ORDER -> {
+                return DomesticStockOrderExternalResDto.class;
+            }
+            case BUY_ORDER_POSSIBLE_CASH -> {
+                return BuyPossibleCheckExternalResDto.class;
+            }
+            case STOCK_BALANCE -> {
+                return StockBalanceExternalResDto.class;
+            }
+            default -> throw new IllegalArgumentException("적절한 응답 DTO가 없습니다.");
+        }
     }
 }

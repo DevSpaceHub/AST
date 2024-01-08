@@ -7,9 +7,6 @@ spring:
   config:
     activate:
       on-profile: local
-my:
-  comprehensive-accountnumber: 50099723
-  accountnumber-product-code: 23
 
 openapi:
   rest:
@@ -18,8 +15,9 @@ openapi:
       transaction-id:
         buy-order: VTTC0802U
         sell-order: VTTC0801U
-    appkey: PSOspPtEknXDIqdg3X4k8DRMz7LZydtY2gdh
-    appsecret: 9QdgtjzwUNXWGrow7omqxz8moly7wCXpxM80gapiAv9C1XDG5x6imzzjZ8ULs1rNv8eit8qNpPnLOicqIgYV0RcMH2MYQJPeQ6iHDZE8ccY6cLMEonHKX8besKXSDtg9sbMTsoZAD06R3RC7wb/4/PT8tIcErIUAwGhaxK2Yiwd9hTG57Q4=
+        buy-possible-cash-find: VTTC8908R
+    appkey: ${APP_KEY}
+    appsecret: ${APP_SECRET}
 
   websocket:
     domain: ws://ops.koreainvestment.com:31000
@@ -35,9 +33,10 @@ openapi:
     domain: https://openapivts.koreainvestment.com:9443
     header:
       transaction-id:
-        buying-order: TTTC0802U
-        selling-order: TTTC0801U
-      appkey: PSGS3Nc1Tpy1B7Jf3eWXtsMxlfhFEgjPwwKR
-      appSecret: yWIFG2LAzI4C5qcr3e1PcHu1icPxxid5+U0UUeOMw4oBFyNdR1usC8UxDWE7RCYeRVDsotKuswp7Ggwft316iGzrF/zpZH8VU/aYyC1CgeSCVmeiM+h/i5G2yuDOZiqjPfXAt1gjJZSQSnW3Ae5TPhjAefn38icbGI1ZEyL8yDWGadtWFcw=
+        buy-order: TTTC0802U
+        sell-order: TTTC0801U
+        buy-possible-cash-find: TTTC8908R
+      appkey: ${APP_KEY}
+      appSecret: ${APP_SECRET}
   websocket:
     domain: ws://ops.koreainvestment.com:21000
