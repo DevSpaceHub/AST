@@ -43,10 +43,20 @@ public class MyServiceImpl implements MyService {
      */
     @Override
     public int getBuyOrderPossibleCash(String stockCode, Integer orderPrice, String orderDivision) {
-
         // 헤더 & 파라미터 값 생성
         Consumer<HttpHeaders> httpHeaders = BuyPossibleCheckExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdBuyPossibleCashFind);
+        MultiValueMap<String, String> queryParams = createRequestParameter(stockCode, orderPrice, orderDivision);
 
+        BuyPossibleCheckExternalResDto responseDto = (BuyPossibleCheckExternalResDto) openApiCall.httpGetRequest(BUY_ORDER_POSSIBLE_CASH, httpHeaders, queryParams);
+
+        log.info("응답 : {}", responseDto.getMessage());
+        log.info("주문 가능 현금 : {}", responseDto.getOutput().getOrderPossibleCash());
+        log.info("최대 구매 가능 금액 : {}", responseDto.getOutput().getMaxBuyAmount());
+        log.info("최대 구매 가능 수량 : {}", responseDto.getOutput().getMaxBuyQuantity());
+        return Integer.valueOf(responseDto.getOutput().getOrderPossibleCash());
+    }
+
+    private MultiValueMap<String, String> createRequestParameter(String stockCode, Integer orderPrice, String orderDivision) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
         queryParams.add("CANO", openApiProperties.getAccntNumber());
         queryParams.add("ACNT_PRDT_CD", openApiProperties.getAccntProductCode());
@@ -56,13 +66,7 @@ public class MyServiceImpl implements MyService {
         queryParams.add("CMA_EVLU_AMT_ICLD_YN", "N");  // CMA 평가 금액 포함 여부
         queryParams.add("OVRS_ICLD_YN", "N");    // 해외 포함 여부
 
-        BuyPossibleCheckExternalResDto responseDto = (BuyPossibleCheckExternalResDto) openApiCall.httpGetRequest(BUY_ORDER_POSSIBLE_CASH, httpHeaders, queryParams);
-
-        log.info("응답 : {}", responseDto.getMessage());
-        log.info("주문 가능 현금 : {}", responseDto.getOutput().getOrderPossibleCash());
-        log.info("최대 구매 가능 금액 : {}", responseDto.getOutput().getMaxBuyAmount());
-        log.info("최대 구매 가능 수량 : {}", responseDto.getOutput().getMaxBuyQuantity());
-        return Integer.valueOf(responseDto.getOutput().getOrderPossibleCash());
+        return queryParams;
     }
 
     /**
@@ -74,7 +78,7 @@ public class MyServiceImpl implements MyService {
         if (orderPrice <= myCash) {
             return true;
         }
-        log.info("매수 가능 금액(%s)이 매수가(%s)보다 낮습니다.", myCash, orderPrice);
+        log.info("매수 가능 금액({})이 매수가({})보다 낮습니다.", myCash, orderPrice);
         return false;
     }
 }

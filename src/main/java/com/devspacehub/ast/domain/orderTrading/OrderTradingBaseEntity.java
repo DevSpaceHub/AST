@@ -8,6 +8,7 @@
 
 package com.devspacehub.ast.domain.orderTrading;
 
+import com.devspacehub.ast.common.constant.CommonConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
@@ -29,5 +30,5 @@ public class OrderTradingBaseEntity {
 
     @Builder.Default
     @Column(name = "registration_id")
-    private String registrationId = "application";
+    private String registrationId = CommonConstants.REGISTER_ID;
 }

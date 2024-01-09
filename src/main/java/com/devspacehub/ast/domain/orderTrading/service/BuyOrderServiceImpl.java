@@ -1,7 +1,7 @@
 /*
  © 2023 devspacehub, Inc. All rights reserved.
 
- name : TradingServiceImpl
+ name : BuyOrderServiceImpl
  creation : 2023.12.10
  author : Yoonji Moon
  */
@@ -15,7 +15,7 @@ import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
-import com.devspacehub.ast.exception.NotEnoughCashException;
+import com.devspacehub.ast.exception.error.NotEnoughCashException;
 import com.devspacehub.ast.util.OpenApiCall;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +57,8 @@ public class BuyOrderServiceImpl extends TradingService {
 
         // 매수 가능 여부 판단
         if (!myService.BuyOrderPossibleCheck(stockItem.getStockCode(), stockItem.getOrderDivision(), realOrderPrice)) {
-            return null;
+            // TODO 예외 처리 핸들러 추가 예정
+            throw new NotEnoughCashException();
         }
 
         // 2. buy order

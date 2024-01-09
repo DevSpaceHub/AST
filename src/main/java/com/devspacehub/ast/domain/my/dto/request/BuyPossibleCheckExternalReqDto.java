@@ -8,7 +8,7 @@
 
 package com.devspacehub.ast.domain.my.dto.request;
 
-import com.devspacehub.ast.common.dto.WebClientRequestDto;
+import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import org.springframework.http.HttpHeaders;
@@ -19,7 +19,7 @@ import java.util.function.Consumer;
  * 매수 가능 조회 요청 DTO.
  */
 @Builder
-public class BuyPossibleCheckExternalReqDto extends WebClientRequestDto {
+public class BuyPossibleCheckExternalReqDto extends WebClientCommonReqDto {
 
     /**
      * Sets headers.

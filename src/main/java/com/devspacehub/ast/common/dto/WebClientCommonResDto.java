@@ -1,7 +1,7 @@
 /*
  © 2023 devspacehub, Inc. All rights reserved.
 
- name : WebClientResponseDto
+ name : WebClientCommonResDto
  creation : 2023.12.16
  author : Yoonji Moon
  */

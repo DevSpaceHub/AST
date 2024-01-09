@@ -1,7 +1,7 @@
 /*
  © 2024 devspacehub, Inc. All rights reserved.
 
- name : OrderItemDto
+ name : StockItemDto
  creation : 2024.1.4
  author : Yoonji Moon
  */

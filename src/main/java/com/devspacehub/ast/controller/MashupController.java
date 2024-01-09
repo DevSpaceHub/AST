@@ -1,12 +1,4 @@
 /*
- © 2024 devspacehub, Inc. All rights reserved.
-
- name : MashupController
- creation : 2024.1.8
- author : Yoonji Moon
- */
-
-/*
  © 2023 devspacehub, Inc. All rights reserved.
 
  name : MashupController
@@ -53,4 +45,5 @@ public class MashupController {
         mashupService.startSellOrder();
         return ResponseEntity.ok().build();
     }
+
 }

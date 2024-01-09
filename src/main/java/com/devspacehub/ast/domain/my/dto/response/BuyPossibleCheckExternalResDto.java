@@ -1,12 +1,4 @@
 /*
- © 2024 devspacehub, Inc. All rights reserved.
-
- name : BuyPossibleCheckExternalResDto
- creation : 2024.1.8
- author : Yoonji Moon
- */
-
-/*
  © 2023 devspacehub, Inc. All rights reserved.
 
  name : BuyPossibleCheckExternalResDto
@@ -44,40 +36,40 @@ public class BuyPossibleCheckExternalResDto extends WebClientCommonResDto {
     @Getter
     public static class Output {
         @JsonProperty("ord_psbl_cash")
-        private String orderPossibleCash;
+        private String orderPossibleCash;   // 주문가능현금
 
         @JsonProperty("ord_psbl_sbst")
-        private String ordPsblSbst;
+        private String ordPsblSbst; // 대용가격(substitute price of securities)
 
         @JsonProperty("ruse_psbl_amt")
-        private String rusePsblAmt;
+        private String rusePsblAmount;  // 재사용가능금액
 
         @JsonProperty("fund_rpch_chgs")
-        private String fundRpchChgs;
+        private String fundRpchChgs;    // 펀드환매대금
 
         @JsonProperty("psbl_qty_calc_unpr")
-        private String psblQtyCalcUnpr;
+        private String psblQtyCalcUnpr; // 가능수량계산단가
 
         @JsonProperty("nrcvb_buy_amt")
-        private String nrcvbBuyAmount;
+        private String nrcvbBuyAmount;  // 미수없는매수금액
 
         @JsonProperty("nrcvb_buy_qty")
-        private String nrcvbBuyQuantity;
+        private String nrcvbBuyQuantity;  // 미수없는매수수량
 
         @JsonProperty("max_buy_amt")
-        private String maxBuyAmount;
+        private String maxBuyAmount;    // 최대매수금액
 
         @JsonProperty("max_buy_qty")
-        private String maxBuyQuantity;
+        private String maxBuyQuantity;  // 최대매수수량
 
         @JsonProperty("cma_evlu_amt")
-        private String cmaEvluAmt;
+        private String cmaEvluAmt;  // CMA평가금액
 
         @JsonProperty("ovrs_re_use_amt_wcrc")
-        private String ovrsReUseAmtWcrc;
+        private String ovrsReUseAmtWcrc;    // 해외재사용금액원화
 
         @JsonProperty("ord_psbl_frcr_amt_wcrc")
-        private String ordPsblFrcrAmtWcrc;
+        private String ordPsblFrcrAmtWcrc;  // 주문가능외화금액원화
     }
 
     @JsonIgnore

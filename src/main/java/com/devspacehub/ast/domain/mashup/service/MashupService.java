@@ -1,7 +1,7 @@
 /*
  © 2023 devspacehub, Inc. All rights reserved.
 
- name : mashup
+ name : MashupService
  creation : 2023.12.11
  author : Yoonji Moon
  */

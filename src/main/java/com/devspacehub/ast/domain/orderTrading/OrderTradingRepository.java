@@ -1,7 +1,7 @@
 /*
  © 2024 devspacehub, Inc. All rights reserved.
 
- name : TradingRepository
+ name : OrderTradingRepository
  creation : 2024.1.6
  author : Yoonji Moon
  */

@@ -1,13 +1,14 @@
 /*
  © 2023 devspacehub, Inc. All rights reserved.
 
- name : AccessTokenIssueExternalResDto
+ name : OAuthTokenIssueExternalResDto
  creation : 2023.12.16
  author : Yoonji Moon
  */
 
 package com.devspacehub.ast.domain.oauth.dto;
 
+import com.devspacehub.ast.common.constant.CommonConstants;
 import com.devspacehub.ast.common.constant.TokenType;
 import com.devspacehub.ast.domain.oauth.OAuthTokens;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -26,8 +27,6 @@ import java.time.LocalDateTime;
 public abstract class OAuthTokenIssueExternalResDto {
     /**
      * The type Web client.
-     * {
-     * "access_token":"","access_token_token_expired":"2023-12-28 21:07:08","token_type":"Bearer","expires_in":86400}
      */
     @NoArgsConstructor
     @Setter
@@ -42,14 +41,14 @@ public abstract class OAuthTokenIssueExternalResDto {
         private int expiresInPerSec;
         @JsonProperty("access_token_token_expired")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-        private LocalDateTime accessTokenExpired;   //2023-12-30 06:52:04
+        private LocalDateTime accessTokenExpired;
 
         public OAuthTokens toEntity() {
             return OAuthTokens.builder()
                     .oauthToken(accessToken)
                     .oauthTokenExpired(accessTokenExpired)
                     .registrationDatetime(LocalDateTime.now())
-                    .registrationId("application")
+                    .registrationId(CommonConstants.REGISTER_ID)
                     .tokenType(TokenType.AccessToken)
                     .build();
         }

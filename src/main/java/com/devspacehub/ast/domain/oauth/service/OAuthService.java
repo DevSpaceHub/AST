@@ -13,15 +13,18 @@ import com.devspacehub.ast.domain.oauth.OAuthTokens;
 import com.devspacehub.ast.domain.oauth.OAuthRepository;
 import com.devspacehub.ast.domain.oauth.dto.AccessTokenIssueExternalReqDto;
 import com.devspacehub.ast.domain.oauth.dto.OAuthTokenIssueExternalResDto;
+import com.devspacehub.ast.exception.error.DtoConversionException;
 import com.devspacehub.ast.util.OpenApiCall;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.devspacehub.ast.common.constant.OpenApiType.OAUTH_ACCESS_TOKEN_ISSUE;
@@ -29,6 +32,7 @@ import static com.devspacehub.ast.common.constant.OpenApiType.OAUTH_ACCESS_TOKEN
 /**
  * OpenApi 호출 - OAuth 서비스.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuthService {
@@ -66,7 +70,8 @@ public class OAuthService {
                     response != null ? response : null,
                     OAuthTokenIssueExternalResDto.WebClient.class);
         } catch (Exception e) {
-            System.out.println("error");
+            // TODO 예외 핸들러 추가 예정
+            throw new DtoConversionException();
         }
 
         OAuthTokens savedToken = oAuthRepository.save(resDto.toEntity());

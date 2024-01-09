@@ -1,7 +1,7 @@
 /*
  © 2024 devspacehub, Inc. All rights reserved.
 
- name : SellOrderService
+ name : SellOrderServiceImpl
  creation : 2024.1.6
  author : Yoonji Moon
  */
@@ -41,7 +41,7 @@ public class SellOrderServiceImpl extends TradingService {
     @Value("${openapi.rest.header.transaction-id.sell-order}")
     private String txIdSellOrder;
     /**
-     * 매도 주문
+     * TODO 매도 주문
      * - 국내주식주문 API 호출
      */
     @Override

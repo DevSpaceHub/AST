@@ -1,7 +1,7 @@
 /*
  © 2023 devspacehub, Inc. All rights reserved.
 
- name : OpenApiCommonDto
+ name : WebClientCommonReqDto
  creation : 2023.12.11
  author : Yoonji Moon
  */
@@ -16,6 +16,6 @@ import lombok.NoArgsConstructor;
  */
 @NoArgsConstructor
 @Getter
-public abstract class WebClientRequestDto {
+public abstract class WebClientCommonReqDto {
 
 }

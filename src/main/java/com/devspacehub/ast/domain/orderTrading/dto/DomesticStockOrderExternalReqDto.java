@@ -1,14 +1,14 @@
 /*
  © 2023 devspacehub, Inc. All rights reserved.
 
- name : DomesticStockOrderDto
+ name : DomesticStockOrderExternalReqDto
  creation : 2023.12.11
  author : Yoonji Moon
  */
 
 package com.devspacehub.ast.domain.orderTrading.dto;
 
-import com.devspacehub.ast.common.dto.WebClientRequestDto;
+import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
@@ -23,15 +23,15 @@ import java.util.function.Consumer;
 @NoArgsConstructor
 @Getter
 @Builder
-public class DomesticStockOrderExternalReqDto extends WebClientRequestDto {
+public class DomesticStockOrderExternalReqDto extends WebClientCommonReqDto {
     @JsonProperty("CANO")
-    private String accntNumber;    // 종합계좌번호
+    private String accntNumber;       // 종합계좌번호
     @JsonProperty("ACNT_PRDT_CD")
-    private String accntProductCode;         // 계좌번호 체계(8-2)의 뒤 2자리
+    private String accntProductCode;  // 계좌번호 체계(8-2)의 뒤 2자리
     @JsonProperty("PDNO")
-    private String stockCode;        // 종목코드
+    private String stockCode;         // 종목코드
     @JsonProperty("ORD_DVSN")
-    private String orderDivision;       // 주문 구분
+    private String orderDivision;     // 주문 구분
     @JsonProperty("ORD_QTY")
     private String orderQuantity;
     @JsonProperty("ORD_UNPR")
@@ -50,9 +50,7 @@ public class DomesticStockOrderExternalReqDto extends WebClientRequestDto {
         headers.add("content-Type", "application/json");
         headers.add("authorization", "Bearer " + oauth);
         headers.add("tr_id", txId);
-        return httpHeaders -> {
-            httpHeaders.addAll(headers);
-        };
+        return httpHeaders -> httpHeaders.addAll(headers);
     }
     @Override
     public String toString() {

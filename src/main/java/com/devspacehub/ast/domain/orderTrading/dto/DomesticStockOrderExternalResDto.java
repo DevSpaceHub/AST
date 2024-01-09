@@ -1,15 +1,7 @@
 /*
- © 2024 devspacehub, Inc. All rights reserved.
-
- name : DomesticStockOrderExternalResDto
- creation : 2024.1.8
- author : Yoonji Moon
- */
-
-/*
  © 2023 devspacehub, Inc. All rights reserved.
 
- name : DomesticStockBuyOrderExternalReqDto
+ name : DomesticStockOrderExternalResDto
  creation : 2023.12.21
  author : Yoonji Moon
  */

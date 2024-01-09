@@ -9,7 +9,7 @@
 package com.devspacehub.ast.util;
 
 import com.devspacehub.ast.common.constant.OpenApiType;
-import com.devspacehub.ast.common.dto.WebClientRequestDto;
+import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.my.dto.response.BuyPossibleCheckExternalResDto;
 import com.devspacehub.ast.domain.my.dto.response.StockBalanceExternalResDto;
@@ -45,18 +45,24 @@ public class OpenApiCall {
      * @return the string
      */
     public String httpOAuthRequest(String uri, AccessTokenIssueExternalReqDto requestDto) {
-        return WebClient.builder()
-                .baseUrl(openApiDomain)
-                .build()
-                .post()
-                .uri(uri)
-                .bodyValue(requestDto)
-                .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        clientResponse ->  clientResponse.bodyToMono(String.class)
-                                .map(RuntimeException::new))
-                .bodyToMono(String.class)
-                .block();
+        String response = null;
+        try {
+            response = WebClient.builder()
+                    .baseUrl(openApiDomain)
+                    .build()
+                    .post()
+                    .uri(uri)
+                    .bodyValue(requestDto)
+                    .retrieve()
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                            clientResponse -> clientResponse.bodyToMono(String.class)
+                                    .map(RuntimeException::new))
+                    .bodyToMono(String.class)
+                    .block();
+        } catch (Exception ex) {
+            log.error("요청 실패하였습니다.(요청 uri : {})", uri);
+        }
+        return response;
     }
 
     /**
@@ -84,8 +90,8 @@ public class OpenApiCall {
                                 .map(RuntimeException::new))
                 .bodyToMono(implResDtoClass)
                 .block();
-        } catch (RuntimeException ex) {
-            log.error("OpenApi Call 중 RuntimeException 발생");
+        } catch (Exception ex) {
+            log.error("요청 실패하였습니다.(요청 uri : {})", openApiType.getUri());
         }
         return response;
 }
@@ -99,7 +105,7 @@ public class OpenApiCall {
      * @param requestDto  the request dto
      * @return the web client response dto
      */
-    public <T extends WebClientRequestDto> WebClientCommonResDto httpPostRequest(OpenApiType openApiType, Consumer<HttpHeaders> headers, T requestDto) {
+    public <T extends WebClientCommonReqDto> WebClientCommonResDto httpPostRequest(OpenApiType openApiType, Consumer<HttpHeaders> headers, T requestDto) {
 
         Class<? extends WebClientCommonResDto> implResDtoClass = implyReturnType(openApiType);
         WebClientCommonResDto response =  null;
@@ -117,9 +123,8 @@ public class OpenApiCall {
                                     .map(RuntimeException::new))
                     .bodyToMono(implResDtoClass)
                     .block();
-        } catch (RuntimeException ex) {
-            // rt_cd : 1, msg_cd : EGW00203, msg1 : OPS라우팅 중 오류가 발생했습니다.  => 이게 response에 담겼나?
-            log.error("OpenApi Call 중 RuntimeException 발생");
+        } catch (Exception ex) {
+            log.error("요청 실패하였습니다.(요청 uri : {})", openApiType.getUri());
         }
         return response;
     }
