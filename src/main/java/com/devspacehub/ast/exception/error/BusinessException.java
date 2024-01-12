@@ -8,9 +8,12 @@
 
 package com.devspacehub.ast.exception.error;
 
+import lombok.Getter;
+
 /**
  * The type Business exception.
  */
+@Getter
 public abstract class BusinessException extends RuntimeException {
     private final ErrorCode errorCode;
 
