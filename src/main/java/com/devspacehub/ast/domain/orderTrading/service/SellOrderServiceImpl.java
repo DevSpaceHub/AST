@@ -15,7 +15,7 @@ import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
-import com.devspacehub.ast.util.OpenApiCall;
+import com.devspacehub.ast.openApiUtil.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,7 +34,7 @@ import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_SEL
 @RequiredArgsConstructor
 @Service
 public class SellOrderServiceImpl extends TradingService {
-    private final OpenApiCall openApiCall;
+    private final OpenApiRequest openApiRequest;
     private final OpenApiProperties openApiProperties;
     private final OrderTradingRepository orderTradingRepository;
 
@@ -56,7 +56,7 @@ public class SellOrderServiceImpl extends TradingService {
                 .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
                 .orderPrice(String.valueOf(stockItem.getOrderPrice()))
                 .build();
-        WebClientCommonResDto response = openApiCall.httpPostRequest(DOMESTIC_STOCK_SELL_ORDER, httpHeaders, bodyDto);
+        WebClientCommonResDto response = openApiRequest.httpPostRequest(DOMESTIC_STOCK_SELL_ORDER, httpHeaders, bodyDto);
 
 
         return null;

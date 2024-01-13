@@ -6,7 +6,7 @@
  author : Yoonji Moon
  */
 
-package com.devspacehub.ast.util;
+package com.devspacehub.ast.openApiUtil;
 
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class OpenApiCall {
+public class OpenApiRequest {
     private final WebClient webClient;
 
     @Value("${openapi.rest.domain}")

@@ -14,7 +14,7 @@ import com.devspacehub.ast.domain.oauth.OAuthRepository;
 import com.devspacehub.ast.domain.oauth.dto.AccessTokenIssueExternalReqDto;
 import com.devspacehub.ast.domain.oauth.dto.OAuthTokenIssueExternalResDto;
 import com.devspacehub.ast.exception.error.DtoConversionException;
-import com.devspacehub.ast.util.OpenApiCall;
+import com.devspacehub.ast.openApiUtil.OpenApiRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.Optional;
 
 import static com.devspacehub.ast.common.constant.OpenApiType.OAUTH_ACCESS_TOKEN_ISSUE;
@@ -36,7 +35,7 @@ import static com.devspacehub.ast.common.constant.OpenApiType.OAUTH_ACCESS_TOKEN
 @Service
 @RequiredArgsConstructor
 public class OAuthService {
-    private final OpenApiCall openApiCall;
+    private final OpenApiRequest openApiRequest;
     private final OAuthRepository oAuthRepository;
     private final ObjectMapper objectMapper;
     @Value("${openapi.rest.appkey}")
@@ -63,14 +62,13 @@ public class OAuthService {
                 .appKey(appKey)
                 .appSecret(appSecret)
                 .build();
-        String response = openApiCall.httpOAuthRequest(OAUTH_ACCESS_TOKEN_ISSUE.getUri(), dto);
+        String response = openApiRequest.httpOAuthRequest(OAUTH_ACCESS_TOKEN_ISSUE.getUri(), dto);
         OAuthTokenIssueExternalResDto.WebClient resDto = null;
         try {
             resDto = objectMapper.readValue(
                     response != null ? response : null,
                     OAuthTokenIssueExternalResDto.WebClient.class);
         } catch (Exception e) {
-            // TODO 예외 핸들러 추가 예정
             throw new DtoConversionException();
         }
 

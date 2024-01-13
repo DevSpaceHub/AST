@@ -16,7 +16,7 @@ import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import com.devspacehub.ast.exception.error.NotEnoughCashException;
-import com.devspacehub.ast.util.OpenApiCall;
+import com.devspacehub.ast.openApiUtil.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,7 +36,7 @@ import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_BUY
 @RequiredArgsConstructor
 @Service
 public class BuyOrderServiceImpl extends TradingService {
-    private final OpenApiCall openApiCall;
+    private final OpenApiRequest openApiRequest;
     private final OpenApiProperties openApiProperties;
     private final OrderTradingRepository orderTradingRepository;
     private final MyService myService;
@@ -57,7 +57,6 @@ public class BuyOrderServiceImpl extends TradingService {
 
         // 매수 가능 여부 판단
         if (!myService.BuyOrderPossibleCheck(stockItem.getStockCode(), stockItem.getOrderDivision(), realOrderPrice)) {
-            // TODO 예외 처리 핸들러 추가 예정
             throw new NotEnoughCashException();
         }
 
@@ -71,7 +70,7 @@ public class BuyOrderServiceImpl extends TradingService {
                 .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
                 .orderPrice(String.valueOf(stockItem.getOrderPrice()))
                 .build();
-        DomesticStockOrderExternalResDto response = (DomesticStockOrderExternalResDto) openApiCall.httpPostRequest(DOMESTIC_STOCK_BUY_ORDER, httpHeaders, bodyDto);
+        DomesticStockOrderExternalResDto response = (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(DOMESTIC_STOCK_BUY_ORDER, httpHeaders, bodyDto);
 
         log.info("===== order trading finish =====");
         return response;

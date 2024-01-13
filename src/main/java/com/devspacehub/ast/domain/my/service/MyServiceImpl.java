@@ -11,7 +11,7 @@ package com.devspacehub.ast.domain.my.service;
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.domain.my.dto.request.BuyPossibleCheckExternalReqDto;
 import com.devspacehub.ast.domain.my.dto.response.BuyPossibleCheckExternalResDto;
-import com.devspacehub.ast.util.OpenApiCall;
+import com.devspacehub.ast.openApiUtil.OpenApiRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,7 @@ import static com.devspacehub.ast.common.constant.OpenApiType.BUY_ORDER_POSSIBLE
 @RequiredArgsConstructor
 @Service
 public class MyServiceImpl implements MyService {
-    private final OpenApiCall openApiCall;
+    private final OpenApiRequest openApiRequest;
     private final OpenApiProperties openApiProperties;
     private final ObjectMapper objectMapper;
     @Value("${openapi.rest.header.transaction-id.buy-possible-cash-find}")
@@ -47,7 +47,7 @@ public class MyServiceImpl implements MyService {
         Consumer<HttpHeaders> httpHeaders = BuyPossibleCheckExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdBuyPossibleCashFind);
         MultiValueMap<String, String> queryParams = createRequestParameter(stockCode, orderPrice, orderDivision);
 
-        BuyPossibleCheckExternalResDto responseDto = (BuyPossibleCheckExternalResDto) openApiCall.httpGetRequest(BUY_ORDER_POSSIBLE_CASH, httpHeaders, queryParams);
+        BuyPossibleCheckExternalResDto responseDto = (BuyPossibleCheckExternalResDto) openApiRequest.httpGetRequest(BUY_ORDER_POSSIBLE_CASH, httpHeaders, queryParams);
 
         log.info("응답 : {}", responseDto.getMessage());
         log.info("주문 가능 현금 : {}", responseDto.getOutput().getOrderPossibleCash());
