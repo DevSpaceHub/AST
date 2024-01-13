@@ -3,13 +3,13 @@ spring:
     name: ast
 
   profiles:
+    group:
+      local: openapi
+      prod: openapi
     active: local
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-
-  jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
 
   sql:
     init:
