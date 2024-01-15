@@ -74,13 +74,13 @@ public class StockBalanceExternalResDto extends WebClientCommonResDto {
         private String hldgQty;
 
         @JsonProperty("ord_psbl_qty")
-        private String ordPsblQty;
+        private String orderPossibleQuantity;   // 보유 수량 - 매도 주문한 수량(체결 안된 상태)
 
         @JsonProperty("pchs_avg_pric")
         private String pchsAvgPric;
 
         @JsonProperty("pchs_amt")
-        private String pchsAmt;
+        private String purchaseAmount;
 
         @JsonProperty("prpr")
         private String prpr;
@@ -92,10 +92,10 @@ public class StockBalanceExternalResDto extends WebClientCommonResDto {
         private String evluPflsAmt;
 
         @JsonProperty("evlu_pfls_rt")
-        private String evluPflsRt;
+        private String evaluateProfitLossRate;   // 평가손익률
 
         @JsonProperty("evlu_erng_rt")
-        private String evluErngRt;
+        private String evaluateEarningRate;
 
         @JsonProperty("loan_dt")
         private String loanDt;

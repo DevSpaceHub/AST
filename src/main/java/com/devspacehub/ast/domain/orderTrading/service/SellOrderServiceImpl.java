@@ -11,6 +11,7 @@ package com.devspacehub.ast.domain.orderTrading.service;
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
+import com.devspacehub.ast.domain.my.dto.response.StockBalanceExternalResDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -40,6 +42,14 @@ public class SellOrderServiceImpl extends TradingService {
 
     @Value("${openapi.rest.header.transaction-id.sell-order}")
     private String txIdSellOrder;
+
+    @Value("${trading.stop-loss-sell-ratio}")
+    private Float stopLossSellRatio;
+
+    @Value("${trading.profit-sell-ratio}")
+    private Float profitSellRatio;
+    private static final Float COMMISSION_RATE = 0.2f;
+
     /**
      * TODO 매도 주문
      * - 국내주식주문 API 호출
@@ -56,10 +66,31 @@ public class SellOrderServiceImpl extends TradingService {
                 .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
                 .orderPrice(String.valueOf(stockItem.getOrderPrice()))
                 .build();
-        WebClientCommonResDto response = openApiRequest.httpPostRequest(DOMESTIC_STOCK_SELL_ORDER, httpHeaders, bodyDto);
+        DomesticStockOrderExternalResDto response = (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(DOMESTIC_STOCK_SELL_ORDER, httpHeaders, bodyDto);
 
+        return response;
+    }
 
-        return null;
+    /**
+     * 알고리즘에 따라 거래할 종목 선택
+     * @param resDto
+     * @return
+     */
+    public List<StockItemDto> pickStockItems(WebClientCommonResDto resDto) {
+        StockBalanceExternalResDto myStockBalance = (StockBalanceExternalResDto) resDto;
+        List<StockItemDto> pickedStockItems = new ArrayList<>();
+
+        for (StockBalanceExternalResDto.Output1 output1 : myStockBalance.getOutput1()) {
+            Float evaluateEarningRate = Float.valueOf(output1.getEvaluateEarningRate());    // TODO 손실일 경우 값이 어떻게 넘어오는지 확인 필요
+            if (evaluateEarningRate - COMMISSION_RATE > profitSellRatio) {
+                // TODO 수익 매도
+                //5.0-0.2 = 4.8 > -5.0%
+            }
+            else if (evaluateEarningRate - COMMISSION_RATE > stopLossSellRatio) {
+                // TODO 손절 매도
+            }
+        }
+        return pickedStockItems;
     }
 
     @Override
