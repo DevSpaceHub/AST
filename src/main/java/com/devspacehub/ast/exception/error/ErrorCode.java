@@ -31,8 +31,8 @@ public enum ErrorCode {
 
 
     // application error
-    DTO_CONVERSION_ERROR(HttpStatus.SERVICE_UNAVAILABLE, "DTO_CONVERSION_ERROR", "DTO 변환 과정에서 문제 발생하였습니다.")
-    ;
+    DTO_CONVERSION_ERROR(HttpStatus.SERVICE_UNAVAILABLE, "DTO_CONVERSION_ERROR", "DTO 변환 과정에서 문제 발생하였습니다."),
+    OPENAPI_FAILED_RESPONSE(HttpStatus.CONFLICT, "OPENAPI_FAILED_RESPONSE", "OpenApi 요청이 실패하였습니다.");
 
     private HttpStatus status;
     private String code;

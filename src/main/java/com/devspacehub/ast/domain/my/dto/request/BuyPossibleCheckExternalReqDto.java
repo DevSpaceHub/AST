@@ -9,11 +9,9 @@
 package com.devspacehub.ast.domain.my.dto.request;
 
 import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
-import org.springframework.http.HttpHeaders;
-
-import java.util.function.Consumer;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 /**
  * 매수 가능 조회 요청 DTO.
@@ -21,19 +19,16 @@ import java.util.function.Consumer;
 @Builder
 public class BuyPossibleCheckExternalReqDto extends WebClientCommonReqDto {
 
-    /**
-     * Sets headers.
-     *
-     * @param oauth the oauth
-     * @param txId  the tx id
-     * @return the headers
-     */
-    @JsonIgnore
-    public static Consumer<HttpHeaders> setHeaders(String oauth, String txId) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("content-type", "application/json");
-        headers.add("authorization", "Bearer " + oauth);
-        headers.add("tr_id", txId);
-        return httpHeaders -> httpHeaders.addAll(headers);
+    public static MultiValueMap<String, String> createParameter(String accntNumber, String accntProductCode, String stockCode, Integer orderPrice, String orderDivision) {
+        MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+        queryParams.add("CANO", accntNumber);
+        queryParams.add("ACNT_PRDT_CD", accntProductCode);
+        queryParams.add("PDNO", stockCode);
+        queryParams.add("ORD_UNPR", String.valueOf(orderPrice));
+        queryParams.add("ORD_DVSN", orderDivision);
+        queryParams.add("CMA_EVLU_AMT_ICLD_YN", "N");  // CMA 평가 금액 포함 여부
+        queryParams.add("OVRS_ICLD_YN", "N");    // 해외 포함 여부
+
+        return queryParams;
     }
 }

@@ -86,11 +86,11 @@ public class MyServiceImpl implements MyService {
 
         StockBalanceExternalResDto responseDto = (StockBalanceExternalResDto) openApiRequest.httpGetRequest(OpenApiType.STOCK_BALANCE, headers, queryParams);
 
-        log.info("응답 : {}", responseDto.getMessage());
         if (!responseDto.isSuccess()) {
             throw new OpenApiFailedResponseException();
         }
         // log (TODO 삭제 예정)
+        log.info("응답 : {}", responseDto.getMessage());
         for(StockBalanceExternalResDto.Output1 output1 : responseDto.getOutput1()) {
             log.info("주식 종목 : {}({})", output1.getStockCode(), output1.getStockName());
             log.info("보유 수량 : {}", output1.getHldgQty());
