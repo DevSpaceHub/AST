@@ -9,6 +9,8 @@
 package com.devspacehub.ast.domain.orderTrading.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
+import com.devspacehub.ast.common.dto.WebClientCommonResDto;
+import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
@@ -24,6 +26,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -78,6 +81,21 @@ public class BuyOrderServiceImpl extends TradingService {
 
     private boolean isStockMarketClosed(String messageCode) {
         return "40100000".equals(messageCode);
+    }
+
+    /**
+     * 알고리즘에 따라 매수할 종목 선택
+     * @param resDto
+     * @return
+     */
+    public List<StockItemDto> pickStockItems(WebClientCommonResDto resDto) {
+        // 거래량 순위 조회에 따른 종목
+        DomStockTradingVolumeRankingExternalResDto stockItems = (DomStockTradingVolumeRankingExternalResDto) resDto;
+
+        List<StockItemDto> pickedStockItems = new ArrayList<>();
+        // TODO 매수 종목 선택 알고리즘 추가 예정
+
+        return pickedStockItems;
     }
 
     @Transactional

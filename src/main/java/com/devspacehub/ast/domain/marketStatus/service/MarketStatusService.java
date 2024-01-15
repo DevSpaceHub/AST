@@ -8,10 +8,9 @@
 
 package com.devspacehub.ast.domain.marketStatus.service;
 
-import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
+import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 /**
  * 주식 현황 조회 서비스.
@@ -23,7 +22,7 @@ public class MarketStatusService {
      *
      * @return the list
      */
-    public List<StockItemDto> findTradingVolume() {
+    public DomStockTradingVolumeRankingExternalResDto findTradingVolume() {
 
 
 /*        StockItemDto build = StockItemDto.builder()
