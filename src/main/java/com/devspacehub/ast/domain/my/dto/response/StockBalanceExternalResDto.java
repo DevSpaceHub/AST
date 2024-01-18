@@ -18,6 +18,8 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
+
 /**
  * 주식 잔고 조회 응답 DTO.
  */
@@ -104,7 +106,7 @@ public class StockBalanceExternalResDto extends WebClientCommonResDto {
         private String loanAmt;
 
         @JsonProperty("stln_slng_chgs")
-        private String stlnSllngChgs;
+        private String stlnSlngChgs;
 
         @JsonProperty("expd_dt")
         private String expdDt;
@@ -193,7 +195,7 @@ public class StockBalanceExternalResDto extends WebClientCommonResDto {
         private String evluPflsSmtlAmt;
 
         @JsonProperty("tot_stln_slng_chgs")
-        private String totStlnSllngChgs;
+        private String totStlnSlngChgs;
 
         @JsonProperty("bfdy_tot_asst_evlu_amt")
         private String bfdyTotAsstEvluAmt;
@@ -208,6 +210,6 @@ public class StockBalanceExternalResDto extends WebClientCommonResDto {
     @JsonIgnore
     @Override
     public boolean isSuccess() {
-        return "0".equals(this.resultCode);
+        return OPENAPI_SUCCESS_RESULT_CODE.equals(this.resultCode);
     }
 }

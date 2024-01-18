@@ -59,7 +59,7 @@ public class BuyOrderServiceImpl extends TradingService {
         // TODO 가격 : 종가 +30%, -30% 사이
 
         // 매수 가능 여부 판단
-        if (!myService.BuyOrderPossibleCheck(stockItem.getStockCode(), stockItem.getOrderDivision(), realOrderPrice)) {
+        if (!myService.buyOrderPossibleCheck(stockItem.getStockCode(), stockItem.getOrderDivision(), realOrderPrice)) {
             throw new NotEnoughCashException();
         }
 

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import java.util.function.Consumer;
 
@@ -32,8 +33,8 @@ public abstract class WebClientCommonReqDto {
     @JsonIgnore
     public static Consumer<HttpHeaders> setHeaders(String oauth, String txId) {
         HttpHeaders headers = new HttpHeaders();
-        headers.add("content-type", "application/json");
-        headers.add("authorization", "Bearer " + oauth);
+        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + oauth);
         headers.add("tr_id", txId);
         return httpHeaders -> httpHeaders.addAll(headers);
     }

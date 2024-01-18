@@ -13,6 +13,8 @@ import lombok.Builder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
+
 /**
  * 매수 가능 조회 요청 DTO.
  */
@@ -26,8 +28,8 @@ public class BuyPossibleCheckExternalReqDto extends WebClientCommonReqDto {
         queryParams.add("PDNO", stockCode);
         queryParams.add("ORD_UNPR", String.valueOf(orderPrice));
         queryParams.add("ORD_DVSN", orderDivision);
-        queryParams.add("CMA_EVLU_AMT_ICLD_YN", "N");  // CMA 평가 금액 포함 여부
-        queryParams.add("OVRS_ICLD_YN", "N");    // 해외 포함 여부
+        queryParams.add("CMA_EVLU_AMT_ICLD_YN", NO.getCode());  // CMA 평가 금액 포함 여부
+        queryParams.add("OVRS_ICLD_YN", NO.getCode());    // 해외 포함 여부
 
         return queryParams;
     }

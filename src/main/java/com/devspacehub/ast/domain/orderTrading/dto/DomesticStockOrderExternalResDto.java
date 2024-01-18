@@ -15,6 +15,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
+
 /**
  * 국내 주식 주문(매수/매도) 응답 DTO.
  */
@@ -50,6 +52,6 @@ public class DomesticStockOrderExternalResDto extends WebClientCommonResDto {
     @JsonIgnore
     @Override
     public boolean isSuccess() {
-        return "0".equals(this.resultCode);
+        return OPENAPI_SUCCESS_RESULT_CODE.equals(this.resultCode);
     }
 }

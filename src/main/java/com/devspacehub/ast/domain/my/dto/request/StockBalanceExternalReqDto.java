@@ -12,6 +12,8 @@ import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
+
 /**
  * 주식 잔고 조회 요청 DTO.
  */
@@ -20,21 +22,18 @@ public class StockBalanceExternalReqDto extends WebClientCommonReqDto {
      * Create parameter multi value map.
      * @param accntNumber      the accnt number
      * @param accntProductCode the accnt product code
-     * @param stockCode        the stock code
-     * @param orderPrice       the order price
-     * @param orderDivision    the order division
      * @return the multi value map
      */
     public static MultiValueMap<String, String> createParameter(String accntNumber, String accntProductCode) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
         queryParams.add("CANO", accntNumber);
         queryParams.add("ACNT_PRDT_CD", accntProductCode);
-        queryParams.add("AFHR_FLPR_YN", "N"); // 시간외 단일가 여부
-        queryParams.add("OFL_YN", "N");     // 오프라인 여부
+        queryParams.add("AFHR_FLPR_YN", NO.getCode()); // 시간외 단일가 여부
+        queryParams.add("OFL_YN", NO.getCode());     // 오프라인 여부
         queryParams.add("INQR_DVSN", "02"); // 01:대출일별, 02:종목별
         queryParams.add("UNPR_DVSN", "01");  // 단가구분
-        queryParams.add("FUND_STTL_ICLD_YN", "N");  // 펀드결제분포함여부
-        queryParams.add("FNCG_AMT_AUTO_RDPT_YN", "N");  // 융자금액자동상환여부
+        queryParams.add("FUND_STTL_ICLD_YN", NO.getCode());  // 펀드결제분포함여부
+        queryParams.add("FNCG_AMT_AUTO_RDPT_YN", NO.getCode());  // 융자금액자동상환여부
         queryParams.add("PRCS_DVSN", "00");  // 처리구분(00: 전일매매포함, 01: 전일매매미포함)
         queryParams.add("CTX_AREA_FK100", ""); // 연속조회검색조건100
         queryParams.add("CTX_AREA_NK100", ""); // 연속조회키100

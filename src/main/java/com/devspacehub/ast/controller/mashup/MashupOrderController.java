@@ -6,7 +6,7 @@
  author : Yoonji Moon
  */
 
-package com.devspacehub.ast.controller;
+package com.devspacehub.ast.controller.mashup;
 
 import com.devspacehub.ast.domain.mashup.service.MashupService;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * AST-BATCH에서 호출하는 매쉬업 컨트롤러
+ * AST-BATCH에서 호출하는 매쉬업 컨트롤러 - 주문
  */
 @RestController
 @RequestMapping("/ast/orders")
 @RequiredArgsConstructor
-public class MashupController {
+public class MashupOrderController {
     private final MashupService mashupService;
 
     /**

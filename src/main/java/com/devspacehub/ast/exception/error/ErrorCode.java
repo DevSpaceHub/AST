@@ -32,8 +32,10 @@ public enum ErrorCode {
 
     // application error
     DTO_CONVERSION_ERROR(HttpStatus.SERVICE_UNAVAILABLE, "DTO_CONVERSION_ERROR", "DTO 변환 과정에서 문제 발생하였습니다."),
-    OPENAPI_FAILED_RESPONSE(HttpStatus.CONFLICT, "OPENAPI_FAILED_RESPONSE", "OpenApi 요청이 실패하였습니다.");
+    OPENAPI_FAILED_RESPONSE(HttpStatus.CONFLICT, "OPENAPI_FAILED_RESPONSE", "OpenApi 요청이 실패하였습니다."),
+    NOT_FOUND_ACCESS_TOKEN(HttpStatus.NOT_FOUND, "NOT_FOUND_ACCESS_TOKEN", "접근 토큰 조회에 실패하였습니다."),
 
+    ;
     private HttpStatus status;
     private String code;
     private String message;

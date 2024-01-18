@@ -22,6 +22,7 @@ import com.devspacehub.ast.domain.orderTrading.OrderTradingServiceFactory;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,7 @@ import java.util.List;
 /**
  * The type Mashup service.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MashupService {
@@ -51,19 +53,16 @@ public class MashupService {
      */
     @Transactional
     public void startBuyOrder() {
-        // 1. 접근 토큰 발급 or 재사용
-        String oauth = oAuthService.issueAccessToken(TokenType.AccessToken);
-        openApiProperties.setOauth(oauth);
-
-        // TODO 2. 거래량 조회 api 호출 (상위 10위)
+        // TODO 1. 거래량 조회 api 호출 (상위 10위)
         DomStockTradingVolumeRankingExternalResDto items = marketStatusService.findTradingVolume();
 
-        // TODO 3. stock item selecting logic
+        log.info("거래량 순위 조회 갯수 : " + items.getStockInfos().length);
+        // TODO 2. stock item selecting logic
         TradingService tradingService = orderTradingServiceFactory.getServiceImpl(OpenApiType.DOMESTIC_STOCK_BUY_ORDER);
         List<StockItemDto> stockItems = tradingService.pickStockItems(items);
 
 
-        // TODO 4. valid check
+        // TODO 3. valid check
 
         // TODO 주식 주문 시에는 다른 dto를 사용해야할 수도 있음
         // 5. n건 매수
@@ -81,9 +80,8 @@ public class MashupService {
 
     @Transactional
     public void startSellOrder() {
-        // 1. 접근 토큰 발급 or 재사용
-        String oauth = oAuthService.issueAccessToken(TokenType.AccessToken);
-        openApiProperties.setOauth(oauth);
+        // 1. 발급해놓은 접근 토큰 세팅
+        oAuthService.setAccessToken(TokenType.AccessToken);
 
         // 2. 주식 잔고 조회
         StockBalanceExternalResDto myStockBalance = myService.getMyStockBalance();

@@ -32,7 +32,7 @@ public interface MyService {
      * @param orderPrice    the order price
      * @return the boolean
      */
-    boolean BuyOrderPossibleCheck(String stockCode, String orderDivision, Integer orderPrice);
+    boolean buyOrderPossibleCheck(String stockCode, String orderDivision, Integer orderPrice);
 
     /**
      * 주식 잔고 조회 (Get)

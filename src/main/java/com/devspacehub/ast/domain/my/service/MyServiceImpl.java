@@ -66,12 +66,12 @@ public class MyServiceImpl implements MyService {
      * 매수 가능한 종목인지 체크
      */
     @Override
-    public boolean BuyOrderPossibleCheck(String stockCode, String orderDivision, Integer orderPrice) {
+    public boolean buyOrderPossibleCheck(String stockCode, String orderDivision, Integer orderPrice) {
         int myCash = getBuyOrderPossibleCash(stockCode, orderPrice, orderDivision);
         if (orderPrice <= myCash) {
             return true;
         }
-        log.info("매수 가능 금액({})이 매수가({})보다 낮습니다.", myCash, orderPrice);
+        log.info("매수 주문 금액이 부족합니다. (매수 가능 금액: {})", myCash);
         return false;
     }
 

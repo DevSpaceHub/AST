@@ -1,7 +1,7 @@
 /*
  © 2024 devspacehub, Inc. All rights reserved.
 
- name : OpenApiFailedException
+ name : OpenApiFailedResponseException
  creation : 2024.1.15
  author : Yoonji Moon
  */

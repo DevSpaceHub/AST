@@ -13,4 +13,5 @@ package com.devspacehub.ast.common.constant;
  */
 public class CommonConstants {
     public static final String REGISTER_ID = "application";
+    public static final String OPENAPI_SUCCESS_RESULT_CODE = "0";
 }
