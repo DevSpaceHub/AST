@@ -1,7 +1,7 @@
 /*
  © 2024 devspacehub, Inc. All rights reserved.
 
- name : MashupAuthController
+ name : MashupOAuthTokenController
  creation : 2024.1.17
  author : Yoonji Moon
  */
