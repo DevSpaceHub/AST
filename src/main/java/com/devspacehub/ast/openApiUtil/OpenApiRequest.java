@@ -1,7 +1,7 @@
 /*
  © 2023 devspacehub, Inc. All rights reserved.
 
- name : OpenApiCall
+ name : OpenApiRequest
  creation : 2023.12.11
  author : Yoonji Moon
  */
@@ -11,6 +11,7 @@ package com.devspacehub.ast.openApiUtil;
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
+import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
 import com.devspacehub.ast.domain.my.dto.response.BuyPossibleCheckExternalResDto;
 import com.devspacehub.ast.domain.my.dto.response.StockBalanceExternalResDto;
 import com.devspacehub.ast.domain.oauth.dto.AccessTokenIssueExternalReqDto;
@@ -94,7 +95,7 @@ public class OpenApiRequest {
             log.error("요청 실패하였습니다.(요청 uri : {})", openApiType.getUri());
         }
         return response;
-}
+    }
 
     /**
      * OpenApi 호출 (Post)
@@ -139,6 +140,9 @@ public class OpenApiRequest {
             }
             case STOCK_BALANCE -> {
                 return StockBalanceExternalResDto.class;
+            }
+            case DOMSTOCK_TRADING_VOLUME_RANKING -> {
+                return DomStockTradingVolumeRankingExternalResDto.class;
             }
             default -> throw new IllegalArgumentException("적절한 응답 DTO가 없습니다.");
         }

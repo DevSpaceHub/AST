@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION;
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_BUY_ORDER;
 
 /**
@@ -89,11 +90,21 @@ public class BuyOrderServiceImpl extends TradingService {
      * @return
      */
     public List<StockItemDto> pickStockItems(WebClientCommonResDto resDto) {
-        // 거래량 순위 조회에 따른 종목
+        // 거래량 순위 종목 (TODO 10개만 고려?)
         DomStockTradingVolumeRankingExternalResDto stockItems = (DomStockTradingVolumeRankingExternalResDto) resDto;
 
         List<StockItemDto> pickedStockItems = new ArrayList<>();
-        // TODO 매수 종목 선택 알고리즘 추가 예정
+        // TODO 매수 종목 선택 알고리즘
+        for (DomStockTradingVolumeRankingExternalResDto.StockInfo stockItem : stockItems.getStockInfos()) {
+            // TODO 매수 금액 결정 위해 주식 현재가 시세 API 호출
+
+            pickedStockItems.add(StockItemDto.builder()
+                    .stockCode(stockItem.getMkscShrnIscd())
+                    .orderDivision(ORDER_DIVISION)
+                    .orderQuantity("")    // TODO 수량, 주문 논의 예정
+                    .orderPrice("")
+                    .build());
+        }
 
         return pickedStockItems;
     }

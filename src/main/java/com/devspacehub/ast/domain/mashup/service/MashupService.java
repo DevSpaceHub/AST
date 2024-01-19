@@ -24,9 +24,11 @@ import com.devspacehub.ast.domain.orderTrading.service.TradingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +43,7 @@ public class MashupService {
     private final OrderTradingServiceFactory orderTradingServiceFactory;
     private final MarketStatusService marketStatusService;
     private final MyService myService;
+    private final Environment environment;
     private final OpenApiProperties openApiProperties;
 
     @Value("${openapi.rest.header.transaction-id.buy-order}")
@@ -49,35 +52,55 @@ public class MashupService {
     private String txIdSellOrder;
 
     /**
-     * 거래 시작 메서드
+     * 매수 주문
      */
     @Transactional
     public void startBuyOrder() {
-        // TODO 1. 거래량 조회 api 호출 (상위 10위)
-        DomStockTradingVolumeRankingExternalResDto items = marketStatusService.findTradingVolume();
+        oAuthService.setAccessToken(TokenType.AccessToken);
 
-        log.info("거래량 순위 조회 갯수 : " + items.getStockInfos().length);
+        // 1. 거래량 조회 api 호출 (상위 10위)
+        DomStockTradingVolumeRankingExternalResDto items = null;
+        for(String profile : environment.getActiveProfiles()) {
+            if ("local".equals(profile)) {
+                try {
+                    items = marketStatusService.getTradingVolumeLocalData();
+                } catch (IOException ex) {
+                    log.error("프로젝트 내 Json 파일을 읽는데 실패하였습니다.");
+                }
+            }
+            else if ("prod".equals(profile)) {
+                items = marketStatusService.findTradingVolume();
+            }
+        }
+
+        log.info("거래량 순위 조회 갯수 : " + items.getStockInfos().size());
         // TODO 2. stock item selecting logic
         TradingService tradingService = orderTradingServiceFactory.getServiceImpl(OpenApiType.DOMESTIC_STOCK_BUY_ORDER);
         List<StockItemDto> stockItems = tradingService.pickStockItems(items);
 
-
-        // TODO 3. valid check
-
+/*
+        List<StockItemDto> stockItems = List.of(StockItemDto.builder()
+                .stockCode("035720")
+                .orderPrice("57500")
+                .orderQuantity("2")
+                .orderDivision("00")
+                .build());*/
         // TODO 주식 주문 시에는 다른 dto를 사용해야할 수도 있음
         // 5. n건 매수
         List<OrderTrading> orderTradings = new ArrayList<>();
 
         for (StockItemDto item : stockItems) {
-            item.setTransactionId(txIdBuyOrder);
             DomesticStockOrderExternalResDto result = tradingService.order(item);
-            orderTradings.add(createOrderFromDTOs(item, result));
+            orderTradings.add(createOrderFromDTOs(item, result, txIdBuyOrder));
         }
 
         // 5. 주문거래 정보 저장
         tradingService.saveInfos(orderTradings);
     }
 
+    /**
+     * 매도 주문
+     */
     @Transactional
     public void startSellOrder() {
         // 1. 발급해놓은 접근 토큰 세팅
@@ -87,25 +110,24 @@ public class MashupService {
         StockBalanceExternalResDto myStockBalance = myService.getMyStockBalance();
 
         TradingService tradingService = orderTradingServiceFactory.getServiceImpl(OpenApiType.DOMESTIC_STOCK_SELL_ORDER);
-        // 3. 매도할 주식 select (손절매도 & 수익매도)
+        // 3. 주식 선택 (손절매도 & 수익매도)
         List<StockItemDto> stockItems = tradingService.pickStockItems(myStockBalance);
         // 4. 매도 주문
         List<OrderTrading> orderTradings = new ArrayList<>();
 
         for (StockItemDto item : stockItems) {
-            item.setTransactionId(txIdSellOrder);
             DomesticStockOrderExternalResDto result = tradingService.order(item);
-            orderTradings.add(createOrderFromDTOs(item, result));
+            orderTradings.add(createOrderFromDTOs(item, result, txIdSellOrder));
         }
 
         // 5. 주문거래 정보 저장
         tradingService.saveInfos(orderTradings);
     }
 
-    private OrderTrading createOrderFromDTOs(StockItemDto item, DomesticStockOrderExternalResDto result) {
+    private OrderTrading createOrderFromDTOs(StockItemDto item, DomesticStockOrderExternalResDto result, String txId) {
         return OrderTrading.builder()
                 .itemCode(item.getStockCode())
-                .transactionId(item.getTransactionId())
+                .transactionId(txId)
                 .orderDivision(item.getOrderDivision())
                 .orderPrice(item.getOrderPrice())
                 .orderQuantity(item.getOrderQuantity())

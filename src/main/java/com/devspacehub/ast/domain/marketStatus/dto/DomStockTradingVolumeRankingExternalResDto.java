@@ -8,17 +8,24 @@
 
 package com.devspacehub.ast.domain.marketStatus.dto;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
+
+import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 
 /**
  * 국내 주식 거래량 순위 조회 응답 DTO.
  */
+@Getter
+@Setter
 public class DomStockTradingVolumeRankingExternalResDto extends WebClientCommonResDto {
     @JsonProperty("output")
     private List<StockInfo> stockInfos;
-
     @JsonProperty("rt_cd")
     private String resultCode;
 
@@ -28,20 +35,20 @@ public class DomStockTradingVolumeRankingExternalResDto extends WebClientCommonR
     @JsonProperty("msg1")
     private String msg1;
 
+    @JsonIgnore
     @Override
     public boolean isSuccess() {
-        return "0".equals(this.resultCode);
+        return OPENAPI_SUCCESS_RESULT_CODE.equals(this.resultCode);
     }
 
-    // Getter and Setter methods
-
+    @Data
     public static class StockInfo {
 
         @JsonProperty("hts_kor_isnm")
         private String htsKorIsnm;
 
         @JsonProperty("mksc_shrn_iscd")
-        private String mkscShrnIscd;
+        private String mkscShrnIscd;    // 유가증권 단축 종목코드
 
         @JsonProperty("data_rank")
         private String dataRank;

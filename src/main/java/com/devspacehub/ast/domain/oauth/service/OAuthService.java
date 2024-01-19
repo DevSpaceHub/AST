@@ -8,12 +8,15 @@
 
 package com.devspacehub.ast.domain.oauth.service;
 
+import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.TokenType;
 import com.devspacehub.ast.domain.oauth.OAuthTokens;
 import com.devspacehub.ast.domain.oauth.OAuthRepository;
 import com.devspacehub.ast.domain.oauth.dto.AccessTokenIssueExternalReqDto;
 import com.devspacehub.ast.domain.oauth.dto.OAuthTokenIssueExternalResDto;
+import com.devspacehub.ast.exception.error.BusinessException;
 import com.devspacehub.ast.exception.error.DtoConversionException;
+import com.devspacehub.ast.exception.error.ErrorCode;
 import com.devspacehub.ast.openApiUtil.OpenApiRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -36,8 +39,11 @@ import static com.devspacehub.ast.common.constant.OpenApiType.OAUTH_ACCESS_TOKEN
 @RequiredArgsConstructor
 public class OAuthService {
     private final OpenApiRequest openApiRequest;
+    private final OpenApiProperties openApiProperties;
     private final OAuthRepository oAuthRepository;
     private final ObjectMapper objectMapper;
+    private final OAuthService oAuthService;
+
     @Value("${openapi.rest.appkey}")
     private String appKey;
 
@@ -45,24 +51,18 @@ public class OAuthService {
     private String appSecret;
 
     /**
-     * Issue access token string.
-     *
+     * RESTful 접근 토큰 발급
      * @return the string
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public String issueAccessToken(TokenType requiredTokenType) {
-        // 이미 발급해놓은 token 있으면 사용
-        Optional<OAuthTokens> oauth = oAuthRepository.findTopByTokenTypeIsAndOauthTokenExpiredGreaterThanOrderByRegistrationDatetimeDesc(requiredTokenType, LocalDateTime.now());
-        if (oauth.isPresent()) {
-            return oauth.get().getOauthToken();
-        }
-
+    @Transactional(propagation = Propagation.REQUIRES_NEW)  // TODO api 분리되면 전파옵션 제거 가능
+    public void issueAccessToken() {
         AccessTokenIssueExternalReqDto dto = AccessTokenIssueExternalReqDto.builder()
                 .grantType("client_credentials")
                 .appKey(appKey)
                 .appSecret(appSecret)
                 .build();
         String response = openApiRequest.httpOAuthRequest(OAUTH_ACCESS_TOKEN_ISSUE.getUri(), dto);
+
         OAuthTokenIssueExternalResDto.WebClient resDto = null;
         try {
             resDto = objectMapper.readValue(
@@ -71,9 +71,24 @@ public class OAuthService {
         } catch (Exception e) {
             throw new DtoConversionException();
         }
+        oAuthRepository.save(resDto.toEntity());
+    }
 
-        OAuthTokens savedToken = oAuthRepository.save(resDto.toEntity());
-
-        return savedToken.getOauthToken();
+    /**
+     * 발급해놓은 token 사용
+     *
+     * @return the access token
+     */
+    public void setAccessToken(TokenType requiredTokenType) {
+        Optional<OAuthTokens> oauth = oAuthRepository.findTopByTokenTypeIsAndOauthTokenExpiredGreaterThanOrderByRegistrationDatetimeDesc(requiredTokenType, LocalDateTime.now());
+        if (oauth.isPresent()) {
+            openApiProperties.setOauth(oauth.get().getOauthToken());
+            return;
+        } else {
+            // TODO 추후 제거할 temp 로직
+            oAuthService.issueAccessToken();
+            openApiProperties.setOauth(oAuthRepository.findTopByTokenTypeIsAndOauthTokenExpiredGreaterThanOrderByRegistrationDatetimeDesc(requiredTokenType, LocalDateTime.now()).get().getOauthToken());
+        }
+        throw new BusinessException(ErrorCode.NOT_FOUND_ACCESS_TOKEN);
     }
 }
