@@ -31,7 +31,7 @@ public class DomesticStockOrderExternalReqDto extends WebClientCommonReqDto {
     @JsonProperty("PDNO")
     private String stockCode;         // 종목코드
     @JsonProperty("ORD_DVSN")
-    private String orderDivision;     // 주문 구분
+    private String orderDivision;     // 주문 구분 (00 : 지정가, 01: 시장가, ...)
     @JsonProperty("ORD_QTY")
     private String orderQuantity;
     @JsonProperty("ORD_UNPR")
