@@ -42,7 +42,6 @@ public class OAuthService {
     private final OpenApiProperties openApiProperties;
     private final OAuthRepository oAuthRepository;
     private final ObjectMapper objectMapper;
-    private final OAuthService oAuthService;
 
     @Value("${openapi.rest.appkey}")
     private String appKey;
@@ -86,7 +85,7 @@ public class OAuthService {
             return;
         } else {
             // TODO 추후 제거할 temp 로직
-            oAuthService.issueAccessToken();
+            issueAccessToken();
             openApiProperties.setOauth(oAuthRepository.findTopByTokenTypeIsAndOauthTokenExpiredGreaterThanOrderByRegistrationDatetimeDesc(requiredTokenType, LocalDateTime.now()).get().getOauthToken());
         }
         throw new BusinessException(ErrorCode.NOT_FOUND_ACCESS_TOKEN);
