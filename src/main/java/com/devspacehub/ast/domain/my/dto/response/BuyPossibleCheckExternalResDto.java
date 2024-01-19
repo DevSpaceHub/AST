@@ -14,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
+
 /**
  * 매수 가능 조회 응답 dto.
  */
@@ -75,7 +77,7 @@ public class BuyPossibleCheckExternalResDto extends WebClientCommonResDto {
     @JsonIgnore
     @Override
     public boolean isSuccess() {
-        return "0".equals(this.resultCode);
+        return OPENAPI_SUCCESS_RESULT_CODE.equals(this.resultCode);
     }
 
 }

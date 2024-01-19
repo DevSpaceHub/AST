@@ -1,6 +1,9 @@
 my:
   comprehensive-accountnumber: ${COMPREHENSIVE_ACCOUNTNUMBER}
   accountnumber-product-code: ${ACCOUNTNUMBER_PRODUCT_CODE}
+trading:
+  stop-loss-sell-ratio: ${STOP_LOSS_SELL_RATIO}
+  profit-sell-ratio: ${PROFIT_SELL_RATIO}
 
 ---
 spring:
@@ -16,6 +19,7 @@ openapi:
         buy-order: VTTC0802U
         sell-order: VTTC0801U
         buy-possible-cash-find: VTTC8908R
+        stock-balance-find: VTTC8434R
     appkey: ${APP_KEY}
     appsecret: ${APP_SECRET}
 
@@ -36,6 +40,7 @@ openapi:
         buy-order: TTTC0802U
         sell-order: TTTC0801U
         buy-possible-cash-find: TTTC8908R
+        stock-balance-find: TTTC8434R
       appkey: ${APP_KEY}
       appSecret: ${APP_SECRET}
   websocket:

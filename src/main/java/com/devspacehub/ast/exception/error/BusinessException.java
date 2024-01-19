@@ -14,7 +14,7 @@ import lombok.Getter;
  * The type Business exception.
  */
 @Getter
-public abstract class BusinessException extends RuntimeException {
+public class BusinessException extends RuntimeException {
     private final ErrorCode errorCode;
 
     /**
@@ -22,7 +22,7 @@ public abstract class BusinessException extends RuntimeException {
      *
      * @param errorCode the error code
      */
-    BusinessException(ErrorCode errorCode) {
+    public BusinessException(ErrorCode errorCode) {
         super(errorCode.name() + " : " + errorCode.getMessage());
         this.errorCode = errorCode;
     }

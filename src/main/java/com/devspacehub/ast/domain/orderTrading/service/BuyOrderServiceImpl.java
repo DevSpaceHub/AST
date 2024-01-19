@@ -9,6 +9,8 @@
 package com.devspacehub.ast.domain.orderTrading.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
+import com.devspacehub.ast.common.dto.WebClientCommonResDto;
+import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
@@ -16,7 +18,7 @@ import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import com.devspacehub.ast.exception.error.NotEnoughCashException;
-import com.devspacehub.ast.util.OpenApiCall;
+import com.devspacehub.ast.openApiUtil.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +26,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -36,7 +39,7 @@ import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_BUY
 @RequiredArgsConstructor
 @Service
 public class BuyOrderServiceImpl extends TradingService {
-    private final OpenApiCall openApiCall;
+    private final OpenApiRequest openApiRequest;
     private final OpenApiProperties openApiProperties;
     private final OrderTradingRepository orderTradingRepository;
     private final MyService myService;
@@ -56,8 +59,7 @@ public class BuyOrderServiceImpl extends TradingService {
         // TODO 가격 : 종가 +30%, -30% 사이
 
         // 매수 가능 여부 판단
-        if (!myService.BuyOrderPossibleCheck(stockItem.getStockCode(), stockItem.getOrderDivision(), realOrderPrice)) {
-            // TODO 예외 처리 핸들러 추가 예정
+        if (!myService.buyOrderPossibleCheck(stockItem.getStockCode(), stockItem.getOrderDivision(), realOrderPrice)) {
             throw new NotEnoughCashException();
         }
 
@@ -71,7 +73,7 @@ public class BuyOrderServiceImpl extends TradingService {
                 .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
                 .orderPrice(String.valueOf(stockItem.getOrderPrice()))
                 .build();
-        DomesticStockOrderExternalResDto response = (DomesticStockOrderExternalResDto) openApiCall.httpPostRequest(DOMESTIC_STOCK_BUY_ORDER, httpHeaders, bodyDto);
+        DomesticStockOrderExternalResDto response = (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(DOMESTIC_STOCK_BUY_ORDER, httpHeaders, bodyDto);
 
         log.info("===== order trading finish =====");
         return response;
@@ -79,6 +81,21 @@ public class BuyOrderServiceImpl extends TradingService {
 
     private boolean isStockMarketClosed(String messageCode) {
         return "40100000".equals(messageCode);
+    }
+
+    /**
+     * 알고리즘에 따라 매수할 종목 선택
+     * @param resDto
+     * @return
+     */
+    public List<StockItemDto> pickStockItems(WebClientCommonResDto resDto) {
+        // 거래량 순위 조회에 따른 종목
+        DomStockTradingVolumeRankingExternalResDto stockItems = (DomStockTradingVolumeRankingExternalResDto) resDto;
+
+        List<StockItemDto> pickedStockItems = new ArrayList<>();
+        // TODO 매수 종목 선택 알고리즘 추가 예정
+
+        return pickedStockItems;
     }
 
     @Transactional

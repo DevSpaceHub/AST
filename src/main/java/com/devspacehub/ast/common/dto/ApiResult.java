@@ -12,7 +12,7 @@ import lombok.Builder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Builder
 public class ApiResult {
-    private boolean success;
+    private Boolean success;
     private String code;
     private String message;
 }
