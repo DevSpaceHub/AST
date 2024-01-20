@@ -20,6 +20,7 @@ openapi:
         sell-order: VTTC0801U
         buy-possible-cash-find: VTTC8908R
         stock-balance-find: VTTC8434R
+        trading-volume-ranking-find: FHPST01710000
     appkey: ${APP_KEY}
     appsecret: ${APP_SECRET}
 
@@ -34,14 +35,15 @@ spring:
 
 openapi:
   rest:
-    domain: https://openapivts.koreainvestment.com:9443
+    domain: https://openapi.koreainvestment.com:9443
     header:
       transaction-id:
         buy-order: TTTC0802U
         sell-order: TTTC0801U
         buy-possible-cash-find: TTTC8908R
         stock-balance-find: TTTC8434R
-      appkey: ${APP_KEY}
-      appSecret: ${APP_SECRET}
+        trading-volume-ranking-find: FHPST01710000
+    appkey: ${APP_KEY}
+    appSecret: ${APP_SECRET}
   websocket:
     domain: ws://ops.koreainvestment.com:21000

@@ -97,7 +97,7 @@ public class StockBalanceExternalResDto extends WebClientCommonResDto {
         private String evaluateProfitLossRate;   // 평가손익률
 
         @JsonProperty("evlu_erng_rt")
-        private String evaluateEarningRate;
+        private String evaluateEarningRate;      // 평가수익률
 
         @JsonProperty("loan_dt")
         private String loanDt;

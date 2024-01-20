@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION;
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_SELL_ORDER;
 
 /**
@@ -66,35 +67,55 @@ public class SellOrderServiceImpl extends TradingService {
                 .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
                 .orderPrice(String.valueOf(stockItem.getOrderPrice()))
                 .build();
-        DomesticStockOrderExternalResDto response = (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(DOMESTIC_STOCK_SELL_ORDER, httpHeaders, bodyDto);
 
-        return response;
+        return (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(DOMESTIC_STOCK_SELL_ORDER, httpHeaders, bodyDto);
     }
 
     /**
-     * 알고리즘에 따라 거래할 종목 선택
+     * 알고리즘에 따라 거래할 종목 선택 및 매수 금액&수량 결정
+     * - 현재가 시세 조회 API 호출 -> 매수 금액 결정
      * @param resDto
      * @return
      */
     public List<StockItemDto> pickStockItems(WebClientCommonResDto resDto) {
-        StockBalanceExternalResDto myStockBalance = (StockBalanceExternalResDto) resDto;
+        StockBalanceExternalResDto stockBalanceResponse = (StockBalanceExternalResDto) resDto;
         List<StockItemDto> pickedStockItems = new ArrayList<>();
 
-        for (StockBalanceExternalResDto.Output1 output1 : myStockBalance.getOutput1()) {
-            Float evaluateEarningRate = Float.valueOf(output1.getEvaluateEarningRate());    // TODO 손실일 경우 값이 어떻게 넘어오는지 확인 필요
-            if (evaluateEarningRate - COMMISSION_RATE > profitSellRatio) {
-                // TODO 수익 매도
-                //5.0-0.2 = 4.8 > -5.0%
-            }
-            else if (evaluateEarningRate - COMMISSION_RATE > stopLossSellRatio) {
-                // TODO 손절 매도
+        for (StockBalanceExternalResDto.Output1 myStockBalance : stockBalanceResponse.getOutput1()) {
+            Float evaluateEarningRate = floatValueOf(myStockBalance.getEvaluateEarningRate());    // TODO 손실일 경우 값이 어떻게 넘어오는지 확인 필요
+            if (checkIsSellStockItem(evaluateEarningRate)) {
+                // TODO 매도 금액 결정 위해 현재가 시세 조회 API 필요
+
+                pickedStockItems.add(StockItemDto.builder()
+                                .stockCode(myStockBalance.getStockCode())
+                                .orderDivision(ORDER_DIVISION)
+                                .orderQuantity("")    // TODO 수량, 주문 논의 예정
+                                .orderPrice("")
+                        .build());
             }
         }
         return pickedStockItems;
     }
 
+    private boolean checkIsSellStockItem(Float evaluateEarningRate) {
+        if (evaluateEarningRate - COMMISSION_RATE > profitSellRatio) {  // 수익 매도  ex) 11.0-0.2 = 10.8 > 10%
+            return true;
+        }
+        if (evaluateEarningRate - COMMISSION_RATE < stopLossSellRatio) { // 손절 매도  ex) 5.0-0.2 = 4.8 < -5.0%
+            return true;
+        }
+        return false;
+    }
+
+    private Float floatValueOf(String strRate) {
+        if (strRate.startsWith("-")) {
+            return Float.valueOf(strRate.substring(1)) * -1.0f;
+        }
+        return Float.valueOf(strRate);
+    }
+
     @Override
     public void saveInfos(List<OrderTrading> orderTradingInfos) {
-
+        orderTradingRepository.saveAll(orderTradingInfos);
     }
 }
