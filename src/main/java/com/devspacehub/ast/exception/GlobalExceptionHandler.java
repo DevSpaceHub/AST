@@ -25,11 +25,6 @@ public class GlobalExceptionHandler {
         log.error("handleBusinessException", ex);
 
         ErrorCode errorCode = ex.getErrorCode();
-        ApiResult result = ApiResult.builder()
-                .success(false)
-                .code(errorCode.getCode())
-                .message(errorCode.getMessage())
-                .build();
-        return ResponseEntity.status(errorCode.getStatus()).body(result);
+        return ResponseEntity.status(errorCode.getStatus()).body(ApiResult.failed(errorCode));
     }
 }

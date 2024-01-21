@@ -10,8 +10,10 @@ package com.devspacehub.ast.domain.orderTrading.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
+import com.devspacehub.ast.domain.itemInfo.ItemInfoRepository;
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
+import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
 import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
@@ -44,6 +46,7 @@ public class BuyOrderServiceImpl extends TradingService {
     private final OpenApiProperties openApiProperties;
     private final OrderTradingRepository orderTradingRepository;
     private final MyService myService;
+    private final ItemInfoRepository itemInfoRepository;
 
     @Value("${openapi.rest.header.transaction-id.buy-order}")
     private String txIdBuyOrder;
@@ -90,20 +93,27 @@ public class BuyOrderServiceImpl extends TradingService {
      * @return
      */
     public List<StockItemDto> pickStockItems(WebClientCommonResDto resDto) {
-        // 거래량 순위 종목 (TODO 10개만 고려?)
+        // 거래량 순위 종목
         DomStockTradingVolumeRankingExternalResDto stockItems = (DomStockTradingVolumeRankingExternalResDto) resDto;
 
         List<StockItemDto> pickedStockItems = new ArrayList<>();
         // TODO 매수 종목 선택 알고리즘
-        for (DomStockTradingVolumeRankingExternalResDto.StockInfo stockItem : stockItems.getStockInfos()) {
-            // TODO 매수 금액 결정 위해 주식 현재가 시세 API 호출
+        int count = 0;
+        while (count < 10) {
+            DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo = stockItems.getStockInfos().get(count);
+            // table에 없는 종목 매수 X (파생상품)
+            if (1 > itemInfoRepository.countByItemCode(stockInfo.getStockCode())) {
+                count++;
+                continue;
+            }
+            // TODO 매수 금액 결정 위해 주식 현재가 조회 (API 호출) - 주식현재가/최저가/최고가
 
             pickedStockItems.add(StockItemDto.builder()
-                    .stockCode(stockItem.getMkscShrnIscd())
-                    .orderDivision(ORDER_DIVISION)
+                    .stockCode(stockInfo.getStockCode())
                     .orderQuantity("")    // TODO 수량, 주문 논의 예정
                     .orderPrice("")
                     .build());
+            count++;
         }
 
         return pickedStockItems;

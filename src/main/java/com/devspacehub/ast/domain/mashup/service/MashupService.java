@@ -44,7 +44,6 @@ public class MashupService {
     private final MarketStatusService marketStatusService;
     private final MyService myService;
     private final Environment environment;
-    private final OpenApiProperties openApiProperties;
 
     @Value("${openapi.rest.header.transaction-id.buy-order}")
     private String txIdBuyOrder;
@@ -74,19 +73,12 @@ public class MashupService {
         }
 
         log.info("거래량 순위 조회 갯수 : " + items.getStockInfos().size());
+
         // TODO 2. stock item selecting logic
         TradingService tradingService = orderTradingServiceFactory.getServiceImpl(OpenApiType.DOMESTIC_STOCK_BUY_ORDER);
         List<StockItemDto> stockItems = tradingService.pickStockItems(items);
 
-/*
-        List<StockItemDto> stockItems = List.of(StockItemDto.builder()
-                .stockCode("035720")
-                .orderPrice("57500")
-                .orderQuantity("2")
-                .orderDivision("00")
-                .build());*/
-        // TODO 주식 주문 시에는 다른 dto를 사용해야할 수도 있음
-        // 5. n건 매수
+        // 3. n건 매수
         List<OrderTrading> orderTradings = new ArrayList<>();
 
         for (StockItemDto item : stockItems) {
@@ -94,7 +86,7 @@ public class MashupService {
             orderTradings.add(createOrderFromDTOs(item, result, txIdBuyOrder));
         }
 
-        // 5. 주문거래 정보 저장
+        // 4. 주문거래 정보 저장
         tradingService.saveInfos(orderTradings);
     }
 
@@ -103,24 +95,20 @@ public class MashupService {
      */
     @Transactional
     public void startSellOrder() {
-        // 1. 발급해놓은 접근 토큰 세팅
         oAuthService.setAccessToken(TokenType.AccessToken);
 
-        // 2. 주식 잔고 조회
+        // 1. 주식 잔고 조회
         StockBalanceExternalResDto myStockBalance = myService.getMyStockBalance();
 
         TradingService tradingService = orderTradingServiceFactory.getServiceImpl(OpenApiType.DOMESTIC_STOCK_SELL_ORDER);
-        // 3. 주식 선택 (손절매도 & 수익매도)
-        List<StockItemDto> stockItems = tradingService.pickStockItems(myStockBalance);
-        // 4. 매도 주문
+        // 2. 주식 선택 후 매도 주문 (손절매도 & 수익매도)
         List<OrderTrading> orderTradings = new ArrayList<>();
-
-        for (StockItemDto item : stockItems) {
+        for (StockItemDto item : tradingService.pickStockItems(myStockBalance)) {
             DomesticStockOrderExternalResDto result = tradingService.order(item);
             orderTradings.add(createOrderFromDTOs(item, result, txIdSellOrder));
         }
 
-        // 5. 주문거래 정보 저장
+        // 3. 주문거래 정보 저장
         tradingService.saveInfos(orderTradings);
     }
 

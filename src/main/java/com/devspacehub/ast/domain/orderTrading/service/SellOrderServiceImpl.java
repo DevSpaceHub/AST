@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION;
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_SELL_ORDER;
 
 /**
@@ -81,16 +80,14 @@ public class SellOrderServiceImpl extends TradingService {
         StockBalanceExternalResDto stockBalanceResponse = (StockBalanceExternalResDto) resDto;
         List<StockItemDto> pickedStockItems = new ArrayList<>();
 
-        for (StockBalanceExternalResDto.Output1 myStockBalance : stockBalanceResponse.getOutput1()) {
+        for (StockBalanceExternalResDto.MyStockBalance myStockBalance : stockBalanceResponse.getMyStockBalance()) {
             Float evaluateEarningRate = floatValueOf(myStockBalance.getEvaluateEarningRate());    // TODO 손실일 경우 값이 어떻게 넘어오는지 확인 필요
             if (checkIsSellStockItem(evaluateEarningRate)) {
-                // TODO 매도 금액 결정 위해 현재가 시세 조회 API 필요
 
                 pickedStockItems.add(StockItemDto.builder()
                                 .stockCode(myStockBalance.getStockCode())
-                                .orderDivision(ORDER_DIVISION)
-                                .orderQuantity("")    // TODO 수량, 주문 논의 예정
-                                .orderPrice("")
+                                .orderQuantity(myStockBalance.getOrderPossibleQuantity())
+                                .orderPrice(myStockBalance.getPurchaseAmount())
                         .build());
             }
         }
@@ -101,10 +98,7 @@ public class SellOrderServiceImpl extends TradingService {
         if (evaluateEarningRate - COMMISSION_RATE > profitSellRatio) {  // 수익 매도  ex) 11.0-0.2 = 10.8 > 10%
             return true;
         }
-        if (evaluateEarningRate - COMMISSION_RATE < stopLossSellRatio) { // 손절 매도  ex) 5.0-0.2 = 4.8 < -5.0%
-            return true;
-        }
-        return false;
+        return evaluateEarningRate - COMMISSION_RATE < stopLossSellRatio; // 손절 매도  ex) 5.0-0.2 = 4.8 < -5.0%
     }
 
     private Float floatValueOf(String strRate) {

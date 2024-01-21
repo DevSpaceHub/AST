@@ -6,14 +6,12 @@ spring:
     group:
       local: openapi
       prod: openapi
+      beta: openapi
     active: local
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-  sql:
-    init:
-      mode: always
 logging:
   config: classpath:log4j2/log4j2-${spring.profiles.active}.xml
 
@@ -37,12 +35,41 @@ spring:
     hibernate:
       ddl-auto: none #create
 
+  sql:
+    init:
+      mode: always
 
   level:
     org.hibernate:
       SQL: debug
       type: trace
     org.springframework.web.reactive.function.client.ExchangeFunctions: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: beta
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    defer-datasource-initialization: false #true
+
+logging:
+  level:
+    org.hibernate:
+      SQL: error
 
 ---
 spring:
@@ -57,8 +84,7 @@ spring:
 
     properties:
       hibernate:
-        format_sql: true
-        show_sql: true
+        show_sql: false
 
   jpa:
     hibernate:
