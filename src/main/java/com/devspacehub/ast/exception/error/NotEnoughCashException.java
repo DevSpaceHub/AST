@@ -7,9 +7,11 @@
  */
 package com.devspacehub.ast.exception.error;
 
+import com.devspacehub.ast.common.constant.ResultCode;
+
 public class NotEnoughCashException extends BusinessException {
 
     public NotEnoughCashException() {
-        super(ErrorCode.NOT_ENOUGH_CASH_ERROR);
+        super(ResultCode.NOT_ENOUGH_CASH_ERROR);
     }
 }

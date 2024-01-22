@@ -10,7 +10,7 @@ package com.devspacehub.ast.exception;
 
 import com.devspacehub.ast.common.dto.ApiResult;
 import com.devspacehub.ast.exception.error.BusinessException;
-import com.devspacehub.ast.exception.error.ErrorCode;
+import com.devspacehub.ast.common.constant.ResultCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<ApiResult> handleBusinessException(BusinessException ex) {
         log.error("handleBusinessException", ex);
 
-        ErrorCode errorCode = ex.getErrorCode();
-        return ResponseEntity.status(errorCode.getStatus()).body(ApiResult.failed(errorCode));
+        ResultCode resultCode = ex.getResultCode();
+        return ResponseEntity.status(resultCode.getCode()).body(ApiResult.failed(resultCode));
     }
 }

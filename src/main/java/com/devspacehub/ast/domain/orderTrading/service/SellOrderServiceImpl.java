@@ -51,7 +51,7 @@ public class SellOrderServiceImpl extends TradingService {
     private static final Float COMMISSION_RATE = 0.2f;
 
     /**
-     * TODO 매도 주문
+     * 매도 주문
      * - 국내주식주문 API 호출
      */
     @Override
@@ -81,7 +81,7 @@ public class SellOrderServiceImpl extends TradingService {
         List<StockItemDto> pickedStockItems = new ArrayList<>();
 
         for (StockBalanceExternalResDto.MyStockBalance myStockBalance : stockBalanceResponse.getMyStockBalance()) {
-            Float evaluateEarningRate = floatValueOf(myStockBalance.getEvaluateEarningRate());    // TODO 손실일 경우 값이 어떻게 넘어오는지 확인 필요
+            double evaluateEarningRate = floatValueOf(myStockBalance.getEvaluateEarningRate());
             if (checkIsSellStockItem(evaluateEarningRate)) {
 
                 pickedStockItems.add(StockItemDto.builder()
@@ -94,18 +94,18 @@ public class SellOrderServiceImpl extends TradingService {
         return pickedStockItems;
     }
 
-    private boolean checkIsSellStockItem(Float evaluateEarningRate) {
-        if (evaluateEarningRate - COMMISSION_RATE > profitSellRatio) {  // 수익 매도  ex) 11.0-0.2 = 10.8 > 10%
-            return true;
-        }
-        return evaluateEarningRate - COMMISSION_RATE < stopLossSellRatio; // 손절 매도  ex) 5.0-0.2 = 4.8 < -5.0%
+    private boolean checkIsSellStockItem(double evaluateEarningRate) {
+        return evaluateEarningRate > profitSellRatio || evaluateEarningRate < stopLossSellRatio;  // 수익 매도(>10%) or 손절 매도(<-5.0%)
     }
 
-    private Float floatValueOf(String strRate) {
+    private double floatValueOf(String strRate) {
+        double doubleRate;
         if (strRate.startsWith("-")) {
-            return Float.valueOf(strRate.substring(1)) * -1.0f;
+            doubleRate = Double.parseDouble(strRate.substring(1)) * -1.0;
+            return Math.round(doubleRate * 100) / 100.0;
         }
-        return Float.valueOf(strRate);
+        doubleRate = Double.parseDouble(strRate);
+        return Math.round(doubleRate * 100) / 100.0;
     }
 
     @Override

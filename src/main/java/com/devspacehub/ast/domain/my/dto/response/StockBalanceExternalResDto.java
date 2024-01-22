@@ -43,14 +43,14 @@ public class StockBalanceExternalResDto extends WebClientCommonResDto {
     private String ctxAreaNk100;
 
     @JsonProperty("output1")
-    private List<Output1> output1;
+    private List<MyStockBalance> myStockBalance;
 
     @JsonProperty("output2")
     private List<Output2> output2;
 
     @Getter
     @NoArgsConstructor
-    public static class Output1 {
+    public static class MyStockBalance {
         @JsonProperty("pdno")
         private String stockCode;   // 종목번호
 
@@ -82,7 +82,7 @@ public class StockBalanceExternalResDto extends WebClientCommonResDto {
         private String pchsAvgPric;
 
         @JsonProperty("pchs_amt")
-        private String purchaseAmount;
+        private String purchaseAmount;  //  매입 금액
 
         @JsonProperty("prpr")
         private String prpr;

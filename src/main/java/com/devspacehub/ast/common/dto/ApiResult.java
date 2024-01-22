@@ -7,12 +7,11 @@
  */
 package com.devspacehub.ast.common.dto;
 
-import com.devspacehub.ast.exception.error.ErrorCode;
+import com.devspacehub.ast.common.constant.ResultCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -24,19 +23,19 @@ public class ApiResult {
     private Boolean success;
     @Builder.Default
     private String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-    private int status;
+    private int code;
 
     public static ApiResult success() {
         return ApiResult.builder()
                 .success(true)
-                .status(HttpStatus.OK.value())
+                .code(ResultCode.SUCCESS.getCode())
                 .build();
     }
 
-    public static ApiResult failed(ErrorCode errorCode) {
+    public static ApiResult failed(ResultCode resultCode) {
         return ApiResult.builder()
                 .success(false)
-                .status(errorCode.getStatus().value())
+                .code(resultCode.getCode())
                 .build();
     }
 

@@ -8,6 +8,8 @@
 
 package com.devspacehub.ast.exception.error;
 
+import com.devspacehub.ast.common.constant.ResultCode;
+
 /**
  * The type Open api failed exception.
  */
@@ -17,6 +19,6 @@ public class OpenApiFailedResponseException extends BusinessException {
      * Instantiates a new Dto translation exception.
      */
     public OpenApiFailedResponseException() {
-        super(ErrorCode.OPENAPI_FAILED_RESPONSE);
+        super(ResultCode.OPENAPI_SERVER_RESPONSE_ERROR);
     }
 }
