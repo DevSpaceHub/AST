@@ -27,6 +27,7 @@ import org.springframework.util.MultiValueMap;
 import java.util.function.Consumer;
 
 import static com.devspacehub.ast.common.constant.OpenApiType.BUY_ORDER_POSSIBLE_CASH;
+import static com.devspacehub.ast.domain.my.dto.request.BuyPossibleCheckExternalReqDto.*;
 
 /**
  * 사용자 My 서비스 구현체.
@@ -49,8 +50,8 @@ public class MyServiceImpl implements MyService {
     @Override
     public int getBuyOrderPossibleCash(String stockCode, Integer orderPrice, String orderDivision) {
         // 헤더 & 파라미터 값 생성
-        Consumer<HttpHeaders> httpHeaders = BuyPossibleCheckExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdBuyPossibleCashFind);
-        MultiValueMap<String, String> queryParams = BuyPossibleCheckExternalReqDto.createParameter(
+        Consumer<HttpHeaders> httpHeaders = setHeaders(openApiProperties.getOauth(), txIdBuyPossibleCashFind);
+        MultiValueMap<String, String> queryParams = createParameter(
                 openApiProperties.getAccntNumber(), openApiProperties.getAccntProductCode(), stockCode, orderPrice, orderDivision);
 
         BuyPossibleCheckExternalResDto responseDto = (BuyPossibleCheckExternalResDto) openApiRequest.httpGetRequest(BUY_ORDER_POSSIBLE_CASH, httpHeaders, queryParams);
@@ -91,13 +92,13 @@ public class MyServiceImpl implements MyService {
         }
         // log (TODO 삭제 예정)
         log.info("응답 : {}", responseDto.getMessage());
-        for(StockBalanceExternalResDto.Output1 output1 : responseDto.getOutput1()) {
-            log.info("주식 종목 : {}({})", output1.getStockCode(), output1.getStockName());
-            log.info("보유 수량 : {}", output1.getHldgQty());
-            log.info("주문 가능 수량 : {}", output1.getOrderPossibleQuantity());
-            log.info("매입금액 : {}", output1.getPurchaseAmount());
-            log.info("평가손익율 : {}", output1.getEvaluateProfitLossRate());
-            log.info("평가수익율 : {}", output1.getEvaluateEarningRate());
+        for(StockBalanceExternalResDto.MyStockBalance myStockBalance : responseDto.getMyStockBalance()) {
+            log.info("주식 종목 : {}({})", myStockBalance.getStockCode(), myStockBalance.getStockName());
+            log.info("보유 수량 : {}", myStockBalance.getHldgQty());
+            log.info("주문 가능 수량 : {}", myStockBalance.getOrderPossibleQuantity());
+            log.info("매입금액 : {}", myStockBalance.getPurchaseAmount());
+            log.info("평가손익율 : {}", myStockBalance.getEvaluateProfitLossRate());
+            log.info("평가수익율 : {}", myStockBalance.getEvaluateEarningRate());
         }
 
         return responseDto;

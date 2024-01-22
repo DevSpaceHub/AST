@@ -8,6 +8,7 @@
 
 package com.devspacehub.ast.controller.mashup;
 
+import com.devspacehub.ast.common.dto.ApiResult;
 import com.devspacehub.ast.domain.mashup.service.MashupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +31,9 @@ public class MashupOrderController {
      * @return the response entity
      */
     @PostMapping("/buy")
-    public ResponseEntity<Void> buyOrder() {
+    public ResponseEntity<ApiResult> buyOrder() {
         mashupService.startBuyOrder();
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResult.success());
     }
 
     /**
@@ -41,9 +42,9 @@ public class MashupOrderController {
      * @return the response entity
      */
     @PostMapping("/sell")
-    public ResponseEntity<Void> sellOrder() {
+    public ResponseEntity<ApiResult> sellOrder() {
         mashupService.startSellOrder();
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResult.success());
     }
 
 }

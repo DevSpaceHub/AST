@@ -16,14 +16,13 @@ import com.devspacehub.ast.domain.oauth.dto.AccessTokenIssueExternalReqDto;
 import com.devspacehub.ast.domain.oauth.dto.OAuthTokenIssueExternalResDto;
 import com.devspacehub.ast.exception.error.BusinessException;
 import com.devspacehub.ast.exception.error.DtoConversionException;
-import com.devspacehub.ast.exception.error.ErrorCode;
+import com.devspacehub.ast.common.constant.ResultCode;
 import com.devspacehub.ast.openApiUtil.OpenApiRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -51,9 +50,8 @@ public class OAuthService {
 
     /**
      * RESTful 접근 토큰 발급
-     * @return the string
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)  // TODO api 분리되면 전파옵션 제거 가능
+    @Transactional
     public void issueAccessToken() {
         AccessTokenIssueExternalReqDto dto = AccessTokenIssueExternalReqDto.builder()
                 .grantType("client_credentials")
@@ -62,32 +60,27 @@ public class OAuthService {
                 .build();
         String response = openApiRequest.httpOAuthRequest(OAUTH_ACCESS_TOKEN_ISSUE.getUri(), dto);
 
-        OAuthTokenIssueExternalResDto.WebClient resDto = null;
+        OAuthTokenIssueExternalResDto.WebClient resDto;
         try {
-            resDto = objectMapper.readValue(
-                    response != null ? response : null,
-                    OAuthTokenIssueExternalResDto.WebClient.class);
+            resDto = objectMapper.readValue(response, OAuthTokenIssueExternalResDto.WebClient.class);
         } catch (Exception e) {
             throw new DtoConversionException();
         }
         oAuthRepository.save(resDto.toEntity());
     }
 
+
     /**
-     * 발급해놓은 token 사용
+     * 접근 토큰 조회 및 사용
      *
-     * @return the access token
+     * @param requiredTokenType the required token type
      */
     public void setAccessToken(TokenType requiredTokenType) {
         Optional<OAuthTokens> oauth = oAuthRepository.findTopByTokenTypeIsAndOauthTokenExpiredGreaterThanOrderByRegistrationDatetimeDesc(requiredTokenType, LocalDateTime.now());
         if (oauth.isPresent()) {
             openApiProperties.setOauth(oauth.get().getOauthToken());
             return;
-        } else {
-            // TODO 추후 제거할 temp 로직
-            issueAccessToken();
-            openApiProperties.setOauth(oAuthRepository.findTopByTokenTypeIsAndOauthTokenExpiredGreaterThanOrderByRegistrationDatetimeDesc(requiredTokenType, LocalDateTime.now()).get().getOauthToken());
         }
-        throw new BusinessException(ErrorCode.NOT_FOUND_ACCESS_TOKEN);
+        throw new BusinessException(ResultCode.NOT_FOUND_ACCESS_TOKEN);
     }
 }

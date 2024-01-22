@@ -16,6 +16,7 @@ import com.devspacehub.ast.domain.my.dto.response.BuyPossibleCheckExternalResDto
 import com.devspacehub.ast.domain.my.dto.response.StockBalanceExternalResDto;
 import com.devspacehub.ast.domain.oauth.dto.AccessTokenIssueExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
+import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -46,7 +48,7 @@ public class OpenApiRequest {
      * @return the string
      */
     public String httpOAuthRequest(String uri, AccessTokenIssueExternalReqDto requestDto) {
-        String response = null;
+        String response;
         try {
             response = WebClient.builder()
                     .baseUrl(openApiDomain)
@@ -62,7 +64,10 @@ public class OpenApiRequest {
                     .block();
         } catch (Exception ex) {
             log.error("요청 실패하였습니다.(요청 uri : {})", uri);
+            log.error("{}", ex.getStackTrace());
+            throw new OpenApiFailedResponseException();
         }
+        checkResponseIsNull(response);
         return response;
     }
 
@@ -76,7 +81,7 @@ public class OpenApiRequest {
      */
     public WebClientCommonResDto httpGetRequest(OpenApiType openApiType, Consumer<HttpHeaders> headers, MultiValueMap<String, String> queryParams) {
         Class<? extends WebClientCommonResDto> implResDtoClass = implyReturnType(openApiType);
-        WebClientCommonResDto response =  null;
+        WebClientCommonResDto response;
         try {
             response = webClient
                 .get()
@@ -93,7 +98,10 @@ public class OpenApiRequest {
                 .block();
         } catch (Exception ex) {
             log.error("요청 실패하였습니다.(요청 uri : {})", openApiType.getUri());
+            log.error("{}", ex.getStackTrace());
+            throw new OpenApiFailedResponseException();
         }
+        checkResponseIsNull(response);
         return response;
     }
 
@@ -109,7 +117,7 @@ public class OpenApiRequest {
     public <T extends WebClientCommonReqDto> WebClientCommonResDto httpPostRequest(OpenApiType openApiType, Consumer<HttpHeaders> headers, T requestDto) {
 
         Class<? extends WebClientCommonResDto> implResDtoClass = implyReturnType(openApiType);
-        WebClientCommonResDto response =  null;
+        WebClientCommonResDto response;
         try {
             response = webClient
                     .mutate()
@@ -126,7 +134,10 @@ public class OpenApiRequest {
                     .block();
         } catch (Exception ex) {
             log.error("요청 실패하였습니다.(요청 uri : {})", openApiType.getUri());
+            log.error("{}", ex.getStackTrace());
+            throw new OpenApiFailedResponseException();
         }
+        checkResponseIsNull(response);
         return response;
     }
 
@@ -145,6 +156,12 @@ public class OpenApiRequest {
                 return DomStockTradingVolumeRankingExternalResDto.class;
             }
             default -> throw new IllegalArgumentException("적절한 응답 DTO가 없습니다.");
+        }
+    }
+
+    private void checkResponseIsNull(Object response) {
+        if (Objects.isNull(response)) {
+            throw new OpenApiFailedResponseException();
         }
     }
 }

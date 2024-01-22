@@ -9,6 +9,8 @@ package com.devspacehub.ast.domain.marketStatus.dto;
 
 import lombok.*;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION;
+
 /**
  * 주식 정보 Dto.
  */
@@ -16,8 +18,6 @@ import lombok.*;
 @Setter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class StockItemDto {
-
-    private String transactionId;
 
     private String stockCode;
 
@@ -28,10 +28,7 @@ public class StockItemDto {
     private Integer orderPrice;
 
     @Builder
-    private static StockItemDto StockItemDto(String transactionId, String stockCode, String orderDivision,
-                                             String orderQuantity, String orderPrice) {
-        return new StockItemDto(
-                transactionId, stockCode, orderDivision, Integer.valueOf(orderQuantity), Integer.valueOf(orderPrice));
+    private static StockItemDto StockItemDto(String stockCode, String orderQuantity, String orderPrice) {
+        return new StockItemDto(stockCode, ORDER_DIVISION, Integer.valueOf(orderQuantity), Integer.valueOf(orderPrice));
     }
-
 }

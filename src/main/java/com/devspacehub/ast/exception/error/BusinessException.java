@@ -8,6 +8,7 @@
 
 package com.devspacehub.ast.exception.error;
 
+import com.devspacehub.ast.common.constant.ResultCode;
 import lombok.Getter;
 
 /**
@@ -15,15 +16,15 @@ import lombok.Getter;
  */
 @Getter
 public class BusinessException extends RuntimeException {
-    private final ErrorCode errorCode;
+    private final ResultCode resultCode;
 
     /**
      * Instantiates a new Business exception.
      *
-     * @param errorCode the error code
+     * @param resultCode the error code
      */
-    public BusinessException(ErrorCode errorCode) {
-        super(errorCode.name() + " : " + errorCode.getMessage());
-        this.errorCode = errorCode;
+    public BusinessException(ResultCode resultCode) {
+        super(resultCode.name() + " : " + resultCode.getMessage());
+        this.resultCode = resultCode;
     }
 }
