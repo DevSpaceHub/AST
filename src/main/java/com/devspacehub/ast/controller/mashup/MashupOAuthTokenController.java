@@ -8,6 +8,7 @@
 
 package com.devspacehub.ast.controller.mashup;
 
+import com.devspacehub.ast.common.dto.ApiResult;
 import com.devspacehub.ast.domain.oauth.service.OAuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,8 +31,8 @@ public class MashupOAuthTokenController {
      * @return the response entity
      */
     @PostMapping
-    public ResponseEntity<Void> oauthTokenIssue() {
+    public ResponseEntity<ApiResult> oauthTokenIssue() {
         oAuthService.issueAccessToken();
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResult.success());
     }
 }
