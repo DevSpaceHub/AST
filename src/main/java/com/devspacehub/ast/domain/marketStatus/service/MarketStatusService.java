@@ -9,8 +9,8 @@
 package com.devspacehub.ast.domain.marketStatus.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
-import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalReqDto;
-import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
+import com.devspacehub.ast.domain.marketStatus.dto.*;
+import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
 import com.devspacehub.ast.openApiUtil.OpenApiRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
+import static com.devspacehub.ast.common.constant.OpenApiType.CURRENT_STOCK_PRICE;
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMSTOCK_TRADING_VOLUME_RANKING;
 
 /**
@@ -43,6 +44,8 @@ public class MarketStatusService {
     private final ObjectMapper objectMapper;
     @Value("${openapi.rest.header.transaction-id.trading-volume-ranking-find}")
     private String txIdTradingVolumeRankingFind;
+    @Value("${openapi.rest.header.transaction-id.current-stock-price-find}")
+    private String txIdCurrentStockPriceFind;
 
     /**
      * 거래량 조회 (1-10위)
@@ -53,9 +56,13 @@ public class MarketStatusService {
         Consumer<HttpHeaders> httpHeaders = DomStockTradingVolumeRankingExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdTradingVolumeRankingFind);
 
         MultiValueMap<String, String> queryParams = DomStockTradingVolumeRankingExternalReqDto.createParameter();
-        return (DomStockTradingVolumeRankingExternalResDto) openApiRequest.httpGetRequest(
+        DomStockTradingVolumeRankingExternalResDto response = (DomStockTradingVolumeRankingExternalResDto) openApiRequest.httpGetRequest(
                 DOMSTOCK_TRADING_VOLUME_RANKING, httpHeaders, queryParams);
 
+        if (!response.isSuccess()) {
+            throw new OpenApiFailedResponseException();
+        }
+        return response;
     }
 
     /**
@@ -71,7 +78,23 @@ public class MarketStatusService {
             String response = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
             inputStream.close();
             return objectMapper.readValue(
-                    response != null ? response : null,
+                    response,
                     DomStockTradingVolumeRankingExternalResDto.class);
     }
+
+    /**
+     * 국내 주식 현재가 시세 조회
+     */
+    public CurrentStockPriceExternalResDto getCurrentStockPrice(String stockCode) {
+        Consumer<HttpHeaders> httpHeaders = CurrentStockPriceExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdCurrentStockPriceFind);
+        MultiValueMap<String, String> queryParams = CurrentStockPriceExternalReqDto.createParameter(stockCode);
+
+        CurrentStockPriceExternalResDto response = (CurrentStockPriceExternalResDto) openApiRequest.httpGetRequest(CURRENT_STOCK_PRICE, httpHeaders, queryParams);
+
+        if (!response.isSuccess()) {
+            throw new OpenApiFailedResponseException();
+        }
+        return response;
+    }
+
 }
