@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
     <Properties>
+        <Property name="logFileName">application</Property>
         <Property name="BASE_DIR">./logs</Property>
         <Property name="LOG_FORMAT">[%date{yyyy-MM-dd HH:mm:ss}] %level %logger{36}(%file:%line) - %msg%n</Property>
     </Properties>
@@ -11,12 +12,12 @@
             <PatternLayout pattern="${LOG_FORMAT}"/>
         </Console>
         <!-- file output -->
-        <RollingFile name="File"
-                     fileName="${BASE_DIR}/application.log"
-                     filePattern="${BASE_DIR}/application.%d{yyyyMMdd}.log">
+        <RollingFile name="baseRollingAppender"
+                     fileName="${BASE_DIR}/${logFileName}.log"
+                     filePattern="${BASE_DIR}/${logFileName}.%d{yyyyMMdd}.log">
             <PatternLayout pattern="${LOG_FORMAT}"/>
             <Policies>
-                <SizeBasedTriggeringPolicy size="200KB"/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
             </Policies>
             <DefaultRolloverStrategy>
                 <Delete basePath="${BASE_DIR}">
@@ -25,12 +26,28 @@
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
+        <RollingFile name="errorRollingAppender" fileName="${BASE_DIR}/error/${logFileName}-error.log"
+                     filePattern="${BASE_DIR}/error/${logFileName}-error.%d{yyyyMMdd}.log">
+            <PatternLayout pattern="${LOG_FORMAT}"/>
+            <LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <DefaultRolloverStrategy>
+                <Delete basePath="${BASE_DIR}">
+                    <IfFileName glob="*.log"/>
+                    <IfLastModified age="30d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
     </Appenders>
     <!-- root logging level -->
     <Loggers>
         <Root level="INFO">
             <AppenderRef ref="Console"/>
-            <AppenderRef ref="File"/>
+            <AppenderRef ref="baseRollingAppender"/>
+            <AppenderRef ref="errorRollingAppender" level="ERROR"/>
         </Root>
     </Loggers>
 

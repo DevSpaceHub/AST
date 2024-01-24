@@ -11,7 +11,7 @@
             <PatternLayout pattern="${LOG_FORMAT}"/>
         </Console>
         <!-- file output -->
-        <RollingFile name="File"
+        <RollingFile name="baseRollingAppender"
                      fileName="${BASE_DIR}/application.log"
                      filePattern="${BASE_DIR}/application.%d{yyyyMMdd}.log">
             <PatternLayout pattern="${LOG_FORMAT}"/>
@@ -25,12 +25,27 @@
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
+        <RollingFile name="errorRollingAppender" fileName="${BASE_DIR}/error/${logFileName}-error.log"
+                     filePattern="${BASE_DIR}/error/${logFileName}-error.%d{yyyyMMdd}.log">
+            <PatternLayout pattern="${LOG_FORMAT}"/>
+            <LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <DefaultRolloverStrategy>
+                <Delete basePath="${BASE_DIR}">
+                    <IfFileName glob="*.log"/>
+                    <IfLastModified age="30d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
     </Appenders>
     <!-- root logging level -->
     <Loggers>
         <Root level="INFO">
             <AppenderRef ref="Console"/>
-            <AppenderRef ref="File"/>
+            <AppenderRef ref="baseRollingAppender"/>
+            <AppenderRef ref="errorRollingAppender" level="ERROR"/>
         </Root>
     </Loggers>
 
