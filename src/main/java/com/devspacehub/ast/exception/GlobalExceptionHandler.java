@@ -27,4 +27,12 @@ public class GlobalExceptionHandler {
         ResultCode resultCode = ex.getResultCode();
         return ResponseEntity.status(resultCode.getCode()).body(ApiResult.failed(resultCode));
     }
+
+    @ExceptionHandler(Exception.class)
+    protected ResponseEntity<ApiResult> handleException(Exception ex) {
+        log.error("handleException", ex);
+
+        ResultCode resultCode = ResultCode.INTERNAL_SERVER_ERROR;
+        return ResponseEntity.status(resultCode.getCode()).body(ApiResult.failed(resultCode));
+    }
 }

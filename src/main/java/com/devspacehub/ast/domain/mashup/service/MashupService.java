@@ -8,7 +8,6 @@
 
 package com.devspacehub.ast.domain.mashup.service;
 
-import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.constant.TokenType;
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
@@ -72,8 +71,6 @@ public class MashupService {
             }
         }
 
-        log.info("거래량 순위 조회 갯수 : " + items.getStockInfos().size());
-
         // TODO 2. stock item selecting logic
         TradingService tradingService = orderTradingServiceFactory.getServiceImpl(OpenApiType.DOMESTIC_STOCK_BUY_ORDER);
         List<StockItemDto> stockItems = tradingService.pickStockItems(items);
@@ -108,8 +105,10 @@ public class MashupService {
             orderTradings.add(createOrderFromDTOs(item, result, txIdSellOrder));
         }
 
-        // 3. 주문거래 정보 저장
-        tradingService.saveInfos(orderTradings);
+        // 3. 주문한 것 있으면 주문 거래 정보 저장
+        if (!orderTradings.isEmpty()) {
+            tradingService.saveInfos(orderTradings);
+        }
     }
 
     private OrderTrading createOrderFromDTOs(StockItemDto item, DomesticStockOrderExternalResDto result, String txId) {

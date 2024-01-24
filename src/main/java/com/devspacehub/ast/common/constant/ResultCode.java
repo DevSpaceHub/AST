@@ -27,8 +27,8 @@ public enum ResultCode {
     NOT_FOUND_ACCESS_TOKEN(5000, "접근 토큰 조회에 실패하였습니다."),
 
     // KIS server error
-    OPENAPI_SERVER_RESPONSE_ERROR(5002, "OpenApi 서버와 통신 중 오류 발생하였습니다")
-    ;
+    OPENAPI_SERVER_RESPONSE_ERROR(5002, "OpenApi 서버와 통신 중 오류 발생하였습니다"),
+    INTERNAL_SERVER_ERROR(5000, "서버 문제 발생하였습니다.");
     private final int code;
     private final String message;
 }
