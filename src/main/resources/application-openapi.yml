@@ -4,6 +4,10 @@ my:
 trading:
   stop-loss-sell-ratio: ${STOP_LOSS_SELL_RATIO}
   profit-sell-ratio: ${PROFIT_SELL_RATIO}
+  limit-price-earnings-ratio: ${PER}
+  limit-price-to-book-ratio: ${PBR}
+  limit-hts-market-capital: ${HTS_MARKET_CAPITAL}
+  limit-on-balance-volume: ${OBV}
 
 ---
 spring:
@@ -21,6 +25,30 @@ openapi:
         buy-possible-cash-find: VTTC8908R
         stock-balance-find: VTTC8434R
         trading-volume-ranking-find: FHPST01710000
+        current-stock-price-find: FHKST01010100
+    appkey: ${APP_KEY}
+    appsecret: ${APP_SECRET}
+
+  websocket:
+    domain: ws://ops.koreainvestment.com:31000
+
+---
+spring:
+  config:
+    activate:
+      on-profile: beta
+
+openapi:
+  rest:
+    domain: https://openapivts.koreainvestment.com:29443
+    header:
+      transaction-id:
+        buy-order: VTTC0802U
+        sell-order: VTTC0801U
+        buy-possible-cash-find: VTTC8908R
+        stock-balance-find: VTTC8434R
+        trading-volume-ranking-find: FHPST01710000
+        current-stock-price-find: FHKST01010100
     appkey: ${APP_KEY}
     appsecret: ${APP_SECRET}
 
@@ -43,6 +71,7 @@ openapi:
         buy-possible-cash-find: TTTC8908R
         stock-balance-find: TTTC8434R
         trading-volume-ranking-find: FHPST01710000
+        current-stock-price-find: FHKST01010100
     appkey: ${APP_KEY}
     appSecret: ${APP_SECRET}
   websocket:
