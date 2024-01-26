@@ -25,10 +25,10 @@ public class StockItemDto {
 
     private Integer orderQuantity;
 
-    private Integer orderPrice;
+    private Integer currentStockPrice; // 현재가
 
     @Builder
-    private static StockItemDto StockItemDto(String stockCode, String orderQuantity, String orderPrice) {
-        return new StockItemDto(stockCode, ORDER_DIVISION, Integer.valueOf(orderQuantity), Integer.valueOf(orderPrice));
+    private static StockItemDto StockItemDto(String stockCode, String orderQuantity, String currentStockPrice) {
+        return new StockItemDto(stockCode, ORDER_DIVISION, Integer.valueOf(orderQuantity), Integer.valueOf(currentStockPrice));
     }
 }

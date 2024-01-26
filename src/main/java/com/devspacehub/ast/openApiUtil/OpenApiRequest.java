@@ -11,6 +11,7 @@ package com.devspacehub.ast.openApiUtil;
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
+import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
 import com.devspacehub.ast.domain.my.dto.response.BuyPossibleCheckExternalResDto;
 import com.devspacehub.ast.domain.my.dto.response.StockBalanceExternalResDto;
@@ -154,6 +155,9 @@ public class OpenApiRequest {
             }
             case DOMSTOCK_TRADING_VOLUME_RANKING -> {
                 return DomStockTradingVolumeRankingExternalResDto.class;
+            }
+            case CURRENT_STOCK_PRICE -> {
+                return CurrentStockPriceExternalResDto.class;
             }
             default -> throw new IllegalArgumentException("적절한 응답 DTO가 없습니다.");
         }
