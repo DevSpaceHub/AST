@@ -32,7 +32,7 @@ public class DomesticStockOrderExternalResDto extends WebClientCommonResDto {
     private String message;
 
     @JsonProperty("output")
-    private Output output;  // TODO Array 필드라고 돼있긴 한데
+    private Output output;
 
     /**
      * 응답 body (실패 시 null)
