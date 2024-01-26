@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "oauth_tokens")
+@Table(name = "item_info")
 @Entity
 public class ItemInfo {
     @Id

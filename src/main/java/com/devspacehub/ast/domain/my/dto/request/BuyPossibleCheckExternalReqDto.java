@@ -8,10 +8,13 @@
 
 package com.devspacehub.ast.domain.my.dto.request;
 
-import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
 import lombok.Builder;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+
+import java.util.function.Consumer;
 
 import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
 
@@ -19,7 +22,7 @@ import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
  * 매수 가능 조회 요청 DTO.
  */
 @Builder
-public class BuyPossibleCheckExternalReqDto extends WebClientCommonReqDto {
+public class BuyPossibleCheckExternalReqDto {
 
     public static MultiValueMap<String, String> createParameter(String accntNumber, String accntProductCode, String stockCode, Integer orderPrice, String orderDivision) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
@@ -32,5 +35,20 @@ public class BuyPossibleCheckExternalReqDto extends WebClientCommonReqDto {
         queryParams.add("OVRS_ICLD_YN", NO.getCode());    // 해외 포함 여부
 
         return queryParams;
+    }
+
+    /**
+     * Sets headers.
+     *
+     * @param oauth the oauth
+     * @param txId  the tx id
+     * @return the headers
+     */
+    public static Consumer<HttpHeaders> setHeaders(String oauth, String txId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + oauth);
+        headers.add("tr_id", txId);
+        return httpHeaders -> httpHeaders.addAll(headers);
     }
 }

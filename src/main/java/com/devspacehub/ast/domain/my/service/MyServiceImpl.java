@@ -10,8 +10,6 @@ package com.devspacehub.ast.domain.my.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
-import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
-import com.devspacehub.ast.domain.my.dto.request.BuyPossibleCheckExternalReqDto;
 import com.devspacehub.ast.domain.my.dto.request.StockBalanceExternalReqDto;
 import com.devspacehub.ast.domain.my.dto.response.BuyPossibleCheckExternalResDto;
 import com.devspacehub.ast.domain.my.dto.response.StockBalanceExternalResDto;
@@ -66,18 +64,6 @@ public class MyServiceImpl implements MyService {
         return Integer.valueOf(responseDto.getOutput().getOrderPossibleCash());
     }
 
-    /**
-     * 매수 가능한 종목인지 체크
-     */
-    @Override
-    public boolean buyOrderPossibleCheck(String stockCode, String orderDivision, Integer orderPrice) {
-        int myCash = getBuyOrderPossibleCash(stockCode, orderPrice, orderDivision);
-        if (orderPrice <= myCash) {
-            return true;
-        }
-        log.info("매수 주문 금액이 부족합니다. (매수 가능 금액: {})", myCash);
-        return false;
-    }
 
     /**
      * 주식 잔고 조회
@@ -85,7 +71,7 @@ public class MyServiceImpl implements MyService {
      */
     @Override
     public StockBalanceExternalResDto getMyStockBalance() {
-        Consumer<HttpHeaders> headers = WebClientCommonReqDto.setHeaders(openApiProperties.getOauth(), txIdStockBalanceFind);
+        Consumer<HttpHeaders> headers = StockBalanceExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdStockBalanceFind);
         MultiValueMap<String, String> queryParams = StockBalanceExternalReqDto.createParameter(openApiProperties.getAccntNumber(), openApiProperties.getAccntProductCode());
 
         StockBalanceExternalResDto responseDto = (StockBalanceExternalResDto) openApiRequest.httpGetRequest(OpenApiType.STOCK_BALANCE, headers, queryParams);
