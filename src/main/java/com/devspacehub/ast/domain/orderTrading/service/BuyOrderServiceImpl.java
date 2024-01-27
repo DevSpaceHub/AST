@@ -59,8 +59,8 @@ public class BuyOrderServiceImpl extends TradingService {
     private float limitPER;
     @Value("${trading.limit-hts-market-capital}")
     private Long limitHtsMarketCapital;
-    @Value("${trading.limit-on-balance-volume}")
-    private Integer limitOBV;
+    @Value("${trading.limit-accumulation-volume}")
+    private Integer limitAccumulationVolume;
 
 
     /**
@@ -92,9 +92,8 @@ public class BuyOrderServiceImpl extends TradingService {
                 .orderQuantity(orderQuantity)
                 .orderPrice(String.valueOf(stockItem.getCurrentStockPrice()))
                 .build();
-        DomesticStockOrderExternalResDto response = (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(DOMESTIC_STOCK_BUY_ORDER, httpHeaders, bodyDto);
 
-        return response;
+        return (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(DOMESTIC_STOCK_BUY_ORDER, httpHeaders, bodyDto);
     }
 
     /**
@@ -147,7 +146,7 @@ public class BuyOrderServiceImpl extends TradingService {
             log.info("종목코드: {}", stockInfo.getStockCode());
             log.info("현재가: {}", currentStockPriceInfo.getCurrentStockPrice());
             log.info("HTS 시가 총액: {}", currentStockPriceInfo.getHtsMarketCapitalization());
-            log.info("누적 거래량: {}", currentStockPriceInfo.getOnBalanceVolume());
+            log.info("누적 거래량: {}", currentStockPriceInfo.getAccumulationVolume());
             log.info("PER: {}", currentStockPriceInfo.getPer());
             log.info("PBR: {}", currentStockPriceInfo.getPbr());
             log.info("투자유의 여부: {}", currentStockPriceInfo.getInvtCarefulYn());
@@ -182,7 +181,7 @@ public class BuyOrderServiceImpl extends TradingService {
         if (Long.valueOf(currentStockPriceInfo.getHtsMarketCapitalization()) < limitHtsMarketCapital) { // 시가총액 (3000억 이상이어야함)
             return false;
         }
-        if(Integer.valueOf(currentStockPriceInfo.getOnBalanceVolume()) < limitOBV) {      // 거래량
+        if(Integer.valueOf(currentStockPriceInfo.getAccumulationVolume()) < limitAccumulationVolume) {      // 누적 거래량
             return false;
         }
         return true;
