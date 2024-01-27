@@ -8,16 +8,19 @@
 
 package com.devspacehub.ast.domain.my.dto.request;
 
-import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+
+import java.util.function.Consumer;
 
 import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
 
 /**
  * 주식 잔고 조회 요청 DTO.
  */
-public class StockBalanceExternalReqDto extends WebClientCommonReqDto {
+public class StockBalanceExternalReqDto {
     /**
      * Create parameter multi value map.
      * @param accntNumber      the accnt number
@@ -41,4 +44,18 @@ public class StockBalanceExternalReqDto extends WebClientCommonReqDto {
         return queryParams;
     }
 
+    /**
+     * Sets headers.
+     *
+     * @param oauth the oauth
+     * @param txId  the tx id
+     * @return the headers
+     */
+    public static Consumer<HttpHeaders> setHeaders(String oauth, String txId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + oauth);
+        headers.add("tr_id", txId);
+        return httpHeaders -> httpHeaders.addAll(headers);
+    }
 }

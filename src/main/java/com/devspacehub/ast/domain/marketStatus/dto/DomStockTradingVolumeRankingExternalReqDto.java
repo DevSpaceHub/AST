@@ -8,7 +8,6 @@
 
 package com.devspacehub.ast.domain.marketStatus.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
@@ -22,7 +21,6 @@ import java.util.function.Consumer;
 public class DomStockTradingVolumeRankingExternalReqDto {
     private static final String PERSONAL_CUST_TYPE = "P";
 
-    @JsonIgnore
     public static Consumer<HttpHeaders> setHeaders(String oauth, String txId) {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);

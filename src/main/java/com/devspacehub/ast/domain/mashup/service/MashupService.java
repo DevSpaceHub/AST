@@ -71,18 +71,17 @@ public class MashupService {
             }
         }
 
-        // TODO 2. stock item selecting logic
+        // 2. 종목 선택 (현재가 시세 조회)
         TradingService tradingService = orderTradingServiceFactory.getServiceImpl(OpenApiType.DOMESTIC_STOCK_BUY_ORDER);
         List<StockItemDto> stockItems = tradingService.pickStockItems(items);
+        log.info("매수 선택 종목 : {}", stockItems.size());
 
-        // 3. n건 매수
+        // 3. 매수
         List<OrderTrading> orderTradings = new ArrayList<>();
-
         for (StockItemDto item : stockItems) {
             DomesticStockOrderExternalResDto result = tradingService.order(item);
             orderTradings.add(createOrderFromDTOs(item, result, txIdBuyOrder));
         }
-
         // 4. 주문거래 정보 저장
         tradingService.saveInfos(orderTradings);
     }
@@ -116,7 +115,7 @@ public class MashupService {
                 .itemCode(item.getStockCode())
                 .transactionId(txId)
                 .orderDivision(item.getOrderDivision())
-                .orderPrice(item.getOrderPrice())
+                .orderPrice(item.getCurrentStockPrice())
                 .orderQuantity(item.getOrderQuantity())
                 .orderResultCode(result.getResultCode())
                 .orderMessageCode(result.getMessageCode())

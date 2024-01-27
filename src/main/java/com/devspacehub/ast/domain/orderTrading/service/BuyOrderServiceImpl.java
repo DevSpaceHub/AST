@@ -11,6 +11,7 @@ package com.devspacehub.ast.domain.orderTrading.service;
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.itemInfo.ItemInfoRepository;
+import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto.CurrentStockPriceInfo;
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
@@ -32,8 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION;
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_BUY_ORDER;
+import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
 
 /**
  * 주식 주문 서비스 구현체 - 매수
@@ -46,10 +47,21 @@ public class BuyOrderServiceImpl extends TradingService {
     private final OpenApiProperties openApiProperties;
     private final OrderTradingRepository orderTradingRepository;
     private final MyService myService;
+    private final MarketStatusService marketStatusService;
     private final ItemInfoRepository itemInfoRepository;
 
     @Value("${openapi.rest.header.transaction-id.buy-order}")
     private String txIdBuyOrder;
+
+    @Value("${trading.limit-price-to-book-ratio}")
+    private float limitPBR;
+    @Value("${trading.limit-price-earnings-ratio}")
+    private float limitPER;
+    @Value("${trading.limit-hts-market-capital}")
+    private Long limitHtsMarketCapital;
+    @Value("${trading.limit-on-balance-volume}")
+    private Integer limitOBV;
+
 
     /**
      * 국내주식 매수 주문
@@ -58,29 +70,54 @@ public class BuyOrderServiceImpl extends TradingService {
      */
     @Override
     public DomesticStockOrderExternalResDto order(StockItemDto stockItem) {
-        int realOrderPrice = stockItem.getOrderPrice() * stockItem.getOrderQuantity();
-        // 1. valid check
-        // TODO 가격 : 종가 +30%, -30% 사이
+        int realOrderPrice = stockItem.getCurrentStockPrice() * stockItem.getOrderQuantity();
 
         // 매수 가능 여부 판단
-        if (!myService.buyOrderPossibleCheck(stockItem.getStockCode(), stockItem.getOrderDivision(), realOrderPrice)) {
+        int myCash = myService.getBuyOrderPossibleCash(stockItem.getStockCode(), realOrderPrice, stockItem.getOrderDivision());
+
+        if (!checkBuyOrderPossible(myCash, realOrderPrice)) {
             throw new NotEnoughCashException();
         }
+        // 매수 수량 결정
+        String orderQuantity = calculateOrderQuantity(myCash, stockItem.getCurrentStockPrice());
+        log.info("매수 수량: {}", orderQuantity);
 
-        // 2. buy order
+        // 매수 주문
         Consumer<HttpHeaders> httpHeaders = DomesticStockOrderExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdBuyOrder);
         DomesticStockOrderExternalReqDto bodyDto = DomesticStockOrderExternalReqDto.builder()
                 .accntNumber(openApiProperties.getAccntNumber())
                 .accntProductCode(openApiProperties.getAccntProductCode())
                 .stockCode(stockItem.getStockCode())
                 .orderDivision(stockItem.getOrderDivision())
-                .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
-                .orderPrice(String.valueOf(stockItem.getOrderPrice()))
+                .orderQuantity(orderQuantity)
+                .orderPrice(String.valueOf(stockItem.getCurrentStockPrice()))
                 .build();
         DomesticStockOrderExternalResDto response = (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(DOMESTIC_STOCK_BUY_ORDER, httpHeaders, bodyDto);
 
-        log.info("===== order trading finish =====");
         return response;
+    }
+
+    /**
+     * 매수 수량 = (매수가능 현금 % 10%) % 종목 현재가
+     * 소수점 버림.
+     * @param myCash
+     * @param currentStockPrice
+     * @return
+     */
+    public String calculateOrderQuantity(int myCash, Integer currentStockPrice) {
+        double orderQuantity = Math.floor((myCash % 10.0) % currentStockPrice);
+        return String.valueOf(orderQuantity);
+    }
+
+    /**
+     * 매수 가능한 종목인지 체크
+     */
+    public boolean checkBuyOrderPossible(int myCash, int orderPrice) {
+        if (orderPrice <= myCash) {
+            return true;
+        }
+        log.info("매수 주문 금액이 부족합니다. (매수 가능 금액: {})", myCash);
+        return false;
     }
 
     private boolean isStockMarketClosed(String messageCode) {
@@ -97,26 +134,58 @@ public class BuyOrderServiceImpl extends TradingService {
         DomStockTradingVolumeRankingExternalResDto stockItems = (DomStockTradingVolumeRankingExternalResDto) resDto;
 
         List<StockItemDto> pickedStockItems = new ArrayList<>();
-        // TODO 매수 종목 선택 알고리즘
+
         int count = 0;
-        while (count < 10) {
+        while (count++ < 10) {
             DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo = stockItems.getStockInfos().get(count);
             // table에 없는 종목 매수 X (파생상품)
             if (1 > itemInfoRepository.countByItemCode(stockInfo.getStockCode())) {
-                count++;
                 continue;
             }
-            // TODO 매수 금액 결정 위해 주식 현재가 조회 (API 호출) - 주식현재가/최저가/최고가
+            // 매수 금액 결정 위해 주식 현재가 시세 조회
+            CurrentStockPriceInfo currentStockPriceInfo = marketStatusService.getCurrentStockPrice(stockInfo.getStockCode()).getCurrentStockPriceInfo();
+            log.info("종목코드: {}", stockInfo.getStockCode());
+            log.info("현재가: {}", currentStockPriceInfo.getCurrentStockPrice());
+            log.info("HTS 시가 총액: {}", currentStockPriceInfo.getHtsMarketCapitalization());
+            log.info("누적 거래량: {}", currentStockPriceInfo.getOnBalanceVolume());
+            log.info("PER: {}", currentStockPriceInfo.getPer());
+            log.info("PBR: {}", currentStockPriceInfo.getPbr());
+            log.info("투자유의 여부: {}", currentStockPriceInfo.getInvtCarefulYn());
+            log.info("정리매매 여부: {}", currentStockPriceInfo.getDelistingYn());
+            log.info("단기과열 여부: {}", currentStockPriceInfo.getShortOverYn());
+            if (!checkAccordingWithIndicators(currentStockPriceInfo)) {
+                continue;
+            }
 
             pickedStockItems.add(StockItemDto.builder()
                     .stockCode(stockInfo.getStockCode())
-                    .orderQuantity("")    // TODO 수량, 주문 논의 예정
-                    .orderPrice("")
+                    .currentStockPrice(currentStockPriceInfo.getCurrentStockPrice())
                     .build());
-            count++;
         }
 
         return pickedStockItems;
+    }
+
+    /**
+     * 지표(per, pbr, 투자유의여부(N), 단기과열여부(N), 정리매매여부(N), 시가총액, 거래량) 고려
+     * @param currentStockPriceInfo
+     * @return
+     */
+    private boolean checkAccordingWithIndicators(CurrentStockPriceInfo currentStockPriceInfo) {
+        if (NO.getCode().equals(currentStockPriceInfo.getInvtCarefulYn()) || NO.getCode().equals(currentStockPriceInfo.getShortOverYn()) ||
+                NO.getCode().equals(currentStockPriceInfo.getDelistingYn())) {
+            return false;
+        }
+        if (Float.valueOf(currentStockPriceInfo.getPer()) > limitPER || Float.valueOf(currentStockPriceInfo.getPbr()) > limitPBR) {
+            return false;
+        }
+        if (Long.valueOf(currentStockPriceInfo.getHtsMarketCapitalization()) < limitHtsMarketCapital) { // 시가총액 (3000억 이상이어야함)
+            return false;
+        }
+        if(Integer.valueOf(currentStockPriceInfo.getOnBalanceVolume()) < limitOBV) {      // 거래량
+            return false;
+        }
+        return true;
     }
 
     @Transactional

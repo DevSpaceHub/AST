@@ -9,7 +9,6 @@
 package com.devspacehub.ast.domain.orderTrading.dto;
 
 import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.http.HttpHeaders;
@@ -44,7 +43,6 @@ public class DomesticStockOrderExternalReqDto extends WebClientCommonReqDto {
      * @param txId  the tx id
      * @return the headers
      */
-    @JsonIgnore
     public static Consumer<HttpHeaders> setHeaders(String oauth, String txId) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("content-Type", "application/json");

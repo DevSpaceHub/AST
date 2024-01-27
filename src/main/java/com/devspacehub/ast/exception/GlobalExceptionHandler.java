@@ -12,6 +12,7 @@ import com.devspacehub.ast.common.dto.ApiResult;
 import com.devspacehub.ast.exception.error.BusinessException;
 import com.devspacehub.ast.common.constant.ResultCode;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -25,7 +26,7 @@ public class GlobalExceptionHandler {
         log.error("handleBusinessException", ex);
 
         ResultCode resultCode = ex.getResultCode();
-        return ResponseEntity.status(resultCode.getCode()).body(ApiResult.failed(resultCode));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResult.failed(resultCode));
     }
 
     @ExceptionHandler(Exception.class)
@@ -33,6 +34,6 @@ public class GlobalExceptionHandler {
         log.error("handleException", ex);
 
         ResultCode resultCode = ResultCode.INTERNAL_SERVER_ERROR;
-        return ResponseEntity.status(resultCode.getCode()).body(ApiResult.failed(resultCode));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResult.failed(resultCode));
     }
 }

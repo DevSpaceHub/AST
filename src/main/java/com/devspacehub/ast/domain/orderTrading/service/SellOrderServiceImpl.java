@@ -63,7 +63,7 @@ public class SellOrderServiceImpl extends TradingService {
                 .stockCode(stockItem.getStockCode())
                 .orderDivision(stockItem.getOrderDivision())
                 .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
-                .orderPrice(String.valueOf(stockItem.getOrderPrice()))
+                .orderPrice(String.valueOf(stockItem.getCurrentStockPrice()))
                 .build();
 
         return (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(DOMESTIC_STOCK_SELL_ORDER, httpHeaders, bodyDto);
@@ -78,30 +78,20 @@ public class SellOrderServiceImpl extends TradingService {
         List<StockItemDto> pickedStockItems = new ArrayList<>();
 
         for (StockBalanceExternalResDto.MyStockBalance myStockBalance : stockBalanceResponse.getMyStockBalance()) {
-            double evaluateEarningRate = floatValueOf(myStockBalance.getEvaluateEarningRate());
+            Float evaluateEarningRate = Float.valueOf(myStockBalance.getEvaluateEarningRate());
             if (checkIsSellStockItem(evaluateEarningRate)) {
                 pickedStockItems.add(StockItemDto.builder()
                                 .stockCode(myStockBalance.getStockCode())
                                 .orderQuantity(myStockBalance.getHoldingQuantity())
-                                .orderPrice(myStockBalance.getCurrentPrice())
+                                .currentStockPrice(myStockBalance.getCurrentPrice())
                         .build());
             }
         }
         return pickedStockItems;
     }
 
-    private boolean checkIsSellStockItem(double evaluateEarningRate) {
+    private boolean checkIsSellStockItem(Float evaluateEarningRate) {
         return evaluateEarningRate > profitSellRatio || evaluateEarningRate < stopLossSellRatio;  // 수익 매도(>10%) or 손절 매도(<-5.0%)
-    }
-
-    private double floatValueOf(String strRate) {
-        double doubleRate;
-        if (strRate.startsWith("-")) {
-            doubleRate = Double.parseDouble(strRate.substring(1)) * -1.0;
-            return Math.round(doubleRate * 100) / 100.0;
-        }
-        doubleRate = Double.parseDouble(strRate);
-        return Math.round(doubleRate * 100) / 100.0;
     }
 
     @Override
