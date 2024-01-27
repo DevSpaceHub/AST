@@ -66,14 +66,14 @@ public class MarketStatusService {
     }
 
     /**
-     *  profile = 'prod' 아닌 경우 json 파일에서 데이터 읽어온다.
+     *  profile = 'prod' 아닌 경우 서버 내 json 파일에서 데이터 읽어온다.
      *
      * @return the trading volume local data
      * @throws IOException the io exception
      */
     @Profile("!prod")
     public DomStockTradingVolumeRankingExternalResDto getTradingVolumeLocalData() throws IOException {
-            File file = ResourceUtils.getFile("classpath:sampleTradingVolumeGetData.json");
+            File file = ResourceUtils.getFile("/www/ast/trading-volume/sampleTradingVolumeGetData.json");
             FileInputStream inputStream = new FileInputStream(file);
             String response = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
             inputStream.close();
