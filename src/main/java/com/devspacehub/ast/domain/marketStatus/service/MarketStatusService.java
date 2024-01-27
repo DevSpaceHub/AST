@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.TRADING_VOLUME_RANKING_DATA_SAMPLE_JSON_PATH;
 import static com.devspacehub.ast.common.constant.OpenApiType.CURRENT_STOCK_PRICE;
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMSTOCK_TRADING_VOLUME_RANKING;
 
@@ -73,7 +74,7 @@ public class MarketStatusService {
      */
     @Profile("!prod")
     public DomStockTradingVolumeRankingExternalResDto getTradingVolumeLocalData() throws IOException {
-            File file = ResourceUtils.getFile("/www/ast/trading-volume/sampleTradingVolumeGetData.json");
+            File file = ResourceUtils.getFile(TRADING_VOLUME_RANKING_DATA_SAMPLE_JSON_PATH);
             FileInputStream inputStream = new FileInputStream(file);
             String response = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
             inputStream.close();
