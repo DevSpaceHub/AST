@@ -79,14 +79,14 @@ public class CurrentStockPriceExternalResDto extends WebClientCommonResDto {
         private String prdyVrssSign;
 
         @JsonProperty("prdy_ctrt")
-        private String onBalanceVolume;    // 누적 거래량, OBV (On Balance Volume)
+        private String prdyCtrt;
 
 
         @JsonProperty("acml_tr_pbmn")
         private String acmlTrPbmn;
 
         @JsonProperty("acml_vol")
-        private String acmlVol;
+        private String accumulationVolume;          // 누적 거래량, Accumulation Volume
 
         @JsonProperty("prdy_vrss_vol_rate")
         private String prdyVrssVolRate;
