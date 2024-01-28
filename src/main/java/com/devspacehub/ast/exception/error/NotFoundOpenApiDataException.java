@@ -10,9 +10,9 @@ package com.devspacehub.ast.exception.error;
 
 import com.devspacehub.ast.common.constant.ResultCode;
 
-public class NotFoundOpenAPiDataException extends BusinessException{
+public class NotFoundOpenApiDataException extends BusinessException{
 
-    public NotFoundOpenAPiDataException(ResultCode errorCode) {
+    public NotFoundOpenApiDataException(ResultCode errorCode) {
         super(errorCode);
     }
 }

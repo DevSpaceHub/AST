@@ -21,7 +21,7 @@ import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingServiceFactory;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
-import com.devspacehub.ast.exception.error.NotFoundOpenAPiDataException;
+import com.devspacehub.ast.exception.error.NotFoundOpenApiDataException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -77,7 +77,7 @@ public class MashupService {
                 items = marketStatusService.getTradingVolumeLocalData();
             } catch (IOException ex) {
                 log.error("프로젝트 내 Json 파일을 읽는데 실패하였습니다.");
-                throw new NotFoundOpenAPiDataException(ResultCode.NOT_FOUND_RANKING_VOLUME_DATA);
+                throw new NotFoundOpenApiDataException(ResultCode.NOT_FOUND_RANKING_VOLUME_DATA);
             }
         }
 
