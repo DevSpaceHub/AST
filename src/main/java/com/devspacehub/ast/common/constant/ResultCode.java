@@ -28,7 +28,10 @@ public enum ResultCode {
 
     // KIS server error
     OPENAPI_SERVER_RESPONSE_ERROR(5002, "OpenApi 서버와 통신 중 오류 발생하였습니다"),
-    INTERNAL_SERVER_ERROR(5000, "서버 문제 발생하였습니다.");
+    INTERNAL_SERVER_ERROR(5000, "서버 문제 발생하였습니다."),
+
+    // notification error
+    NOTIFICATION_ERROR(5003, "알림 요청 중 문제 발생하였습니다.");
     private final int code;
     private final String message;
 }

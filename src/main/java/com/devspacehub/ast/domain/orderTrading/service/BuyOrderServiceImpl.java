@@ -190,7 +190,8 @@ public class BuyOrderServiceImpl extends TradingService {
     @Transactional
     @Override
     public void saveInfos(List<OrderTrading> orderTradingInfos) {
-        orderTradingRepository.saveAll(orderTradingInfos);
+        if (!orderTradingInfos.isEmpty()) {
+            orderTradingRepository.saveAll(orderTradingInfos);
+        }
     }
-
 }

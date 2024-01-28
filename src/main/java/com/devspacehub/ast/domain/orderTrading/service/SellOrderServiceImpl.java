@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,8 +95,11 @@ public class SellOrderServiceImpl extends TradingService {
         return evaluateEarningRate > profitSellRatio || evaluateEarningRate < stopLossSellRatio;  // 수익 매도(>10%) or 손절 매도(<-5.0%)
     }
 
+    @Transactional
     @Override
     public void saveInfos(List<OrderTrading> orderTradingInfos) {
-        orderTradingRepository.saveAll(orderTradingInfos);
+        if (!orderTradingInfos.isEmpty()) {
+            orderTradingRepository.saveAll(orderTradingInfos);
+        }
     }
 }

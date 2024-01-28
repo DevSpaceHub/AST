@@ -105,9 +105,7 @@ public class MashupService {
         }
 
         // 3. 주문한 것 있으면 주문 거래 정보 저장
-        if (!orderTradings.isEmpty()) {
-            tradingService.saveInfos(orderTradings);
-        }
+        tradingService.saveInfos(orderTradings);
     }
 
     private OrderTrading createOrderFromDTOs(StockItemDto item, DomesticStockOrderExternalResDto result, String txId) {
