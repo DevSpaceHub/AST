@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import java.util.function.Consumer;
 
@@ -29,7 +30,7 @@ public class DiscordWebhookNotifyRequestDto {
 
     public static Consumer<HttpHeaders> setHeaders() {
         HttpHeaders headers = new HttpHeaders();
-        headers.add("content-Type", "application/json; utf-8");
+        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         return httpHeaders -> httpHeaders.addAll(headers);
     }
 }
