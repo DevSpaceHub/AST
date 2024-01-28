@@ -8,18 +8,20 @@
 
 package com.devspacehub.ast.domain.mashup.service;
 
-import com.devspacehub.ast.common.constant.OpenApiType;
+import com.devspacehub.ast.common.constant.ResultCode;
 import com.devspacehub.ast.common.constant.TokenType;
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
 import com.devspacehub.ast.domain.my.dto.response.StockBalanceExternalResDto;
 import com.devspacehub.ast.domain.my.service.MyService;
+import com.devspacehub.ast.domain.notification.Notificator;
 import com.devspacehub.ast.domain.oauth.service.OAuthService;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingServiceFactory;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
+import com.devspacehub.ast.exception.error.NotFoundOpenAPiDataException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.devspacehub.ast.common.constant.OpenApiType.*;
 
 /**
  * The type Mashup service.
@@ -42,12 +46,17 @@ public class MashupService {
     private final OrderTradingServiceFactory orderTradingServiceFactory;
     private final MarketStatusService marketStatusService;
     private final MyService myService;
+    private final Notificator notificator;
     private final Environment environment;
 
     @Value("${openapi.rest.header.transaction-id.buy-order}")
     private String txIdBuyOrder;
     @Value("${openapi.rest.header.transaction-id.sell-order}")
     private String txIdSellOrder;
+    private static final String ORDER_NOTI_SENDER_NAME = "주문 봇";
+    private static final String REAL_ACCOUNT_STATUS_KOR = "실전";
+    private static final String TEST_ACCOUNT_STATUS_KOR = "모의";
+    private StringBuilder sb;
 
     /**
      * 매수 주문
@@ -56,23 +65,24 @@ public class MashupService {
     public void startBuyOrder() {
         oAuthService.setAccessToken(TokenType.AccessToken);
 
-        // 1. 거래량 조회 api 호출 (상위 10위)
-        DomStockTradingVolumeRankingExternalResDto items = null;
-        for(String profile : environment.getActiveProfiles()) {
-            if ("local".equals(profile)) {
-                try {
-                    items = marketStatusService.getTradingVolumeLocalData();
-                } catch (IOException ex) {
-                    log.error("프로젝트 내 Json 파일을 읽는데 실패하였습니다.");
-                }
-            }
-            else if ("prod".equals(profile)) {
-                items = marketStatusService.findTradingVolume();
+        // 1. 거래량 조회 (상위 10위)
+        String accountStatusKor;
+        DomStockTradingVolumeRankingExternalResDto items;
+        if (Boolean.TRUE.equals(isProdActive())) {
+            items = marketStatusService.findTradingVolume();
+            accountStatusKor = REAL_ACCOUNT_STATUS_KOR;
+        } else {
+            try {
+                accountStatusKor = TEST_ACCOUNT_STATUS_KOR;
+                items = marketStatusService.getTradingVolumeLocalData();
+            } catch (IOException ex) {
+                log.error("프로젝트 내 Json 파일을 읽는데 실패하였습니다.");
+                throw new NotFoundOpenAPiDataException(ResultCode.NOT_FOUND_RANKING_VOLUME_DATA);
             }
         }
 
-        // 2. 종목 선택 (현재가 시세 조회)
-        TradingService tradingService = orderTradingServiceFactory.getServiceImpl(OpenApiType.DOMESTIC_STOCK_BUY_ORDER);
+        // 2. 현재가 시세 조회하여 매수할 종목 선택
+        TradingService tradingService = orderTradingServiceFactory.getServiceImpl(DOMESTIC_STOCK_BUY_ORDER);
         List<StockItemDto> stockItems = tradingService.pickStockItems(items);
         log.info("매수 선택 종목 : {}", stockItems.size());
 
@@ -80,11 +90,40 @@ public class MashupService {
         List<OrderTrading> orderTradings = new ArrayList<>();
         for (StockItemDto item : stockItems) {
             DomesticStockOrderExternalResDto result = tradingService.order(item);
-            orderTradings.add(createOrderFromDTOs(item, result, txIdBuyOrder));
+            OrderTrading orderTrading = createOrderFromDTOs(item, result, txIdBuyOrder);
+            orderTradings.add(orderTrading);
+
+            notificator.sendMessage(ORDER_NOTI_SENDER_NAME, createMessage(accountStatusKor, orderTrading));
         }
         // 4. 주문거래 정보 저장
         tradingService.saveInfos(orderTradings);
     }
+
+    private Boolean isProdActive() {
+        for(String profile : environment.getActiveProfiles()) {
+            if ("local".equals(profile) || "beta".equals(profile)) {
+                return Boolean.FALSE;
+            }
+        }
+        return Boolean.TRUE;
+    }
+
+    private String createMessage(String accountStatusKor, OrderTrading orderTrading) {
+        sb.setLength(0);
+
+        sb.append("[" + orderTrading.getOrderDateTime() + "] ").append("주문완료");
+        sb.append("\n계좌 상태 : ").append(accountStatusKor);
+        sb.append("\n종목명 : ").append(orderTrading.getItemNameKor()).
+                append(" (").append(orderTrading.getItemCode()).append(")");
+        sb.append("\n매매구분 : ").append(txIdBuyOrder.equals(orderTrading.getTransactionId()) ?
+                DOMESTIC_STOCK_BUY_ORDER.getDiscription() : DOMESTIC_STOCK_SELL_ORDER.getDiscription());
+        sb.append("\n주문수량 : ").append(orderTrading.getOrderQuantity()).append("주");
+        sb.append("\n주문단가 : ").append(orderTrading.getOrderPrice());
+        sb.append("\n주문번호 : ").append(orderTrading.getOrderNumber());
+
+        return sb.toString();
+    }
+
 
     /**
      * 매도 주문
@@ -96,12 +135,16 @@ public class MashupService {
         // 1. 주식 잔고 조회
         StockBalanceExternalResDto myStockBalance = myService.getMyStockBalance();
 
-        TradingService tradingService = orderTradingServiceFactory.getServiceImpl(OpenApiType.DOMESTIC_STOCK_SELL_ORDER);
+        TradingService tradingService = orderTradingServiceFactory.getServiceImpl(DOMESTIC_STOCK_SELL_ORDER);
         // 2. 주식 선택 후 매도 주문 (손절매도 & 수익매도)
         List<OrderTrading> orderTradings = new ArrayList<>();
         for (StockItemDto item : tradingService.pickStockItems(myStockBalance)) {
             DomesticStockOrderExternalResDto result = tradingService.order(item);
-            orderTradings.add(createOrderFromDTOs(item, result, txIdSellOrder));
+            OrderTrading orderTrading = createOrderFromDTOs(item, result, txIdSellOrder);
+            orderTradings.add(orderTrading);
+
+            String accountStatusKor = Boolean.TRUE.equals(isProdActive()) ? REAL_ACCOUNT_STATUS_KOR : TEST_ACCOUNT_STATUS_KOR;
+            notificator.sendMessage(ORDER_NOTI_SENDER_NAME, createMessage(accountStatusKor, orderTrading));
         }
 
         // 3. 주문한 것 있으면 주문 거래 정보 저장
@@ -111,6 +154,7 @@ public class MashupService {
     private OrderTrading createOrderFromDTOs(StockItemDto item, DomesticStockOrderExternalResDto result, String txId) {
         return OrderTrading.builder()
                 .itemCode(item.getStockCode())
+                .itemNameKor(item.getStockNameKor())
                 .transactionId(txId)
                 .orderDivision(item.getOrderDivision())
                 .orderPrice(item.getCurrentStockPrice())

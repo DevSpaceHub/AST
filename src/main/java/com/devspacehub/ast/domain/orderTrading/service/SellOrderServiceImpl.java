@@ -82,9 +82,10 @@ public class SellOrderServiceImpl extends TradingService {
             Float evaluateEarningRate = Float.valueOf(myStockBalance.getEvaluateEarningRate());
             if (checkIsSellStockItem(evaluateEarningRate)) {
                 pickedStockItems.add(StockItemDto.builder()
-                                .stockCode(myStockBalance.getStockCode())
-                                .orderQuantity(myStockBalance.getHoldingQuantity())
-                                .currentStockPrice(myStockBalance.getCurrentPrice())
+                        .stockCode(myStockBalance.getStockCode())
+                        .stockNameKor(myStockBalance.getStockName())
+                        .orderQuantity(myStockBalance.getHoldingQuantity())
+                        .currentStockPrice(myStockBalance.getCurrentPrice())
                         .build());
             }
         }

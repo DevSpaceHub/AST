@@ -28,6 +28,8 @@ public class OrderTrading extends OrderTradingBaseEntity {
 
     @Column(name = "item_code")
     private String itemCode;
+    @Column(name = "item_name_korean")
+    private String itemNameKor;
 
     @Column(name = "transaction_id")
     private String transactionId;
