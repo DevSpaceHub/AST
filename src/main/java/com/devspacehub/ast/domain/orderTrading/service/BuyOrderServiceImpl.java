@@ -36,7 +36,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_BUY_ORDER;
-import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
 import static com.devspacehub.ast.common.constant.YesNoStatus.YES;
 
 /**
