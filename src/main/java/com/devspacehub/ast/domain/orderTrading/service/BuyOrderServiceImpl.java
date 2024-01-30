@@ -164,6 +164,7 @@ public class BuyOrderServiceImpl extends TradingService {
             log.info("정리매매 여부: {}", currentStockPriceInfo.getDelistingYn());
             log.info("단기과열 여부: {}", currentStockPriceInfo.getShortOverYn());
 
+            timeDelay();
             // 5. 지표 체크
             if (!checkAccordingWithIndicators(currentStockPriceInfo)) {
                 continue;
@@ -175,15 +176,21 @@ public class BuyOrderServiceImpl extends TradingService {
                     .orderQuantity(orderQuantity)
                     .currentStockPrice(currentPrice)
                     .build());
-            try {
-                Thread.sleep(TIME_DELAY_MILLIS);
-            } catch (InterruptedException ex) {
-                log.error("시간 지연 처리 중 이슈 발생하였습니다.");
-                log.error("{}", ex.getStackTrace());
-            }
         }
 
         return pickedStockItems;
+    }
+
+    /**
+     * KIS Open API를 초당 2회 이상 호출하지 않기 위해 시간 지연 수행.
+     */
+    private void timeDelay() {
+        try {
+            Thread.sleep(TIME_DELAY_MILLIS);
+        } catch (InterruptedException ex) {
+            log.error("시간 지연 처리 중 이슈 발생하였습니다.");
+            log.error("{}", ex.getStackTrace());
+        }
     }
 
     /**
