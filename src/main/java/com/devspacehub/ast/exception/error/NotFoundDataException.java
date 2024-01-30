@@ -1,7 +1,7 @@
 /*
  © 2024 devspacehub, Inc. All rights reserved.
 
- name : NotFoundOpenApiDataException
+ name : NotFoundDataException
  creation : 2024.1.30
  author : Yoonji Moon
  */
