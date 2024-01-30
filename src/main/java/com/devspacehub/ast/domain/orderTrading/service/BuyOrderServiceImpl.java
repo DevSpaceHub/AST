@@ -63,6 +63,7 @@ public class BuyOrderServiceImpl extends TradingService {
     private Long limitHtsMarketCapital;
     @Value("${trading.limit-accumulation-volume}")
     private Integer limitAccumulationVolume;
+    private static final long TIME_DELAY_MILLIS = 200L;
 
 
     /**
@@ -104,8 +105,8 @@ public class BuyOrderServiceImpl extends TradingService {
      * @return
      */
     public String calculateOrderQuantity(int myCash, Integer currentStockPrice) {
-        double orderQuantity = Math.floor((myCash % 10.0) % currentStockPrice);
-        return String.valueOf(orderQuantity);
+        Double orderQuantity = (myCash % 10.0) % currentStockPrice;
+        return String.valueOf(orderQuantity.intValue());
     }
 
     /**
@@ -161,6 +162,12 @@ public class BuyOrderServiceImpl extends TradingService {
                     .stockNameKor(stockInfo.getHtsStockNameKor())
                     .currentStockPrice(currentStockPriceInfo.getCurrentStockPrice())
                     .build());
+            try {
+                Thread.sleep(TIME_DELAY_MILLIS);
+            } catch (InterruptedException ex) {
+                log.error("시간 지연 처리 중 이슈 발생하였습니다.");
+                log.error("{}", ex.getStackTrace());
+            }
         }
 
         return pickedStockItems;
@@ -172,20 +179,21 @@ public class BuyOrderServiceImpl extends TradingService {
      * @return
      */
     private boolean checkAccordingWithIndicators(CurrentStockPriceInfo currentStockPriceInfo) {
-        if (NO.getCode().equals(currentStockPriceInfo.getInvtCarefulYn()) || NO.getCode().equals(currentStockPriceInfo.getShortOverYn()) ||
+        if (NO.getCode().equals(currentStockPriceInfo.getInvtCarefulYn()) ||
+                NO.getCode().equals(currentStockPriceInfo.getShortOverYn()) ||
                 NO.getCode().equals(currentStockPriceInfo.getDelistingYn())) {
             return false;
         }
         if (Strings.isEmpty(currentStockPriceInfo.getPer()) || Strings.isEmpty(currentStockPriceInfo.getPbr())) {
             return false;
         }
-        if (Float.valueOf(currentStockPriceInfo.getPer()) > limitPER || Float.valueOf(currentStockPriceInfo.getPbr()) > limitPBR) {
+        if (Float.parseFloat(currentStockPriceInfo.getPer()) > limitPER || Float.parseFloat(currentStockPriceInfo.getPbr()) > limitPBR) {
             return false;
         }
-        if (Long.valueOf(currentStockPriceInfo.getHtsMarketCapitalization()) < limitHtsMarketCapital) { // 시가총액 (3000억 이상이어야함)
+        if (Long.parseLong(currentStockPriceInfo.getHtsMarketCapitalization()) < limitHtsMarketCapital) { // 시가총액 (3000억 이상이어야함)
             return false;
         }
-        if(Integer.valueOf(currentStockPriceInfo.getAccumulationVolume()) < limitAccumulationVolume) {      // 누적 거래량
+        if(Integer.parseInt(currentStockPriceInfo.getAccumulationVolume()) < limitAccumulationVolume) {   // 누적 거래량
             return false;
         }
         return true;
