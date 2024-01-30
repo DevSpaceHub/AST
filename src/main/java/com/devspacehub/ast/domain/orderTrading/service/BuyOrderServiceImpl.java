@@ -104,8 +104,8 @@ public class BuyOrderServiceImpl extends TradingService {
      * @return
      */
     public String calculateOrderQuantity(int myCash, Integer currentStockPrice) {
-        double orderQuantity = Math.floor((myCash % 10.0) % currentStockPrice);
-        return String.valueOf(orderQuantity);
+        Double orderQuantity = (myCash % 10.0) % currentStockPrice;
+        return String.valueOf(orderQuantity.intValue());
     }
 
     /**
@@ -161,6 +161,12 @@ public class BuyOrderServiceImpl extends TradingService {
                     .stockNameKor(stockInfo.getHtsStockNameKor())
                     .currentStockPrice(currentStockPriceInfo.getCurrentStockPrice())
                     .build());
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException ex) {
+                log.error("시간 지연 처리 중 이슈 발생하였습니다.");
+                log.error("{}", ex.getStackTrace());
+            }
         }
 
         return pickedStockItems;
