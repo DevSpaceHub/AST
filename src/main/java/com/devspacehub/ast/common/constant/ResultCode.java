@@ -25,7 +25,7 @@ public enum ResultCode {
     // application error
     DTO_CONVERSION_ERROR(5000, "DTO 변환 과정에서 문제 발생하였습니다."),
     NOT_FOUND_ACCESS_TOKEN(5000, "접근 토큰 조회에 실패하였습니다."),
-    NOT_FOUND_RANKING_VOLUME_DATA(5004, "거래량 순위 데이터가 존재하지 않습니다."),
+    NOT_FOUND_RANKING_VOLUME_DATA_JSON_FILE(5004, "거래량 순위 JSON 파일이 존재하지 않습니다."),
 
     // KIS server error
     OPENAPI_SERVER_RESPONSE_ERROR(5002, "OpenApi 서버와 통신 중 오류 발생하였습니다"),
