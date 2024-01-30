@@ -164,7 +164,7 @@ public class BuyOrderServiceImpl extends TradingService {
             log.info("정리매매 여부: {}", currentStockPriceInfo.getDelistingYn());
             log.info("단기과열 여부: {}", currentStockPriceInfo.getShortOverYn());
 
-            delay();
+            timeDelay();
             // 5. 지표 체크
             if (!checkAccordingWithIndicators(currentStockPriceInfo)) {
                 continue;
@@ -184,7 +184,7 @@ public class BuyOrderServiceImpl extends TradingService {
     /**
      * KIS Open API를 초당 2회 이상 호출하지 않기 위해 시간 지연 수행.
      */
-    private void delay() {
+    private void timeDelay() {
         try {
             Thread.sleep(TIME_DELAY_MILLIS);
         } catch (InterruptedException ex) {
