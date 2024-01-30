@@ -24,6 +24,7 @@ import com.devspacehub.ast.exception.error.NotEnoughCashException;
 import com.devspacehub.ast.openApiUtil.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_BUY_ORDER;
@@ -72,12 +74,10 @@ public class BuyOrderServiceImpl extends TradingService {
     public DomesticStockOrderExternalResDto order(StockItemDto stockItem) {
         int realOrderPrice = stockItem.getCurrentStockPrice() * stockItem.getOrderQuantity();
 
-        // 매수 가능 여부 판단
+        // 매수 가능한 금액 보유 여부 판단
         int myCash = myService.getBuyOrderPossibleCash(stockItem.getStockCode(), realOrderPrice, stockItem.getOrderDivision());
+        checkBuyOrderPossible(myCash, realOrderPrice);
 
-        if (!checkBuyOrderPossible(myCash, realOrderPrice)) {
-            throw new NotEnoughCashException();
-        }
         // 매수 수량 결정
         String orderQuantity = calculateOrderQuantity(myCash, stockItem.getCurrentStockPrice());
         log.info("매수 수량: {}", orderQuantity);
@@ -111,12 +111,12 @@ public class BuyOrderServiceImpl extends TradingService {
     /**
      * 매수 가능한 종목인지 체크
      */
-    public boolean checkBuyOrderPossible(int myCash, int orderPrice) {
+    public void checkBuyOrderPossible(int myCash, int orderPrice) {
         if (orderPrice <= myCash) {
-            return true;
+            return;
         }
         log.info("매수 주문 금액이 부족합니다. (매수 가능 금액: {})", myCash);
-        return false;
+        throw new NotEnoughCashException();
     }
 
     private boolean isStockMarketClosed(String messageCode) {
@@ -147,8 +147,8 @@ public class BuyOrderServiceImpl extends TradingService {
             log.info("현재가: {}", currentStockPriceInfo.getCurrentStockPrice());
             log.info("HTS 시가 총액: {}", currentStockPriceInfo.getHtsMarketCapitalization());
             log.info("누적 거래량: {}", currentStockPriceInfo.getAccumulationVolume());
-            log.info("PER: {}", currentStockPriceInfo.getPer());
-            log.info("PBR: {}", currentStockPriceInfo.getPbr());
+            log.info("PER: {}", Objects.isNull(currentStockPriceInfo.getPer()) ? "Null" : currentStockPriceInfo.getPer());
+            log.info("PBR: {}", Objects.isNull(currentStockPriceInfo.getPbr()) ? "Null" : currentStockPriceInfo.getPbr());
             log.info("투자유의 여부: {}", currentStockPriceInfo.getInvtCarefulYn());
             log.info("정리매매 여부: {}", currentStockPriceInfo.getDelistingYn());
             log.info("단기과열 여부: {}", currentStockPriceInfo.getShortOverYn());
@@ -158,6 +158,7 @@ public class BuyOrderServiceImpl extends TradingService {
 
             pickedStockItems.add(StockItemDto.builder()
                     .stockCode(stockInfo.getStockCode())
+                    .stockNameKor(stockInfo.getHtsStockNameKor())
                     .currentStockPrice(currentStockPriceInfo.getCurrentStockPrice())
                     .build());
         }
@@ -173,6 +174,9 @@ public class BuyOrderServiceImpl extends TradingService {
     private boolean checkAccordingWithIndicators(CurrentStockPriceInfo currentStockPriceInfo) {
         if (NO.getCode().equals(currentStockPriceInfo.getInvtCarefulYn()) || NO.getCode().equals(currentStockPriceInfo.getShortOverYn()) ||
                 NO.getCode().equals(currentStockPriceInfo.getDelistingYn())) {
+            return false;
+        }
+        if (Strings.isEmpty(currentStockPriceInfo.getPer()) || Strings.isEmpty(currentStockPriceInfo.getPbr())) {
             return false;
         }
         if (Float.valueOf(currentStockPriceInfo.getPer()) > limitPER || Float.valueOf(currentStockPriceInfo.getPbr()) > limitPBR) {

@@ -45,7 +45,7 @@ public class DomStockTradingVolumeRankingExternalResDto extends WebClientCommonR
     public static class StockInfo {
 
         @JsonProperty("hts_kor_isnm")
-        private String htsKorIsnm;
+        private String htsStockNameKor;      // 한글 종목명
 
         @JsonProperty("mksc_shrn_iscd")
         private String stockCode;      // 유가증권 단축 종목코드

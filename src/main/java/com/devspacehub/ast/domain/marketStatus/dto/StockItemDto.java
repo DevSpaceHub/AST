@@ -20,6 +20,7 @@ import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION
 public class StockItemDto {
 
     private String stockCode;
+    private String stockNameKor;
 
     private String orderDivision;
 
@@ -28,7 +29,9 @@ public class StockItemDto {
     private Integer currentStockPrice; // 현재가
 
     @Builder
-    private static StockItemDto StockItemDto(String stockCode, String orderQuantity, String currentStockPrice) {
-        return new StockItemDto(stockCode, ORDER_DIVISION, Integer.valueOf(orderQuantity), Integer.valueOf(currentStockPrice));
+    private static StockItemDto StockItemDto(String stockCode, String stockNameKor,
+                                             String orderQuantity, String currentStockPrice) {
+        return new StockItemDto(stockCode, stockNameKor, ORDER_DIVISION,
+                Integer.valueOf(orderQuantity), Integer.valueOf(currentStockPrice));
     }
 }
