@@ -71,8 +71,8 @@ public class SellOrderServiceImpl extends TradingService {
     }
 
     /**
-     * 알고리즘에 따라 거래할 종목 선택 및 매수 금액&수량 결정
-     * - 현재가 시세 조회 API 호출 -> 매수 금액 결정
+     * 알고리즘에 따라 거래할 종목 선택 및 매도 금액&수량 결정
+     * - 현재가 시세 조회 API 호출 -> 매도 금액 결정
      */
     public List<StockItemDto> pickStockItems(WebClientCommonResDto resDto) {
         StockBalanceExternalResDto stockBalanceResponse = (StockBalanceExternalResDto) resDto;
@@ -84,8 +84,8 @@ public class SellOrderServiceImpl extends TradingService {
                 pickedStockItems.add(StockItemDto.builder()
                         .stockCode(myStockBalance.getStockCode())
                         .stockNameKor(myStockBalance.getStockName())
-                        .orderQuantity(myStockBalance.getHoldingQuantity())
-                        .currentStockPrice(myStockBalance.getCurrentPrice())
+                        .orderQuantity(Integer.parseInt(myStockBalance.getHoldingQuantity()))     // 전량 매도
+                        .currentStockPrice(Integer.parseInt(myStockBalance.getCurrentPrice()))
                         .build());
             }
         }

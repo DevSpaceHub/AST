@@ -35,8 +35,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION;
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_BUY_ORDER;
 import static com.devspacehub.ast.common.constant.YesNoStatus.YES;
+import static com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto.*;
 
 /**
  * 주식 주문 서비스 구현체 - 매수
@@ -73,16 +75,6 @@ public class BuyOrderServiceImpl extends TradingService {
      */
     @Override
     public DomesticStockOrderExternalResDto order(StockItemDto stockItem) {
-        int realOrderPrice = stockItem.getCurrentStockPrice() * stockItem.getOrderQuantity();
-
-        // 매수 가능한 금액 보유 여부 판단
-        int myCash = myService.getBuyOrderPossibleCash(stockItem.getStockCode(), realOrderPrice, stockItem.getOrderDivision());
-        checkBuyOrderPossible(myCash, realOrderPrice);
-
-        // 매수 수량 결정
-        String orderQuantity = calculateOrderQuantity(myCash, stockItem.getCurrentStockPrice());
-        log.info("매수 수량: {}", orderQuantity);
-
         // 매수 주문
         Consumer<HttpHeaders> httpHeaders = DomesticStockOrderExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdBuyOrder);
         DomesticStockOrderExternalReqDto bodyDto = DomesticStockOrderExternalReqDto.builder()
@@ -90,7 +82,7 @@ public class BuyOrderServiceImpl extends TradingService {
                 .accntProductCode(openApiProperties.getAccntProductCode())
                 .stockCode(stockItem.getStockCode())
                 .orderDivision(stockItem.getOrderDivision())
-                .orderQuantity(orderQuantity)
+                .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
                 .orderPrice(String.valueOf(stockItem.getCurrentStockPrice()))
                 .build();
 
@@ -104,19 +96,19 @@ public class BuyOrderServiceImpl extends TradingService {
      * @param currentStockPrice
      * @return
      */
-    public String calculateOrderQuantity(int myCash, Integer currentStockPrice) {
+    public int calculateOrderQuantity(int myCash, Integer currentStockPrice) {
         Double orderQuantity = (myCash % 10.0) % currentStockPrice;
-        return String.valueOf(orderQuantity.intValue());
+        return orderQuantity.intValue();
     }
 
     /**
      * 매수 가능한 종목인지 체크
      */
-    public void checkBuyOrderPossible(int myCash, int orderPrice) {
-        if (orderPrice <= myCash) {
+    public void checkBuyOrderPossible(int myDeposit, int orderPrice, int orderQuantity) {
+        if (orderPrice * orderQuantity <= myDeposit) {
             return;
         }
-        log.info("매수 주문 금액이 부족합니다. (매수 가능 금액: {})", myCash);
+        log.info("매수 주문 금액이 부족합니다. (예수금: {})", myDeposit);
         throw new NotEnoughCashException();
     }
 
@@ -126,26 +118,44 @@ public class BuyOrderServiceImpl extends TradingService {
 
     /**
      * 알고리즘에 따라 매수할 종목 선택
+     * 1. 거래량 순위 종목 조회 api
+     * 2. valid check : table에 없는 종목 매수 X (파생상품)
+     * 3. 현재가 시세 조회
+     * 4. 매수 가능 현금 조회
+     * - 매수 수량 결정
+     * - 매수 가능 여부 확인
+     * 5. 지표 체크
      * @param resDto
      * @return
      */
     public List<StockItemDto> pickStockItems(WebClientCommonResDto resDto) {
-        // 거래량 순위 종목
+        // 1. 거래량 순위 종목 조회
         DomStockTradingVolumeRankingExternalResDto stockItems = (DomStockTradingVolumeRankingExternalResDto) resDto;
 
         List<StockItemDto> pickedStockItems = new ArrayList<>();
 
         int count = 0;
         while (count++ < 10) {
-            DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo = stockItems.getStockInfos().get(count);
-            // table에 없는 종목 매수 X (파생상품)
+            StockInfo stockInfo = stockItems.getStockInfos().get(count);
+            // 2. valid check
             if (1 > itemInfoRepository.countByItemCode(stockInfo.getStockCode())) {
                 continue;
             }
-            // 매수 금액 결정 위해 주식 현재가 시세 조회
+            // 3. 현재가 시세 조회
             CurrentStockPriceInfo currentStockPriceInfo = marketStatusService.getCurrentStockPrice(stockInfo.getStockCode()).getCurrentStockPriceInfo();
+            int currentPrice = Integer.parseInt(currentStockPriceInfo.getCurrentStockPrice());
+
+            // 4. 매수 가능 현금 조회
+            int myDeposit = myService.getBuyOrderPossibleCash(stockInfo.getStockCode(), currentPrice, ORDER_DIVISION);
+
+            // 매수 수량 결정
+            int orderQuantity = calculateOrderQuantity(myDeposit, currentPrice);
+
+            // 매수 가능 여부 체크
+            checkBuyOrderPossible(myDeposit, currentPrice, orderQuantity);
+
             log.info("종목코드: {}", stockInfo.getStockCode());
-            log.info("현재가: {}", currentStockPriceInfo.getCurrentStockPrice());
+            log.info("현재가: {}", currentPrice);
             log.info("HTS 시가 총액: {}", currentStockPriceInfo.getHtsMarketCapitalization());
             log.info("누적 거래량: {}", currentStockPriceInfo.getAccumulationVolume());
             log.info("PER: {}", Objects.isNull(currentStockPriceInfo.getPer()) ? "Null" : currentStockPriceInfo.getPer());
@@ -153,6 +163,8 @@ public class BuyOrderServiceImpl extends TradingService {
             log.info("투자유의 여부: {}", currentStockPriceInfo.getInvtCarefulYn());
             log.info("정리매매 여부: {}", currentStockPriceInfo.getDelistingYn());
             log.info("단기과열 여부: {}", currentStockPriceInfo.getShortOverYn());
+
+            // 5. 지표 체크
             if (!checkAccordingWithIndicators(currentStockPriceInfo)) {
                 continue;
             }
@@ -160,7 +172,8 @@ public class BuyOrderServiceImpl extends TradingService {
             pickedStockItems.add(StockItemDto.builder()
                     .stockCode(stockInfo.getStockCode())
                     .stockNameKor(stockInfo.getHtsStockNameKor())
-                    .currentStockPrice(currentStockPriceInfo.getCurrentStockPrice())
+                    .orderQuantity(orderQuantity)
+                    .currentStockPrice(currentPrice)
                     .build());
             try {
                 Thread.sleep(TIME_DELAY_MILLIS);

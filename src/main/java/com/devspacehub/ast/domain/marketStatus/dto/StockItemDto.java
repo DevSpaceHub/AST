@@ -30,8 +30,8 @@ public class StockItemDto {
 
     @Builder
     private static StockItemDto StockItemDto(String stockCode, String stockNameKor,
-                                             String orderQuantity, String currentStockPrice) {
+                                             int orderQuantity, int currentStockPrice) {
         return new StockItemDto(stockCode, stockNameKor, ORDER_DIVISION,
-                Integer.valueOf(orderQuantity), Integer.valueOf(currentStockPrice));
+                orderQuantity, currentStockPrice);
     }
 }

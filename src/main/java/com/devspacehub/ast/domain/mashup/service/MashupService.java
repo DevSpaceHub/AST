@@ -81,7 +81,7 @@ public class MashupService {
             }
         }
 
-        // 2. 현재가 시세 조회하여 매수할 종목 선택
+        // 2. 종목 선택 (거래량 순위 API) 및 매입수량 결정 (현재가 시세 조회 API)
         TradingService tradingService = orderTradingServiceFactory.getServiceImpl(DOMESTIC_STOCK_BUY_ORDER);
         List<StockItemDto> stockItems = tradingService.pickStockItems(items);
         log.info("매수 선택 종목 : {}", stockItems.size());
