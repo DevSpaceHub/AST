@@ -36,7 +36,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_BUY_ORDER;
-import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
+import static com.devspacehub.ast.common.constant.YesNoStatus.YES;
 
 /**
  * 주식 주문 서비스 구현체 - 매수
@@ -179,9 +179,9 @@ public class BuyOrderServiceImpl extends TradingService {
      * @return
      */
     private boolean checkAccordingWithIndicators(CurrentStockPriceInfo currentStockPriceInfo) {
-        if (NO.getCode().equals(currentStockPriceInfo.getInvtCarefulYn()) ||
-                NO.getCode().equals(currentStockPriceInfo.getShortOverYn()) ||
-                NO.getCode().equals(currentStockPriceInfo.getDelistingYn())) {
+        if (YES.getCode().equals(currentStockPriceInfo.getInvtCarefulYn()) ||
+                YES.getCode().equals(currentStockPriceInfo.getShortOverYn()) ||
+                YES.getCode().equals(currentStockPriceInfo.getDelistingYn())) {
             return false;
         }
         if (Strings.isEmpty(currentStockPriceInfo.getPer()) || Strings.isEmpty(currentStockPriceInfo.getPbr())) {
