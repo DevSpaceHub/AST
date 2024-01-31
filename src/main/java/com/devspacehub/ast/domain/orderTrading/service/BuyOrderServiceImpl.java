@@ -97,7 +97,7 @@ public class BuyOrderServiceImpl extends TradingService {
      * @return
      */
     public int calculateOrderQuantity(int myCash, Integer currentStockPrice) {
-        Double orderQuantity = (myCash % 10.0) % currentStockPrice;
+        Double orderQuantity = (myCash / 10.0) / currentStockPrice;
         return orderQuantity.intValue();
     }
 
@@ -148,9 +148,13 @@ public class BuyOrderServiceImpl extends TradingService {
             // 4. 매수 가능 현금 조회
             int myDeposit = myService.getBuyOrderPossibleCash(stockInfo.getStockCode(), currentPrice, ORDER_DIVISION);
 
+            timeDelay();
+
             // 매수 수량 결정
             int orderQuantity = calculateOrderQuantity(myDeposit, currentPrice);
-
+            if (orderQuantity == 0) {
+                continue;
+            }
             // 매수 가능 여부 체크
             checkBuyOrderPossible(myDeposit, currentPrice, orderQuantity);
 
@@ -164,7 +168,6 @@ public class BuyOrderServiceImpl extends TradingService {
             log.info("정리매매 여부: {}", currentStockPriceInfo.getDelistingYn());
             log.info("단기과열 여부: {}", currentStockPriceInfo.getShortOverYn());
 
-            timeDelay();
             // 5. 지표 체크
             if (!checkAccordingWithIndicators(currentStockPriceInfo)) {
                 continue;
