@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
     <Properties>
-        <Property name="logFileName">application</Property>
+        <Property name="LOG_FILE_NAME">application-beta</Property>
         <Property name="BASE_DIR">./logs</Property>
         <Property name="LOG_FORMAT">[%date{yyyy-MM-dd HH:mm:ss}] %level %logger{36}(%file:%line) - %msg%n</Property>
     </Properties>
@@ -13,8 +13,8 @@
         </Console>
         <!-- file output -->
         <RollingFile name="baseRollingAppender"
-                     fileName="${BASE_DIR}/application.log"
-                     filePattern="${BASE_DIR}/application.%d{yyyyMMdd}.log">
+                     fileName="${BASE_DIR}/${LOG_FILE_NAME}.log"
+                     filePattern="${BASE_DIR}/${LOG_FILE_NAME}.%d{yyyyMMdd}.log">
             <PatternLayout pattern="${LOG_FORMAT}"/>
             <Policies>
                 <SizeBasedTriggeringPolicy size="200KB"/>
@@ -26,8 +26,8 @@
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
-        <RollingFile name="errorRollingAppender" fileName="${BASE_DIR}/error/${logFileName}-error.log"
-                     filePattern="${BASE_DIR}/error/${logFileName}-error.%d{yyyyMMdd}.log">
+        <RollingFile name="errorRollingAppender" fileName="${BASE_DIR}/error/${LOG_FILE_NAME}-error.log"
+                     filePattern="${BASE_DIR}/error/${LOG_FILE_NAME}-error.%d{yyyyMMdd}.log">
             <PatternLayout pattern="${LOG_FORMAT}"/>
             <LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
             <Policies>
