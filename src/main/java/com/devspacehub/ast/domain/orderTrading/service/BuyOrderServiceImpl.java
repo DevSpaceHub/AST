@@ -30,6 +30,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -141,6 +144,11 @@ public class BuyOrderServiceImpl extends TradingService {
             if (1 > itemInfoRepository.countByItemCode(stockInfo.getStockCode())) {
                 continue;
             }
+            if (isAlreadyOrderedStockCode(stockInfo.getStockCode(), stockItems.getResultCode())) {
+                log.info("오늘 이미 매수된 종목입니다.({})", stockInfo.getStockCode());
+                continue;
+            }
+
             // 3. 현재가 시세 조회
             CurrentStockPriceInfo currentStockPriceInfo = marketStatusService.getCurrentStockPrice(stockInfo.getStockCode()).getCurrentStockPriceInfo();
             int currentPrice = Integer.parseInt(currentStockPriceInfo.getCurrentStockPrice());
@@ -180,8 +188,17 @@ public class BuyOrderServiceImpl extends TradingService {
                     .currentStockPrice(currentPrice)
                     .build());
         }
-
         return pickedStockItems;
+    }
+
+    protected boolean isAlreadyOrderedStockCode(String stockCode, String resultCode) {
+        LocalDateTime start = LocalDateTime.of(LocalDate.now(), LocalTime.of(8,59,0));
+        LocalDateTime end = LocalDateTime.of(LocalDate.now(), LocalTime.of(15,0,0));
+
+        log.error("========start : {}", start);
+        log.error("========end : {}", end);
+        return orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
+                stockCode, resultCode, txIdBuyOrder, start, end) > 0;
     }
 
     /**
