@@ -12,6 +12,9 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+server:
+  port: 8081
+
 logging:
   config: classpath:log4j2/log4j2-${spring.profiles.active}.xml
 
@@ -93,6 +96,9 @@ spring:
     hibernate:
       ddl-auto: none
     defer-datasource-initialization: false #true
+
+server:
+  port: 8080
 
 logging:
   level:

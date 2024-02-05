@@ -79,8 +79,8 @@ public class SellOrderServiceImpl extends TradingService {
         List<StockItemDto> pickedStockItems = new ArrayList<>();
 
         for (StockBalanceExternalResDto.MyStockBalance myStockBalance : stockBalanceResponse.getMyStockBalance()) {
-            Float evaluateEarningRate = Float.valueOf(myStockBalance.getEvaluateEarningRate());
-            if (checkIsSellStockItem(evaluateEarningRate)) {
+            Float evaluateProfitLossRate = Float.valueOf(myStockBalance.getEvaluateProfitLossRate());
+            if (checkIsSellStockItem(evaluateProfitLossRate)) {
                 pickedStockItems.add(StockItemDto.builder()
                         .stockCode(myStockBalance.getStockCode())
                         .stockNameKor(myStockBalance.getStockName())
@@ -92,8 +92,8 @@ public class SellOrderServiceImpl extends TradingService {
         return pickedStockItems;
     }
 
-    private boolean checkIsSellStockItem(Float evaluateEarningRate) {
-        return evaluateEarningRate > profitSellRatio || evaluateEarningRate < stopLossSellRatio;  // 수익 매도(>10%) or 손절 매도(<-5.0%)
+    protected boolean checkIsSellStockItem(Float evaluateProfitLossRate) {
+        return evaluateProfitLossRate > profitSellRatio || evaluateProfitLossRate < stopLossSellRatio;  // 수익 매도 or 손절 매도
     }
 
     @Transactional
