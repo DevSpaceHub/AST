@@ -85,7 +85,7 @@ public class MyServiceImpl implements MyService {
             log.info("주식 종목 : {}({})", myStockBalance.getStockCode(), myStockBalance.getStockName());
             log.info("보유 수량 : {}", myStockBalance.getHoldingQuantity());
             log.info("현재가 : {}", myStockBalance.getCurrentPrice());
-            log.info("평가수익율 : {}", myStockBalance.getEvaluateEarningRate());
+            log.info("평가손익율 : {}", myStockBalance.getEvaluateProfitLossRate());
         }
 
         return responseDto;
