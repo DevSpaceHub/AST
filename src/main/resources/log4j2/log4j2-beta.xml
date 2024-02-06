@@ -2,7 +2,7 @@
 <Configuration>
     <Properties>
         <Property name="LOG_FILE_NAME">application-beta</Property>
-        <Property name="BASE_DIR">./logs</Property>
+        <Property name="BASE_DIR">/www/ast/logs</Property>
         <Property name="LOG_FORMAT">[%date{yyyy-MM-dd HH:mm:ss}] %level %logger{36}(%file:%line) - %msg%n</Property>
     </Properties>
 
