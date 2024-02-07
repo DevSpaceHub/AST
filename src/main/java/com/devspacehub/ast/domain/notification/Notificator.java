@@ -56,7 +56,8 @@ public class Notificator {
                     .headers(headers)
                     .bodyValue(requestBody)
                     .retrieve()
-                    .bodyToMono(Void.class);
+                    .toBodilessEntity()
+                    .block();
 
         } catch (Exception ex) {
             if (ex instanceof WebClientResponseException && HttpStatus.NO_CONTENT.equals(((WebClientResponseException) ex).getStatusCode())) {
