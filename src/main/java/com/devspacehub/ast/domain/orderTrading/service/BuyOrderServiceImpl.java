@@ -20,7 +20,6 @@ import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
-import com.devspacehub.ast.exception.error.NotEnoughCashException;
 import com.devspacehub.ast.openApiUtil.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +37,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION;
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_BUY_ORDER;
 import static com.devspacehub.ast.common.constant.YesNoStatus.YES;
@@ -105,14 +105,10 @@ public class BuyOrderServiceImpl extends TradingService {
     }
 
     /**
-     * 매수 가능한 종목인지 체크
+     * 매수 수량이 0이면 매수 불가능.
      */
-    public void checkBuyOrderPossible(int myDeposit, int orderPrice, int orderQuantity) {
-        if (orderPrice * orderQuantity <= myDeposit) {
-            return;
-        }
-        log.info("매수 주문 금액이 부족합니다. (예수금: {})", myDeposit);
-        throw new NotEnoughCashException();
+    public boolean checkOrderImpossible(int orderQuantity) {
+        return orderQuantity == 0;
     }
 
     private boolean isStockMarketClosed(String messageCode) {
@@ -144,8 +140,7 @@ public class BuyOrderServiceImpl extends TradingService {
             if (1 > itemInfoRepository.countByItemCode(stockInfo.getStockCode())) {
                 continue;
             }
-            if (isAlreadyOrderedStockCode(stockInfo.getStockCode(), stockItems.getResultCode())) {
-                log.info("오늘 이미 매수된 종목입니다.({})", stockInfo.getStockCode());
+            if (!isOrderable(stockInfo.getStockCode())) {
                 continue;
             }
 
@@ -160,13 +155,12 @@ public class BuyOrderServiceImpl extends TradingService {
 
             // 매수 수량 결정
             int orderQuantity = calculateOrderQuantity(myDeposit, currentPrice);
-            if (orderQuantity == 0) {
+            if (checkOrderImpossible(orderQuantity)) {
+                log.info("매수 주문 금액이 부족합니다. (예수금: {})", myDeposit);
                 continue;
             }
-            // 매수 가능 여부 체크
-            checkBuyOrderPossible(myDeposit, currentPrice, orderQuantity);
 
-            log.info("종목코드: {}", stockInfo.getStockCode());
+            log.info("종목: {}({})", stockInfo.getStockCode(), stockInfo.getHtsStockNameKor());
             log.info("현재가: {}", currentPrice);
             log.info("HTS 시가 총액: {}", currentStockPriceInfo.getHtsMarketCapitalization());
             log.info("누적 거래량: {}", currentStockPriceInfo.getAccumulationVolume());
@@ -191,16 +185,23 @@ public class BuyOrderServiceImpl extends TradingService {
         return pickedStockItems;
     }
 
-    protected boolean isAlreadyOrderedStockCode(String stockCode, String resultCode) {
-        LocalDateTime start = LocalDateTime.of(LocalDate.now(), LocalTime.of(8,59,0));
-        LocalDateTime end = LocalDateTime.of(LocalDate.now(), LocalTime.of(15,0,0));
-
-        log.error("========start : {}", start);
-        log.error("========end : {}", end);
-        return orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
-                stockCode, resultCode, txIdBuyOrder, start, end) > 0;
+    /**
+     * 매수 가능한지 체크.
+     * @param stockCode
+     * @return
+     */
+    protected boolean isOrderable(String stockCode) {
+        if (itemInfoRepository.countByItemCode(stockCode) < 1) {
+            return false;
+        }
+        return isNewOrder(stockCode);
     }
-
+    public boolean isNewOrder(String stockCode){
+        return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
+                stockCode, OPENAPI_SUCCESS_RESULT_CODE, txIdBuyOrder,
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(8,59,0)),
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(15,0,0)));
+    }
     /**
      * KIS Open API를 초당 2회 이상 호출하지 않기 위해 시간 지연 수행.
      */

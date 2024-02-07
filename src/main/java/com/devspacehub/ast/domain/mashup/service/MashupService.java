@@ -93,7 +93,9 @@ public class MashupService {
             OrderTrading orderTrading = createOrderFromDTOs(item, result, txIdBuyOrder);
             orderTradings.add(orderTrading);
 
-            notificator.sendMessage(DOMESTIC_STOCK_BUY_ORDER, accountStatusKor, orderTrading);
+            if (result.isSuccess()) {
+                notificator.sendMessage(DOMESTIC_STOCK_BUY_ORDER, accountStatusKor, orderTrading);
+            }
         }
         // 4. 주문거래 정보 저장
         tradingService.saveInfos(orderTradings);
@@ -126,12 +128,14 @@ public class MashupService {
             OrderTrading orderTrading = createOrderFromDTOs(item, result, txIdSellOrder);
             orderTradings.add(orderTrading);
 
-            String accountStatusKor = Boolean.TRUE.equals(isProdActive()) ? REAL_ACCOUNT_STATUS_KOR : TEST_ACCOUNT_STATUS_KOR;
-            notificator.sendMessage(DOMESTIC_STOCK_SELL_ORDER, accountStatusKor, orderTrading);
+            if (result.isSuccess()) {
+                String accountStatusKor = Boolean.TRUE.equals(isProdActive()) ? REAL_ACCOUNT_STATUS_KOR : TEST_ACCOUNT_STATUS_KOR;
+                notificator.sendMessage(DOMESTIC_STOCK_SELL_ORDER, accountStatusKor, orderTrading);
+            }
         }
 
         // 3. 주문한 것 있으면 주문 거래 정보 저장
-        tradingService.saveInfos(orderTradings);
+      tradingService.saveInfos(orderTradings);
     }
 
     private OrderTrading createOrderFromDTOs(StockItemDto item, DomesticStockOrderExternalResDto result, String txId) {

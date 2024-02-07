@@ -32,4 +32,12 @@ public abstract class TradingService {
      * 주식 주문 정보 저장.
      */
     public abstract void saveInfos(List<OrderTrading> orderTradingInfos);
+
+    /**
+     * 금일 한번도 매수/매도 주문되지 않은 종목인지 체크.
+     * @param stockCode
+     * @return
+     */
+    public abstract boolean isNewOrder(String stockCode);
+
 }

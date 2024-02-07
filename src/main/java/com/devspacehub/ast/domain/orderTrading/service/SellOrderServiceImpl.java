@@ -24,10 +24,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_SELL_ORDER;
 
 /**
@@ -56,7 +60,6 @@ public class SellOrderServiceImpl extends TradingService {
      */
     @Override
     public DomesticStockOrderExternalResDto order(StockItemDto stockItem) {
-        // 1. 조건 체크
         Consumer<HttpHeaders> httpHeaders = DomesticStockOrderExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdSellOrder);
         DomesticStockOrderExternalReqDto bodyDto = DomesticStockOrderExternalReqDto.builder()
                 .accntNumber(openApiProperties.getAccntNumber())
@@ -79,15 +82,19 @@ public class SellOrderServiceImpl extends TradingService {
         List<StockItemDto> pickedStockItems = new ArrayList<>();
 
         for (StockBalanceExternalResDto.MyStockBalance myStockBalance : stockBalanceResponse.getMyStockBalance()) {
+            // 지표 체크
             Float evaluateProfitLossRate = Float.valueOf(myStockBalance.getEvaluateProfitLossRate());
-            if (checkIsSellStockItem(evaluateProfitLossRate)) {
-                pickedStockItems.add(StockItemDto.builder()
-                        .stockCode(myStockBalance.getStockCode())
-                        .stockNameKor(myStockBalance.getStockName())
-                        .orderQuantity(Integer.parseInt(myStockBalance.getHoldingQuantity()))     // 전량 매도
-                        .currentStockPrice(Integer.parseInt(myStockBalance.getCurrentPrice()))
-                        .build());
+            checkIsSellStockItem(evaluateProfitLossRate);
+
+            if (!isNewOrder(myStockBalance.getStockCode())) {
+                continue;
             }
+            pickedStockItems.add(StockItemDto.builder()
+                    .stockCode(myStockBalance.getStockCode())
+                    .stockNameKor(myStockBalance.getStockName())
+                    .orderQuantity(Integer.parseInt(myStockBalance.getHoldingQuantity()))     // 전량 매도
+                    .currentStockPrice(Integer.parseInt(myStockBalance.getCurrentPrice()))
+                    .build());
         }
         return pickedStockItems;
     }
@@ -103,4 +110,20 @@ public class SellOrderServiceImpl extends TradingService {
             orderTradingRepository.saveAll(orderTradingInfos);
         }
     }
+
+    /**
+     * 매수됐지만 체결되지 않은 종목은 주문하지 않는다.
+     * 매수됐던 이력도 없다면 주문할 수 있다.
+     * @param stockCode
+     * @return
+     */
+    public boolean isNewOrder(String stockCode){
+        // 주문 가능 수량 초과 시 주문 불가.
+        return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
+                stockCode, OPENAPI_SUCCESS_RESULT_CODE, txIdSellOrder,
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 59, 0)),
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(15, 0, 0))
+        );
+    }
+
 }
