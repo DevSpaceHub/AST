@@ -107,7 +107,7 @@ public class BuyOrderServiceImpl extends TradingService {
     /**
      * 매수 수량이 0이면 매수 불가능.
      */
-    public boolean checkOrderImpossible(int orderQuantity) {
+    public boolean isZero(int orderQuantity) {
         return orderQuantity == 0;
     }
 
@@ -136,27 +136,22 @@ public class BuyOrderServiceImpl extends TradingService {
         int count = 0;
         while (count++ < 10) {
             StockInfo stockInfo = stockItems.getStockInfos().get(count);
-            // 2. valid check
-            if (1 > itemInfoRepository.countByItemCode(stockInfo.getStockCode())) {
-                continue;
-            }
-            if (!isOrderable(stockInfo.getStockCode())) {
+            // 1. 매수 가능 여부 체크
+            if (!isStockItemBuyOrderable(stockInfo)) {
                 continue;
             }
 
-            // 3. 현재가 시세 조회
+            // 2. 현재가 시세 조회
             CurrentStockPriceInfo currentStockPriceInfo = marketStatusService.getCurrentStockPrice(stockInfo.getStockCode()).getCurrentStockPriceInfo();
             int currentPrice = Integer.parseInt(currentStockPriceInfo.getCurrentStockPrice());
 
-            // 4. 매수 가능 현금 조회
             int myDeposit = myService.getBuyOrderPossibleCash(stockInfo.getStockCode(), currentPrice, ORDER_DIVISION);
 
             timeDelay();
 
-            // 매수 수량 결정
             int orderQuantity = calculateOrderQuantity(myDeposit, currentPrice);
-            if (checkOrderImpossible(orderQuantity)) {
-                log.info("매수 주문 금액이 부족합니다. (예수금: {})", myDeposit);
+            if (isZero(orderQuantity)) {
+                log.info("매수 주문 금액이 부족.(종목명: {}, 예수금: {})", stockInfo.getHtsStockNameKor(), myDeposit);
                 continue;
             }
 
@@ -170,11 +165,10 @@ public class BuyOrderServiceImpl extends TradingService {
             log.info("정리매매 여부: {}", currentStockPriceInfo.getDelistingYn());
             log.info("단기과열 여부: {}", currentStockPriceInfo.getShortOverYn());
 
-            // 5. 지표 체크
+            // 3. 지표 체크
             if (!checkAccordingWithIndicators(currentStockPriceInfo)) {
                 continue;
             }
-
             pickedStockItems.add(StockItemDto.builder()
                     .stockCode(stockInfo.getStockCode())
                     .stockNameKor(stockInfo.getHtsStockNameKor())
@@ -186,16 +180,25 @@ public class BuyOrderServiceImpl extends TradingService {
     }
 
     /**
-     * 매수 가능한지 체크.
+     * 매수 가능한지 체크
+     * @param stockInfo
+     * @return
+     */
+    private boolean isStockItemBuyOrderable(StockInfo stockInfo) {
+        if (1 > itemInfoRepository.countByItemCode(stockInfo.getStockCode())) {
+            return false;
+        }
+        if (itemInfoRepository.countByItemCode(stockInfo.getStockCode()) < 1) {
+            return false;
+        }
+        return isNewOrder(stockInfo.getStockCode());
+    }
+
+    /**
+     * 종목에 대해 새 주문인지 체크
      * @param stockCode
      * @return
      */
-    protected boolean isOrderable(String stockCode) {
-        if (itemInfoRepository.countByItemCode(stockCode) < 1) {
-            return false;
-        }
-        return isNewOrder(stockCode);
-    }
     public boolean isNewOrder(String stockCode){
         return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
                 stockCode, OPENAPI_SUCCESS_RESULT_CODE, txIdBuyOrder,
@@ -219,7 +222,7 @@ public class BuyOrderServiceImpl extends TradingService {
      * @param currentStockPriceInfo
      * @return
      */
-    private boolean checkAccordingWithIndicators(CurrentStockPriceInfo currentStockPriceInfo) {
+    protected boolean checkAccordingWithIndicators(CurrentStockPriceInfo currentStockPriceInfo) {
         if (YES.getCode().equals(currentStockPriceInfo.getInvtCarefulYn()) ||
                 YES.getCode().equals(currentStockPriceInfo.getShortOverYn()) ||
                 YES.getCode().equals(currentStockPriceInfo.getDelistingYn())) {
