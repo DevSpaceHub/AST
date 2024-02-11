@@ -82,13 +82,10 @@ public class SellOrderServiceImpl extends TradingService {
         List<StockItemDto> pickedStockItems = new ArrayList<>();
 
         for (StockBalanceExternalResDto.MyStockBalance myStockBalance : stockBalanceResponse.getMyStockBalance()) {
-            // 지표 체크
-            Float evaluateProfitLossRate = Float.valueOf(myStockBalance.getEvaluateProfitLossRate());
-            checkIsSellStockItem(evaluateProfitLossRate);
-
-            if (!isNewOrder(myStockBalance.getStockCode())) {
+            if (!isStockItemSellOrderable(myStockBalance)) {
                 continue;
             }
+
             pickedStockItems.add(StockItemDto.builder()
                     .stockCode(myStockBalance.getStockCode())
                     .stockNameKor(myStockBalance.getStockName())
@@ -99,7 +96,33 @@ public class SellOrderServiceImpl extends TradingService {
         return pickedStockItems;
     }
 
-    protected boolean checkIsSellStockItem(Float evaluateProfitLossRate) {
+    /**
+     * 주식 매도할 수 있는 종목인지 체크.
+     * @param myStockBalance
+     * @return
+     */
+    protected boolean isStockItemSellOrderable(StockBalanceExternalResDto.MyStockBalance myStockBalance) {
+        if (compareEvaluateProfitLossRate(myStockBalance.getEvaluateProfitLossRate())) {
+            return true;
+        }
+
+        if (isNewOrder(myStockBalance.getStockCode())) {
+            return true;
+        }
+        // 이미 체결된 주식인지 체크 (KIS : 체결 + 2일동안 0으로 응답함)
+        return 0 != Integer.valueOf(myStockBalance.getHoldingQuantity());
+    }
+
+    /**
+     * 평균 손익률과 비교. 수익/손절 매도에 부합하면 true.
+     * 수익 매도 : 평균 손익률 > 10%
+     * 손절 매도 : 평균 손익률 < -5%
+     * @param evaluateProfitLossRateStr
+     * @return
+     */
+    protected boolean compareEvaluateProfitLossRate(String evaluateProfitLossRateStr) {
+        Float evaluateProfitLossRate = Float.valueOf(evaluateProfitLossRateStr);
+
         return evaluateProfitLossRate > profitSellRatio || evaluateProfitLossRate < stopLossSellRatio;  // 수익 매도 or 손절 매도
     }
 
@@ -121,8 +144,8 @@ public class SellOrderServiceImpl extends TradingService {
         // 주문 가능 수량 초과 시 주문 불가.
         return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
                 stockCode, OPENAPI_SUCCESS_RESULT_CODE, txIdSellOrder,
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 59, 0)),
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(15, 0, 0))
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 0)),
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59))
         );
     }
 
