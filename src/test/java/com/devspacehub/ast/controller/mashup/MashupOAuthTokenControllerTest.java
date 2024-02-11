@@ -38,6 +38,7 @@ class MashupOAuthTokenControllerTest {
                 post("/ast/token")
                 ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").exists())
+                .andExpect(jsonPath("$.time").exists())
                 .andExpect(jsonPath("$.code").exists())
                 .andDo(print());
 
