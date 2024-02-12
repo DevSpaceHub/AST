@@ -46,8 +46,8 @@ public class OrderTrading extends OrderTradingBaseEntity {
     @Column(name = "order_quantity")
     private Integer orderQuantity;
 
-    @Column(name = "order_datetime")
-    private String orderDateTime;   // HHMMSS
+    @Column(name = "order_time")
+    private String orderTime;   // HHMMSS
 
     @Column(name = "order_result_code")
     private String orderResultCode;

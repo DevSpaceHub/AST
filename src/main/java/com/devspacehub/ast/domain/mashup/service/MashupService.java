@@ -150,7 +150,7 @@ public class MashupService {
                 .orderMessageCode(result.getMessageCode())
                 .orderMessage(result.getMessage())
                 .orderNumber(result.isSuccess() ? result.getOutput().getOrderNumber() : null)
-                .orderDateTime(result.isSuccess() ? result.getOutput().getOrderDateTime() : null)
+                .orderTime(result.isSuccess() ? result.getOutput().getOrderTime() : null)
                 .build();
     }
 
