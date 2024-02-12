@@ -102,15 +102,15 @@ public class SellOrderServiceImpl extends TradingService {
      * @return
      */
     protected boolean isStockItemSellOrderable(StockBalanceExternalResDto.MyStockBalance myStockBalance) {
+        // 이미 체결된 주식인지 체크 (KIS : 체결 + 2일동안 0으로 응답함)
+        if (0 == Integer.valueOf(myStockBalance.getHoldingQuantity())) {
+            return false;
+        }
+
         if (compareEvaluateProfitLossRate(myStockBalance.getEvaluateProfitLossRate())) {
             return true;
         }
-
-        if (isNewOrder(myStockBalance.getStockCode())) {
-            return true;
-        }
-        // 이미 체결된 주식인지 체크 (KIS : 체결 + 2일동안 0으로 응답함)
-        return 0 != Integer.valueOf(myStockBalance.getHoldingQuantity());
+        return isNewOrder(myStockBalance.getStockCode());
     }
 
     /**
