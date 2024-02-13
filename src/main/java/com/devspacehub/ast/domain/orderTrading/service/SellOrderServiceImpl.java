@@ -107,20 +107,20 @@ public class SellOrderServiceImpl extends TradingService {
             return false;
         }
 
-        if (compareEvaluateProfitLossRate(myStockBalance.getEvaluateProfitLossRate())) {
-            return true;
+        if (isEvaluateProfitLossRateBetweenProfitAndStopLossPercent(myStockBalance.getEvaluateProfitLossRate())) {
+            return false;
         }
         return isNewOrder(myStockBalance.getStockCode());
     }
 
     /**
-     * 평균 손익률과 비교. 수익/손절 매도에 부합하면 true.
+     * 평균 손익률과 비교. 수익/손절 매도 지표 사이에 해당하면 false. 수익이거나 손절이면 true.
      * 수익 매도 : 평균 손익률 > 10%
      * 손절 매도 : 평균 손익률 < -5%
      * @param evaluateProfitLossRateStr
      * @return
      */
-    protected boolean compareEvaluateProfitLossRate(String evaluateProfitLossRateStr) {
+    protected boolean isEvaluateProfitLossRateBetweenProfitAndStopLossPercent(String evaluateProfitLossRateStr) {
         Float evaluateProfitLossRate = Float.valueOf(evaluateProfitLossRateStr);
 
         return evaluateProfitLossRate > profitSellRatio || evaluateProfitLossRate < stopLossSellRatio;  // 수익 매도 or 손절 매도
