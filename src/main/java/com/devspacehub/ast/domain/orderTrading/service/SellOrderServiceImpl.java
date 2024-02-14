@@ -114,7 +114,7 @@ public class SellOrderServiceImpl extends TradingService {
     }
 
     /**
-     * 평균 손익률과 비교. 수익/손절 매도 지표 사이에 해당하면 false. 수익이거나 손절이면 true.
+     * 평균 손익률과 비교. 수익/손절 매도 지표 사이 값이면 True. 그 반대(수익이거나 손절)면 False.
      * 수익 매도 : 평균 손익률 > 10%
      * 손절 매도 : 평균 손익률 < -5%
      * @param evaluateProfitLossRateStr
@@ -123,7 +123,7 @@ public class SellOrderServiceImpl extends TradingService {
     protected boolean isEvaluateProfitLossRateBetweenProfitAndStopLossPercent(String evaluateProfitLossRateStr) {
         Float evaluateProfitLossRate = Float.valueOf(evaluateProfitLossRateStr);
 
-        return evaluateProfitLossRate > profitSellRatio || evaluateProfitLossRate < stopLossSellRatio;  // 수익 매도 or 손절 매도
+        return stopLossSellRatio <= evaluateProfitLossRate && evaluateProfitLossRate <= profitSellRatio;  // 수익 매도 or 손절 매도
     }
 
     @Transactional

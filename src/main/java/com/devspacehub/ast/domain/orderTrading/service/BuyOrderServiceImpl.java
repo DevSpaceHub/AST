@@ -151,19 +151,19 @@ public class BuyOrderServiceImpl extends TradingService {
 
             int orderQuantity = calculateOrderQuantity(myDeposit, currentPrice);
             if (isZero(orderQuantity)) {
-                log.info("매수 주문 금액이 부족.(종목명: {}, 예수금: {})", stockInfo.getHtsStockNameKor(), myDeposit);
+                log.info("[buy] 매수 주문 금액이 부족.(종목명: {}, 예수금: {})", stockInfo.getHtsStockNameKor(), myDeposit);
                 continue;
             }
 
-            log.info("종목: {}({})", stockInfo.getStockCode(), stockInfo.getHtsStockNameKor());
-            log.info("현재가: {}", currentPrice);
-            log.info("HTS 시가 총액: {}", currentStockPriceInfo.getHtsMarketCapitalization());
-            log.info("누적 거래량: {}", currentStockPriceInfo.getAccumulationVolume());
-            log.info("PER: {}", Objects.isNull(currentStockPriceInfo.getPer()) ? "Null" : currentStockPriceInfo.getPer());
-            log.info("PBR: {}", Objects.isNull(currentStockPriceInfo.getPbr()) ? "Null" : currentStockPriceInfo.getPbr());
-            log.info("투자유의 여부: {}", currentStockPriceInfo.getInvtCarefulYn());
-            log.info("정리매매 여부: {}", currentStockPriceInfo.getDelistingYn());
-            log.info("단기과열 여부: {}", currentStockPriceInfo.getShortOverYn());
+            log.info("[buy] 종목: {}({})", stockInfo.getStockCode(), stockInfo.getHtsStockNameKor());
+            log.info("[buy] 현재가: {}", currentPrice);
+            log.info("[buy] HTS 시가 총액: {}", currentStockPriceInfo.getHtsMarketCapitalization());
+            log.info("[buy] 누적 거래량: {}", currentStockPriceInfo.getAccumulationVolume());
+            log.info("[buy] PER: {}", Objects.isNull(currentStockPriceInfo.getPer()) ? "Null" : currentStockPriceInfo.getPer());
+            log.info("[buy] PBR: {}", Objects.isNull(currentStockPriceInfo.getPbr()) ? "Null" : currentStockPriceInfo.getPbr());
+            log.info("[buy] 투자유의 여부: {}", currentStockPriceInfo.getInvtCarefulYn());
+            log.info("[buy] 정리매매 여부: {}", currentStockPriceInfo.getDelistingYn());
+            log.info("[buy] 단기과열 여부: {}", currentStockPriceInfo.getShortOverYn());
 
             // 3. 지표 체크
             if (!checkAccordingWithIndicators(currentStockPriceInfo)) {

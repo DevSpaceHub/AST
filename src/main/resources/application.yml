@@ -104,3 +104,7 @@ logging:
   level:
     org.hibernate:
       SQL: error
+
+notify:
+  discord-webhook:
+    url: https://discord.com/api/webhooks/1207310185216081960/kMoNygVLXY-0Gth4gz1LP8Nobkt9aa50z0CENUCHKw9jDEFNZmJXev8VVYwUzibfbRmQ
