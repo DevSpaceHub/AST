@@ -45,19 +45,19 @@ class SellOrderServiceImplTest {
     }
 
     @Test
-    @DisplayName("평가손익률이 지표에 부합하다면 True 반환한다. 반대는 False")
-    void isSellStockItem() {
+    @DisplayName("평가손익률이 지표 사이에 있다면 True 반환한다. 반대는 False")
+    void isEvaluateProfitLossRateBetweenProfitAndStopLossPercent() {
         // True
         final String lossEvaluateProfitLossRate = "10.01";
-        assertThat(sellOrderService.compareEvaluateProfitLossRate(lossEvaluateProfitLossRate)).isTrue();
+        assertThat(sellOrderService.isEvaluateProfitLossRateBetweenProfitAndStopLossPercent(lossEvaluateProfitLossRate)).isFalse();
 
         final String profitEvaluateLossRate = "-5.1";
-        assertThat(sellOrderService.compareEvaluateProfitLossRate(profitEvaluateLossRate)).isTrue();
+        assertThat(sellOrderService.isEvaluateProfitLossRateBetweenProfitAndStopLossPercent(profitEvaluateLossRate)).isFalse();
 
         // False
         final String unsoldLossEvaluateProfitLossRate = "9.99";
-        assertThat(sellOrderService.compareEvaluateProfitLossRate(unsoldLossEvaluateProfitLossRate)).isFalse();
+        assertThat(sellOrderService.isEvaluateProfitLossRateBetweenProfitAndStopLossPercent(unsoldLossEvaluateProfitLossRate)).isTrue();
         final String unsoldProfitEvaluateProfitLossRate = "-0.22";
-        assertThat(sellOrderService.compareEvaluateProfitLossRate(unsoldProfitEvaluateProfitLossRate)).isFalse();
+        assertThat(sellOrderService.isEvaluateProfitLossRateBetweenProfitAndStopLossPercent(unsoldProfitEvaluateProfitLossRate)).isTrue();
     }
 }
