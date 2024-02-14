@@ -92,7 +92,7 @@ public class Notificator {
     public String createMessage(OpenApiType openApiType, String accountStatusKor, OrderTrading orderTrading) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("[").append(orderTrading.getOrderTime()).append("] ").append("주문완료");
+        sb.append("**[").append(orderTrading.getOrderTime()).append("] ").append("주문완료**");
         sb.append("\n계좌 상태 : ").append(accountStatusKor);
         sb.append("\n종목명 : ").append(orderTrading.getItemNameKor()).
                 append(" (").append(orderTrading.getItemCode()).append(")");
