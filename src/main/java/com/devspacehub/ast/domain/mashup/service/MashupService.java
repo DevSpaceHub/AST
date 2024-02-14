@@ -84,7 +84,7 @@ public class MashupService {
         // 2. 종목 선택 (거래량 순위 API) 및 매입수량 결정 (현재가 시세 조회 API)
         TradingService tradingService = orderTradingServiceFactory.getServiceImpl(DOMESTIC_STOCK_BUY_ORDER);
         List<StockItemDto> stockItems = tradingService.pickStockItems(items);
-        log.info("매수 선택 종목 : {}", stockItems.size());
+        log.info("[buy] 최종 매수 가능 종목 : {}", stockItems.size());
 
         // 3. 매수
         List<OrderTrading> orderTradings = new ArrayList<>();
@@ -94,6 +94,7 @@ public class MashupService {
             orderTradings.add(orderTrading);
 
             if (result.isSuccess()) {
+                log.info("===== [buy] order success ({}) =====", item.getStockNameKor());
                 notificator.sendMessage(DOMESTIC_STOCK_BUY_ORDER, accountStatusKor, orderTrading);
             }
         }
@@ -129,6 +130,7 @@ public class MashupService {
             orderTradings.add(orderTrading);
 
             if (result.isSuccess()) {
+                log.info("===== [sell] order success ({}) =====", item.getStockNameKor());
                 String accountStatusKor = Boolean.TRUE.equals(isProdActive()) ? REAL_ACCOUNT_STATUS_KOR : TEST_ACCOUNT_STATUS_KOR;
                 notificator.sendMessage(DOMESTIC_STOCK_SELL_ORDER, accountStatusKor, orderTrading);
             }

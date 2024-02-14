@@ -57,10 +57,10 @@ public class MyServiceImpl implements MyService {
         if (!responseDto.isSuccess()) {
             throw new OpenApiFailedResponseException();
         }
-        log.info("응답 : {}", responseDto.getMessage());
-        log.info("주문 가능 현금 : {}", responseDto.getOutput().getOrderPossibleCash());
-        log.info("최대 구매 가능 금액 : {}", responseDto.getOutput().getMaxBuyAmount());
-        log.info("최대 구매 가능 수량 : {}", responseDto.getOutput().getMaxBuyQuantity());
+        log.info("[buy] 매수가능금액조회 : {}", responseDto.getMessage());
+        log.info("[buy] 주문 가능 현금 : {}", responseDto.getOutput().getOrderPossibleCash());
+        log.info("[buy] 최대 구매 가능 금액 : {}", responseDto.getOutput().getMaxBuyAmount());
+        log.info("[buy] 최대 구매 가능 수량 : {}", responseDto.getOutput().getMaxBuyQuantity());
         return Integer.valueOf(responseDto.getOutput().getOrderPossibleCash());
     }
 
@@ -80,12 +80,12 @@ public class MyServiceImpl implements MyService {
             throw new OpenApiFailedResponseException();
         }
         // log (TODO 삭제 예정)
-        log.info("응답 : {}", responseDto.getMessage());
+        log.info("[sell] 주식잔고조회 : {}", responseDto.getMessage());
         for(StockBalanceExternalResDto.MyStockBalance myStockBalance : responseDto.getMyStockBalance()) {
-            log.info("주식 종목 : {}({})", myStockBalance.getStockCode(), myStockBalance.getStockName());
-            log.info("보유 수량 : {}", myStockBalance.getHoldingQuantity());
-            log.info("현재가 : {}", myStockBalance.getCurrentPrice());
-            log.info("평가손익율 : {}", myStockBalance.getEvaluateProfitLossRate());
+            log.info("[sell] 1. 주식 종목 : {}({})", myStockBalance.getStockCode(), myStockBalance.getStockName());
+            log.info("[sell] 2. 보유 수량 : {}", myStockBalance.getHoldingQuantity());
+            log.info("[sell] 3. 현재가 : {}", myStockBalance.getCurrentPrice());
+            log.info("[sell] 4. 평가손익율 : {}", myStockBalance.getEvaluateProfitLossRate());
         }
 
         return responseDto;
