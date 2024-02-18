@@ -8,6 +8,8 @@
 
 package com.devspacehub.ast.domain.orderTrading;
 
+import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
+import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -58,4 +60,19 @@ public class OrderTrading extends OrderTradingBaseEntity {
     @Column(name = "order_message")
     private String orderMessage;
 
+    public static OrderTrading from(StockItemDto item, DomesticStockOrderExternalResDto result, String txIdBuyOrder) {
+        return OrderTrading.builder()
+                .itemCode(item.getStockCode())
+                .itemNameKor(item.getStockNameKor())
+                .transactionId(txIdBuyOrder)
+                .orderDivision(item.getOrderDivision())
+                .orderPrice(item.getCurrentStockPrice())
+                .orderQuantity(item.getOrderQuantity())
+                .orderResultCode(result.getResultCode())
+                .orderMessageCode(result.getMessageCode())
+                .orderMessage(result.getMessage())
+                .orderNumber(result.isSuccess() ? result.getOutput().getOrderNumber() : null)
+                .orderTime(result.isSuccess() ? result.getOutput().getOrderTime() : null)
+                .build();
+    }
 }

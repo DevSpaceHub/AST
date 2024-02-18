@@ -18,10 +18,10 @@ import java.util.List;
  * 분할 매수 전략 위한 퍼센트 관리 일급 컬렉션.
  */
 @Getter
-public class SplitBuy {
+public class SplitBuyPercents {
     List<Float> percents;
 
-    public SplitBuy() {
+    public SplitBuyPercents() {
         percents = new ArrayList<>(Arrays.asList(0.2F, 0.5F, 0.8F));
     }
 
