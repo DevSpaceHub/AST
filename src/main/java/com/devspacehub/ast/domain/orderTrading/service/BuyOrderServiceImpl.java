@@ -104,7 +104,7 @@ public class BuyOrderServiceImpl extends TradingService {
     }
 
     /**
-     * 매수 수량 구하기
+     * 매수 수량 구하기 (매수가능 현금 % {환경 변수}%) % 종목 현재가
      * 소수점 버림.
      * @param myCash
      * @param calculatedOrderPrice
