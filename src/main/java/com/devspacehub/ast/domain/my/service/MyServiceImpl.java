@@ -14,7 +14,7 @@ import com.devspacehub.ast.domain.my.dto.request.StockBalanceExternalReqDto;
 import com.devspacehub.ast.domain.my.dto.response.BuyPossibleCheckExternalResDto;
 import com.devspacehub.ast.domain.my.dto.response.StockBalanceExternalResDto;
 import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
-import com.devspacehub.ast.openApiUtil.OpenApiRequest;
+import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
