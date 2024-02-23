@@ -90,7 +90,7 @@ public class MashupService {
         List<OrderTrading> orderTradings = new ArrayList<>();
         for (StockItemDto item : stockItems) {
             DomesticStockOrderExternalResDto result = tradingService.order(item);
-            OrderTrading orderTrading = createOrderFromDTOs(item, result, txIdBuyOrder);
+            OrderTrading orderTrading = OrderTrading.from(item, result, txIdBuyOrder);
             orderTradings.add(orderTrading);
 
             if (result.isSuccess()) {
@@ -126,7 +126,7 @@ public class MashupService {
         List<OrderTrading> orderTradings = new ArrayList<>();
         for (StockItemDto item : tradingService.pickStockItems(myStockBalance)) {
             DomesticStockOrderExternalResDto result = tradingService.order(item);
-            OrderTrading orderTrading = createOrderFromDTOs(item, result, txIdSellOrder);
+            OrderTrading orderTrading = OrderTrading.from(item, result, txIdSellOrder);
             orderTradings.add(orderTrading);
 
             if (result.isSuccess()) {
@@ -138,22 +138,6 @@ public class MashupService {
 
         // 3. 주문한 것 있으면 주문 거래 정보 저장
       tradingService.saveInfos(orderTradings);
-    }
-
-    private OrderTrading createOrderFromDTOs(StockItemDto item, DomesticStockOrderExternalResDto result, String txId) {
-        return OrderTrading.builder()
-                .itemCode(item.getStockCode())
-                .itemNameKor(item.getStockNameKor())
-                .transactionId(txId)
-                .orderDivision(item.getOrderDivision())
-                .orderPrice(item.getCurrentStockPrice())
-                .orderQuantity(item.getOrderQuantity())
-                .orderResultCode(result.getResultCode())
-                .orderMessageCode(result.getMessageCode())
-                .orderMessage(result.getMessage())
-                .orderNumber(result.isSuccess() ? result.getOutput().getOrderNumber() : null)
-                .orderTime(result.isSuccess() ? result.getOutput().getOrderTime() : null)
-                .build();
     }
 
 }

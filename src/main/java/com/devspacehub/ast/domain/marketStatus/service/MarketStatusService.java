@@ -11,7 +11,7 @@ package com.devspacehub.ast.domain.marketStatus.service;
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.domain.marketStatus.dto.*;
 import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
-import com.devspacehub.ast.openApiUtil.OpenApiRequest;
+import com.devspacehub.ast.util.OpenApiRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
