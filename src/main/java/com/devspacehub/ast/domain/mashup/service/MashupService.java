@@ -139,4 +139,5 @@ public class MashupService {
         // 3. 주문한 것 있으면 주문 거래 정보 저장
       tradingService.saveInfos(orderTradings);
     }
+
 }

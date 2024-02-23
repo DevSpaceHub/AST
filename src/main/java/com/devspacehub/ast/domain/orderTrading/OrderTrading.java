@@ -60,11 +60,11 @@ public class OrderTrading extends OrderTradingBaseEntity {
     @Column(name = "order_message")
     private String orderMessage;
 
-    public static OrderTrading from(StockItemDto item, DomesticStockOrderExternalResDto result, String txIdBuyOrder) {
+    public static OrderTrading from(StockItemDto item, DomesticStockOrderExternalResDto result, String txId) {
         return OrderTrading.builder()
                 .itemCode(item.getStockCode())
                 .itemNameKor(item.getStockNameKor())
-                .transactionId(txIdBuyOrder)
+                .transactionId(txId)
                 .orderDivision(item.getOrderDivision())
                 .orderPrice(item.getOrderPrice())
                 .orderQuantity(item.getOrderQuantity())
