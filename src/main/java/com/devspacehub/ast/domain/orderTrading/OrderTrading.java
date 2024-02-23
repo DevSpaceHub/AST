@@ -66,7 +66,7 @@ public class OrderTrading extends OrderTradingBaseEntity {
                 .itemNameKor(item.getStockNameKor())
                 .transactionId(txIdBuyOrder)
                 .orderDivision(item.getOrderDivision())
-                .orderPrice(item.getCurrentStockPrice())
+                .orderPrice(item.getOrderPrice())
                 .orderQuantity(item.getOrderQuantity())
                 .orderResultCode(result.getResultCode())
                 .orderMessageCode(result.getMessageCode())

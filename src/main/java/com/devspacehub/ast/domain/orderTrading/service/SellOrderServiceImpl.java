@@ -67,7 +67,7 @@ public class SellOrderServiceImpl extends TradingService {
                 .stockCode(stockItem.getStockCode())
                 .orderDivision(stockItem.getOrderDivision())
                 .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
-                .orderPrice(String.valueOf(stockItem.getCurrentStockPrice()))
+                .orderPrice(String.valueOf(stockItem.getOrderPrice()))
                 .build();
 
         return (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(DOMESTIC_STOCK_SELL_ORDER, httpHeaders, bodyDto);

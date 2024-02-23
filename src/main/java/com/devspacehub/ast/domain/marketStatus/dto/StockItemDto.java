@@ -27,7 +27,7 @@ public class StockItemDto {
 
     private Integer orderQuantity;
 
-    private Integer currentStockPrice; // 현재가
+    private Integer orderPrice;
 
     @Builder
     private static StockItemDto StockItemDto(String stockCode, String stockNameKor,
