@@ -10,6 +10,7 @@ package com.devspacehub.ast.domain.marketStatus.dto;
 
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -37,6 +38,7 @@ public class CurrentStockPriceExternalResDto extends WebClientCommonResDto {
     private String msg1;
 
     @Getter
+    @Builder
     public static class CurrentStockPriceInfo {
 
         @JsonProperty("iscd_stat_cls_code")
