@@ -9,6 +9,7 @@
 package com.devspacehub.ast.domain.orderTrading.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
+import com.devspacehub.ast.common.constant.StockPriceUnit;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.itemInfo.ItemInfoRepository;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto.CurrentStockPriceInfo;
@@ -20,7 +21,9 @@ import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
-import com.devspacehub.ast.openApiUtil.OpenApiRequest;
+import com.devspacehub.ast.domain.orderTrading.dto.SplitBuyPercents;
+import com.devspacehub.ast.util.NumberUtil;
+import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -68,7 +71,12 @@ public class BuyOrderServiceImpl extends TradingService {
     private Long limitHtsMarketCapital;
     @Value("${trading.limit-accumulation-volume}")
     private Integer limitAccumulationVolume;
-    private static final long TIME_DELAY_MILLIS = 200L;
+    @Value("${trading.cash-buy-order-amount-percent}")
+    private int cashBuyOrderAmountPercent;
+    @Value("${trading.split-buy-percents-by-comma}")
+    private String splitBuyPercentsByComma;
+    @Value("${trading.split-buy-count}")
+    private int splitBuyCount;
 
 
     /**
@@ -86,21 +94,21 @@ public class BuyOrderServiceImpl extends TradingService {
                 .stockCode(stockItem.getStockCode())
                 .orderDivision(stockItem.getOrderDivision())
                 .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
-                .orderPrice(String.valueOf(stockItem.getCurrentStockPrice()))
+                .orderPrice(String.valueOf(stockItem.getOrderPrice()))
                 .build();
 
         return (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(DOMESTIC_STOCK_BUY_ORDER, httpHeaders, bodyDto);
     }
 
     /**
-     * 매수 수량 = (매수가능 현금 % 10%) % 종목 현재가
+     * 매수 수량 구하기
      * 소수점 버림.
      * @param myCash
-     * @param currentStockPrice
+     * @param calculatedOrderPrice
      * @return
      */
-    public int calculateOrderQuantity(int myCash, Integer currentStockPrice) {
-        Double orderQuantity = (myCash / 10.0) / currentStockPrice;
+    public int calculateOrderQuantity(int myCash, int calculatedOrderPrice) {
+        Float orderQuantity = ((myCash * NumberUtil.percentageToDecimal(cashBuyOrderAmountPercent)) / splitBuyCount) / calculatedOrderPrice;
         return orderQuantity.intValue();
     }
 
@@ -117,13 +125,15 @@ public class BuyOrderServiceImpl extends TradingService {
 
     /**
      * 알고리즘에 따라 매수할 종목 선택
-     * 1. 거래량 순위 종목 조회 api
+     * 1. 거래량 순위 종목 조회하여 상위 10개 순회
      * 2. valid check : table에 없는 종목 매수 X (파생상품)
      * 3. 현재가 시세 조회
-     * 4. 매수 가능 현금 조회
+     * 4. 지표 체크
+     * 5. 매수 가능 현금 조회
+     * - 주문 단가 결정 (호가 단위 고려)
      * - 매수 수량 결정
      * - 매수 가능 여부 확인
-     * 5. 지표 체크
+     * 6. 분할 매수
      * @param resDto
      * @return
      */
@@ -136,24 +146,14 @@ public class BuyOrderServiceImpl extends TradingService {
         int count = 0;
         while (count++ < 10) {
             StockInfo stockInfo = stockItems.getStockInfos().get(count);
-            // 1. 매수 가능 여부 체크
+            // 2. 매수 가능 여부 체크
             if (!isStockItemBuyOrderable(stockInfo)) {
                 continue;
             }
 
-            // 2. 현재가 시세 조회
+            // 3. 현재가 시세 조회
             CurrentStockPriceInfo currentStockPriceInfo = marketStatusService.getCurrentStockPrice(stockInfo.getStockCode()).getCurrentStockPriceInfo();
             int currentPrice = Integer.parseInt(currentStockPriceInfo.getCurrentStockPrice());
-
-            int myDeposit = myService.getBuyOrderPossibleCash(stockInfo.getStockCode(), currentPrice, ORDER_DIVISION);
-
-            timeDelay();
-
-            int orderQuantity = calculateOrderQuantity(myDeposit, currentPrice);
-            if (isZero(orderQuantity)) {
-                log.info("[buy] 매수 주문 금액이 부족.(종목명: {}, 예수금: {})", stockInfo.getHtsStockNameKor(), myDeposit);
-                continue;
-            }
 
             log.info("[buy] 종목: {}({})", stockInfo.getStockCode(), stockInfo.getHtsStockNameKor());
             log.info("[buy] 현재가: {}", currentPrice);
@@ -165,18 +165,45 @@ public class BuyOrderServiceImpl extends TradingService {
             log.info("[buy] 정리매매 여부: {}", currentStockPriceInfo.getDelistingYn());
             log.info("[buy] 단기과열 여부: {}", currentStockPriceInfo.getShortOverYn());
 
-            // 3. 지표 체크
+            // 4. 지표 체크
             if (!checkAccordingWithIndicators(currentStockPriceInfo)) {
                 continue;
             }
-            pickedStockItems.add(StockItemDto.builder()
-                    .stockCode(stockInfo.getStockCode())
-                    .stockNameKor(stockInfo.getHtsStockNameKor())
-                    .orderQuantity(orderQuantity)
-                    .currentStockPrice(currentPrice)
-                    .build());
+            // 5. 매수 가능 금액 조회
+            int myDeposit = myService.getBuyOrderPossibleCash(stockInfo.getStockCode(), currentPrice, ORDER_DIVISION);
+
+            OpenApiRequest.timeDelay();
+            // 6. 매수 금액 + 매수 수량 결정 (분할 매수 Case)
+            SplitBuyPercents splitBuyPercents = SplitBuyPercents.of(splitBuyPercentsByComma);
+
+            for (int idx = 0; idx < splitBuyPercents.getPercents().size(); idx++) {
+                int orderPriceByPriceUnit = orderPriceCuttingByPriceUnit(
+                        splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, idx),
+                        StockPriceUnit.getPriceUnitBy(currentPrice));
+                int orderQuantity = calculateOrderQuantity(myDeposit, orderPriceByPriceUnit);
+
+                if (isZero(orderQuantity)) {
+                    log.info("[buy] 매수 주문 금액이 부족.(종목명: {}, 예수금: {})", stockInfo.getHtsStockNameKor(), myDeposit);
+                    continue;
+                }
+
+                log.info("[buy] 주문 수량 : {}, 주문가: {} (분할 매수 퍼센트: {})", orderQuantity, orderPriceByPriceUnit,
+                        splitBuyPercents.getPercents().get(idx));
+                pickedStockItems.add(StockItemDto.from(stockInfo, orderQuantity, orderPriceByPriceUnit));
+            }
         }
         return pickedStockItems;
+    }
+
+
+    /**
+     * 호가 단위에 따라 주문가 조정
+     * @param calculatedOrderPrice
+     * @return
+     */
+    protected int orderPriceCuttingByPriceUnit(int calculatedOrderPrice, int priceUnit) {
+        Float decimal = calculatedOrderPrice / (float) priceUnit;
+        return decimal.intValue() * priceUnit;
     }
 
     /**
@@ -204,17 +231,6 @@ public class BuyOrderServiceImpl extends TradingService {
                 stockCode, OPENAPI_SUCCESS_RESULT_CODE, txIdBuyOrder,
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(8,59,0)),
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(15,0,0)));
-    }
-    /**
-     * KIS Open API를 초당 2회 이상 호출하지 않기 위해 시간 지연 수행.
-     */
-    private void timeDelay() {
-        try {
-            Thread.sleep(TIME_DELAY_MILLIS);
-        } catch (InterruptedException ex) {
-            log.error("시간 지연 처리 중 이슈 발생하였습니다.");
-            log.error("{}", ex.getStackTrace());
-        }
     }
 
     /**

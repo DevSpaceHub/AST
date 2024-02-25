@@ -10,7 +10,7 @@ package com.devspacehub.ast.domain.orderTrading.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
-import com.devspacehub.ast.openApiUtil.OpenApiRequest;
+import com.devspacehub.ast.util.OpenApiRequest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

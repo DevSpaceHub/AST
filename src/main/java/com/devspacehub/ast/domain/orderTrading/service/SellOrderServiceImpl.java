@@ -16,7 +16,7 @@ import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
-import com.devspacehub.ast.openApiUtil.OpenApiRequest;
+import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,7 +67,7 @@ public class SellOrderServiceImpl extends TradingService {
                 .stockCode(stockItem.getStockCode())
                 .orderDivision(stockItem.getOrderDivision())
                 .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
-                .orderPrice(String.valueOf(stockItem.getCurrentStockPrice()))
+                .orderPrice(String.valueOf(stockItem.getOrderPrice()))
                 .build();
 
         return (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(DOMESTIC_STOCK_SELL_ORDER, httpHeaders, bodyDto);
@@ -86,12 +86,7 @@ public class SellOrderServiceImpl extends TradingService {
                 continue;
             }
 
-            pickedStockItems.add(StockItemDto.builder()
-                    .stockCode(myStockBalance.getStockCode())
-                    .stockNameKor(myStockBalance.getStockName())
-                    .orderQuantity(Integer.parseInt(myStockBalance.getHoldingQuantity()))     // 전량 매도
-                    .currentStockPrice(Integer.parseInt(myStockBalance.getCurrentPrice()))
-                    .build());
+            pickedStockItems.add(StockItemDto.of(myStockBalance));
         }
         return pickedStockItems;
     }
@@ -103,7 +98,7 @@ public class SellOrderServiceImpl extends TradingService {
      */
     protected boolean isStockItemSellOrderable(StockBalanceExternalResDto.MyStockBalance myStockBalance) {
         // 이미 체결된 주식인지 체크 (KIS : 체결 + 2일동안 0으로 응답함)
-        if (0 == Integer.valueOf(myStockBalance.getHoldingQuantity())) {
+        if (0 == Integer.parseInt(myStockBalance.getHoldingQuantity())) {
             return false;
         }
 

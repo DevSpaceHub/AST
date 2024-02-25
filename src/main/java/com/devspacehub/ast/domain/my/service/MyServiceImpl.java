@@ -14,7 +14,7 @@ import com.devspacehub.ast.domain.my.dto.request.StockBalanceExternalReqDto;
 import com.devspacehub.ast.domain.my.dto.response.BuyPossibleCheckExternalResDto;
 import com.devspacehub.ast.domain.my.dto.response.StockBalanceExternalResDto;
 import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
-import com.devspacehub.ast.openApiUtil.OpenApiRequest;
+import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,13 +61,13 @@ public class MyServiceImpl implements MyService {
         log.info("[buy] 주문 가능 현금 : {}", responseDto.getOutput().getOrderPossibleCash());
         log.info("[buy] 최대 구매 가능 금액 : {}", responseDto.getOutput().getMaxBuyAmount());
         log.info("[buy] 최대 구매 가능 수량 : {}", responseDto.getOutput().getMaxBuyQuantity());
-        return Integer.valueOf(responseDto.getOutput().getOrderPossibleCash());
+        return Integer.parseInt(responseDto.getOutput().getOrderPossibleCash());
     }
 
 
     /**
      * 주식 잔고 조회
-     * @return
+     * @return StockBalanceExternalResDto
      */
     @Override
     public StockBalanceExternalResDto getMyStockBalance() {
@@ -85,7 +85,7 @@ public class MyServiceImpl implements MyService {
             log.info("[sell] 1. 주식 종목 : {}({})", myStockBalance.getStockCode(), myStockBalance.getStockName());
             log.info("[sell] 2. 보유 수량 : {}", myStockBalance.getHoldingQuantity());
             log.info("[sell] 3. 현재가 : {}", myStockBalance.getCurrentPrice());
-            log.info("[sell] 4. 평가손익율 : {}", myStockBalance.getEvaluateProfitLossRate());
+            log.info("[sell] 4. 평가손익율 : {}\n", myStockBalance.getEvaluateProfitLossRate());
         }
 
         return responseDto;

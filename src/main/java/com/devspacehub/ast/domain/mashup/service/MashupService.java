@@ -22,6 +22,7 @@ import com.devspacehub.ast.domain.orderTrading.OrderTradingServiceFactory;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
 import com.devspacehub.ast.exception.error.NotFoundDataException;
+import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -90,13 +91,14 @@ public class MashupService {
         List<OrderTrading> orderTradings = new ArrayList<>();
         for (StockItemDto item : stockItems) {
             DomesticStockOrderExternalResDto result = tradingService.order(item);
-            OrderTrading orderTrading = createOrderFromDTOs(item, result, txIdBuyOrder);
+            OrderTrading orderTrading = OrderTrading.from(item, result, txIdBuyOrder);
             orderTradings.add(orderTrading);
 
             if (result.isSuccess()) {
                 log.info("===== [buy] order success ({}) =====", item.getStockNameKor());
                 notificator.sendMessage(DOMESTIC_STOCK_BUY_ORDER, accountStatusKor, orderTrading);
             }
+            OpenApiRequest.timeDelay();
         }
         // 4. 주문거래 정보 저장
         tradingService.saveInfos(orderTradings);
@@ -126,7 +128,7 @@ public class MashupService {
         List<OrderTrading> orderTradings = new ArrayList<>();
         for (StockItemDto item : tradingService.pickStockItems(myStockBalance)) {
             DomesticStockOrderExternalResDto result = tradingService.order(item);
-            OrderTrading orderTrading = createOrderFromDTOs(item, result, txIdSellOrder);
+            OrderTrading orderTrading = OrderTrading.from(item, result, txIdSellOrder);
             orderTradings.add(orderTrading);
 
             if (result.isSuccess()) {
@@ -138,22 +140,6 @@ public class MashupService {
 
         // 3. 주문한 것 있으면 주문 거래 정보 저장
       tradingService.saveInfos(orderTradings);
-    }
-
-    private OrderTrading createOrderFromDTOs(StockItemDto item, DomesticStockOrderExternalResDto result, String txId) {
-        return OrderTrading.builder()
-                .itemCode(item.getStockCode())
-                .itemNameKor(item.getStockNameKor())
-                .transactionId(txId)
-                .orderDivision(item.getOrderDivision())
-                .orderPrice(item.getCurrentStockPrice())
-                .orderQuantity(item.getOrderQuantity())
-                .orderResultCode(result.getResultCode())
-                .orderMessageCode(result.getMessageCode())
-                .orderMessage(result.getMessage())
-                .orderNumber(result.isSuccess() ? result.getOutput().getOrderNumber() : null)
-                .orderTime(result.isSuccess() ? result.getOutput().getOrderTime() : null)
-                .build();
     }
 
 }
