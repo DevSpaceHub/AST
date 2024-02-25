@@ -22,6 +22,7 @@ import com.devspacehub.ast.domain.orderTrading.OrderTradingServiceFactory;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
 import com.devspacehub.ast.exception.error.NotFoundDataException;
+import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -84,16 +85,20 @@ public class MashupService {
         // 2. 종목 선택 (거래량 순위 API) 및 매입수량 결정 (현재가 시세 조회 API)
         TradingService tradingService = orderTradingServiceFactory.getServiceImpl(DOMESTIC_STOCK_BUY_ORDER);
         List<StockItemDto> stockItems = tradingService.pickStockItems(items);
-        log.info("매수 선택 종목 : {}", stockItems.size());
+        log.info("[buy] 최종 매수 가능 종목 : {}", stockItems.size());
 
         // 3. 매수
         List<OrderTrading> orderTradings = new ArrayList<>();
         for (StockItemDto item : stockItems) {
             DomesticStockOrderExternalResDto result = tradingService.order(item);
-            OrderTrading orderTrading = createOrderFromDTOs(item, result, txIdBuyOrder);
+            OrderTrading orderTrading = OrderTrading.from(item, result, txIdBuyOrder);
             orderTradings.add(orderTrading);
 
-            notificator.sendMessage(DOMESTIC_STOCK_BUY_ORDER, accountStatusKor, orderTrading);
+            if (result.isSuccess()) {
+                log.info("===== [buy] order success ({}) =====", item.getStockNameKor());
+                notificator.sendMessage(DOMESTIC_STOCK_BUY_ORDER, accountStatusKor, orderTrading);
+            }
+            OpenApiRequest.timeDelay();
         }
         // 4. 주문거래 정보 저장
         tradingService.saveInfos(orderTradings);
@@ -123,31 +128,18 @@ public class MashupService {
         List<OrderTrading> orderTradings = new ArrayList<>();
         for (StockItemDto item : tradingService.pickStockItems(myStockBalance)) {
             DomesticStockOrderExternalResDto result = tradingService.order(item);
-            OrderTrading orderTrading = createOrderFromDTOs(item, result, txIdSellOrder);
+            OrderTrading orderTrading = OrderTrading.from(item, result, txIdSellOrder);
             orderTradings.add(orderTrading);
 
-            String accountStatusKor = Boolean.TRUE.equals(isProdActive()) ? REAL_ACCOUNT_STATUS_KOR : TEST_ACCOUNT_STATUS_KOR;
-            notificator.sendMessage(DOMESTIC_STOCK_SELL_ORDER, accountStatusKor, orderTrading);
+            if (result.isSuccess()) {
+                log.info("===== [sell] order success ({}) =====", item.getStockNameKor());
+                String accountStatusKor = Boolean.TRUE.equals(isProdActive()) ? REAL_ACCOUNT_STATUS_KOR : TEST_ACCOUNT_STATUS_KOR;
+                notificator.sendMessage(DOMESTIC_STOCK_SELL_ORDER, accountStatusKor, orderTrading);
+            }
         }
 
         // 3. 주문한 것 있으면 주문 거래 정보 저장
-        tradingService.saveInfos(orderTradings);
-    }
-
-    private OrderTrading createOrderFromDTOs(StockItemDto item, DomesticStockOrderExternalResDto result, String txId) {
-        return OrderTrading.builder()
-                .itemCode(item.getStockCode())
-                .itemNameKor(item.getStockNameKor())
-                .transactionId(txId)
-                .orderDivision(item.getOrderDivision())
-                .orderPrice(item.getCurrentStockPrice())
-                .orderQuantity(item.getOrderQuantity())
-                .orderResultCode(result.getResultCode())
-                .orderMessageCode(result.getMessageCode())
-                .orderMessage(result.getMessage())
-                .orderNumber(result.isSuccess() ? result.getOutput().getOrderNumber() : null)
-                .orderDateTime(result.isSuccess() ? result.getOutput().getOrderDateTime() : null)
-                .build();
+      tradingService.saveInfos(orderTradings);
     }
 
 }

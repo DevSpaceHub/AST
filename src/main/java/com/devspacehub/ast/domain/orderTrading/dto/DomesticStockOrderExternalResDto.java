@@ -46,7 +46,7 @@ public class DomesticStockOrderExternalResDto extends WebClientCommonResDto {
         private String orderNumber;
 
         @JsonProperty("ORD_TMD")
-        private String orderDateTime;
+        private String orderTime;
     }
 
     @JsonIgnore

@@ -17,7 +17,7 @@ import com.devspacehub.ast.domain.oauth.dto.OAuthTokenIssueExternalResDto;
 import com.devspacehub.ast.exception.error.BusinessException;
 import com.devspacehub.ast.exception.error.DtoConversionException;
 import com.devspacehub.ast.common.constant.ResultCode;
-import com.devspacehub.ast.openApiUtil.OpenApiRequest;
+import com.devspacehub.ast.util.OpenApiRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

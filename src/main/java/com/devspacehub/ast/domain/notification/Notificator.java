@@ -11,7 +11,7 @@ import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.constant.ResultCode;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.exception.error.NotificationException;
-import com.devspacehub.ast.exception.error.UnexpectedValueException;
+import com.devspacehub.ast.exception.error.InvalidValueException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -56,7 +56,8 @@ public class Notificator {
                     .headers(headers)
                     .bodyValue(requestBody)
                     .retrieve()
-                    .bodyToMono(Void.class);
+                    .toBodilessEntity()
+                    .block();
 
         } catch (Exception ex) {
             if (ex instanceof WebClientResponseException && HttpStatus.NO_CONTENT.equals(((WebClientResponseException) ex).getStatusCode())) {
@@ -77,7 +78,7 @@ public class Notificator {
             case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER -> {
                 return ORDER_NOTI_SENDER_NAME;
             }
-            default -> throw new UnexpectedValueException(ResultCode.UNEXPECTED_OPENAPI_TYPE_ERROR);
+            default -> throw new InvalidValueException(ResultCode.INVALID_OPENAPI_TYPE_ERROR);
         }
     }
 
@@ -91,7 +92,7 @@ public class Notificator {
     public String createMessage(OpenApiType openApiType, String accountStatusKor, OrderTrading orderTrading) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("[").append(orderTrading.getOrderDateTime()).append("] ").append("주문완료");
+        sb.append("**[").append(orderTrading.getOrderTime()).append("] ").append("주문완료**");
         sb.append("\n계좌 상태 : ").append(accountStatusKor);
         sb.append("\n종목명 : ").append(orderTrading.getItemNameKor()).
                 append(" (").append(orderTrading.getItemCode()).append(")");

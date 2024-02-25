@@ -16,7 +16,7 @@ import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
-import com.devspacehub.ast.openApiUtil.OpenApiRequest;
+import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,10 +24,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_SELL_ORDER;
 
 /**
@@ -56,7 +60,6 @@ public class SellOrderServiceImpl extends TradingService {
      */
     @Override
     public DomesticStockOrderExternalResDto order(StockItemDto stockItem) {
-        // 1. 조건 체크
         Consumer<HttpHeaders> httpHeaders = DomesticStockOrderExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdSellOrder);
         DomesticStockOrderExternalReqDto bodyDto = DomesticStockOrderExternalReqDto.builder()
                 .accntNumber(openApiProperties.getAccntNumber())
@@ -64,7 +67,7 @@ public class SellOrderServiceImpl extends TradingService {
                 .stockCode(stockItem.getStockCode())
                 .orderDivision(stockItem.getOrderDivision())
                 .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
-                .orderPrice(String.valueOf(stockItem.getCurrentStockPrice()))
+                .orderPrice(String.valueOf(stockItem.getOrderPrice()))
                 .build();
 
         return (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(DOMESTIC_STOCK_SELL_ORDER, httpHeaders, bodyDto);
@@ -79,21 +82,43 @@ public class SellOrderServiceImpl extends TradingService {
         List<StockItemDto> pickedStockItems = new ArrayList<>();
 
         for (StockBalanceExternalResDto.MyStockBalance myStockBalance : stockBalanceResponse.getMyStockBalance()) {
-            Float evaluateEarningRate = Float.valueOf(myStockBalance.getEvaluateEarningRate());
-            if (checkIsSellStockItem(evaluateEarningRate)) {
-                pickedStockItems.add(StockItemDto.builder()
-                        .stockCode(myStockBalance.getStockCode())
-                        .stockNameKor(myStockBalance.getStockName())
-                        .orderQuantity(Integer.parseInt(myStockBalance.getHoldingQuantity()))     // 전량 매도
-                        .currentStockPrice(Integer.parseInt(myStockBalance.getCurrentPrice()))
-                        .build());
+            if (!isStockItemSellOrderable(myStockBalance)) {
+                continue;
             }
+
+            pickedStockItems.add(StockItemDto.of(myStockBalance));
         }
         return pickedStockItems;
     }
 
-    private boolean checkIsSellStockItem(Float evaluateEarningRate) {
-        return evaluateEarningRate > profitSellRatio || evaluateEarningRate < stopLossSellRatio;  // 수익 매도(>10%) or 손절 매도(<-5.0%)
+    /**
+     * 주식 매도할 수 있는 종목인지 체크.
+     * @param myStockBalance
+     * @return
+     */
+    protected boolean isStockItemSellOrderable(StockBalanceExternalResDto.MyStockBalance myStockBalance) {
+        // 이미 체결된 주식인지 체크 (KIS : 체결 + 2일동안 0으로 응답함)
+        if (0 == Integer.parseInt(myStockBalance.getHoldingQuantity())) {
+            return false;
+        }
+
+        if (isEvaluateProfitLossRateBetweenProfitAndStopLossPercent(myStockBalance.getEvaluateProfitLossRate())) {
+            return false;
+        }
+        return isNewOrder(myStockBalance.getStockCode());
+    }
+
+    /**
+     * 평균 손익률과 비교. 수익/손절 매도 지표 사이 값이면 True. 그 반대(수익이거나 손절)면 False.
+     * 수익 매도 : 평균 손익률 > 10%
+     * 손절 매도 : 평균 손익률 < -5%
+     * @param evaluateProfitLossRateStr
+     * @return
+     */
+    protected boolean isEvaluateProfitLossRateBetweenProfitAndStopLossPercent(String evaluateProfitLossRateStr) {
+        Float evaluateProfitLossRate = Float.valueOf(evaluateProfitLossRateStr);
+
+        return stopLossSellRatio <= evaluateProfitLossRate && evaluateProfitLossRate <= profitSellRatio;  // 수익 매도 or 손절 매도
     }
 
     @Transactional
@@ -103,4 +128,20 @@ public class SellOrderServiceImpl extends TradingService {
             orderTradingRepository.saveAll(orderTradingInfos);
         }
     }
+
+    /**
+     * 매수됐지만 체결되지 않은 종목은 주문하지 않는다.
+     * 매수됐던 이력도 없다면 주문할 수 있다.
+     * @param stockCode
+     * @return
+     */
+    public boolean isNewOrder(String stockCode){
+        // 주문 가능 수량 초과 시 주문 불가.
+        return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
+                stockCode, OPENAPI_SUCCESS_RESULT_CODE, txIdSellOrder,
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 0)),
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59))
+        );
+    }
+
 }

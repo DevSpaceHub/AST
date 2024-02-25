@@ -9,6 +9,7 @@
 package com.devspacehub.ast.domain.orderTrading.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
+import com.devspacehub.ast.common.constant.StockPriceUnit;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.itemInfo.ItemInfoRepository;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto.CurrentStockPriceInfo;
@@ -20,8 +21,9 @@ import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
-import com.devspacehub.ast.exception.error.NotEnoughCashException;
-import com.devspacehub.ast.openApiUtil.OpenApiRequest;
+import com.devspacehub.ast.domain.orderTrading.dto.SplitBuyPercents;
+import com.devspacehub.ast.util.NumberUtil;
+import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -38,6 +40,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION;
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_BUY_ORDER;
 import static com.devspacehub.ast.common.constant.YesNoStatus.YES;
@@ -68,7 +71,12 @@ public class BuyOrderServiceImpl extends TradingService {
     private Long limitHtsMarketCapital;
     @Value("${trading.limit-accumulation-volume}")
     private Integer limitAccumulationVolume;
-    private static final long TIME_DELAY_MILLIS = 200L;
+    @Value("${trading.cash-buy-order-amount-percent}")
+    private int cashBuyOrderAmountPercent;
+    @Value("${trading.split-buy-percents-by-comma}")
+    private String splitBuyPercentsByComma;
+    @Value("${trading.split-buy-count}")
+    private int splitBuyCount;
 
 
     /**
@@ -86,33 +94,29 @@ public class BuyOrderServiceImpl extends TradingService {
                 .stockCode(stockItem.getStockCode())
                 .orderDivision(stockItem.getOrderDivision())
                 .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
-                .orderPrice(String.valueOf(stockItem.getCurrentStockPrice()))
+                .orderPrice(String.valueOf(stockItem.getOrderPrice()))
                 .build();
 
         return (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(DOMESTIC_STOCK_BUY_ORDER, httpHeaders, bodyDto);
     }
 
     /**
-     * 매수 수량 = (매수가능 현금 % 10%) % 종목 현재가
+     * 매수 수량 구하기
      * 소수점 버림.
      * @param myCash
-     * @param currentStockPrice
+     * @param calculatedOrderPrice
      * @return
      */
-    public int calculateOrderQuantity(int myCash, Integer currentStockPrice) {
-        Double orderQuantity = (myCash / 10.0) / currentStockPrice;
+    public int calculateOrderQuantity(int myCash, int calculatedOrderPrice) {
+        Float orderQuantity = ((myCash * NumberUtil.percentageToDecimal(cashBuyOrderAmountPercent)) / splitBuyCount) / calculatedOrderPrice;
         return orderQuantity.intValue();
     }
 
     /**
-     * 매수 가능한 종목인지 체크
+     * 매수 수량이 0이면 매수 불가능.
      */
-    public void checkBuyOrderPossible(int myDeposit, int orderPrice, int orderQuantity) {
-        if (orderPrice * orderQuantity <= myDeposit) {
-            return;
-        }
-        log.info("매수 주문 금액이 부족합니다. (예수금: {})", myDeposit);
-        throw new NotEnoughCashException();
+    public boolean isZero(int orderQuantity) {
+        return orderQuantity == 0;
     }
 
     private boolean isStockMarketClosed(String messageCode) {
@@ -121,13 +125,15 @@ public class BuyOrderServiceImpl extends TradingService {
 
     /**
      * 알고리즘에 따라 매수할 종목 선택
-     * 1. 거래량 순위 종목 조회 api
+     * 1. 거래량 순위 종목 조회하여 상위 10개 순회
      * 2. valid check : table에 없는 종목 매수 X (파생상품)
      * 3. 현재가 시세 조회
-     * 4. 매수 가능 현금 조회
+     * 4. 지표 체크
+     * 5. 매수 가능 현금 조회
+     * - 주문 단가 결정 (호가 단위 고려)
      * - 매수 수량 결정
      * - 매수 가능 여부 확인
-     * 5. 지표 체크
+     * 6. 분할 매수
      * @param resDto
      * @return
      */
@@ -140,12 +146,8 @@ public class BuyOrderServiceImpl extends TradingService {
         int count = 0;
         while (count++ < 10) {
             StockInfo stockInfo = stockItems.getStockInfos().get(count);
-            // 2. valid check
-            if (1 > itemInfoRepository.countByItemCode(stockInfo.getStockCode())) {
-                continue;
-            }
-            if (isAlreadyOrderedStockCode(stockInfo.getStockCode(), stockItems.getResultCode())) {
-                log.info("오늘 이미 매수된 종목입니다.({})", stockInfo.getStockCode());
+            // 2. 매수 가능 여부 체크
+            if (!isStockItemBuyOrderable(stockInfo)) {
                 continue;
             }
 
@@ -153,64 +155,82 @@ public class BuyOrderServiceImpl extends TradingService {
             CurrentStockPriceInfo currentStockPriceInfo = marketStatusService.getCurrentStockPrice(stockInfo.getStockCode()).getCurrentStockPriceInfo();
             int currentPrice = Integer.parseInt(currentStockPriceInfo.getCurrentStockPrice());
 
-            // 4. 매수 가능 현금 조회
-            int myDeposit = myService.getBuyOrderPossibleCash(stockInfo.getStockCode(), currentPrice, ORDER_DIVISION);
+            log.info("[buy] 종목: {}({})", stockInfo.getStockCode(), stockInfo.getHtsStockNameKor());
+            log.info("[buy] 현재가: {}", currentPrice);
+            log.info("[buy] HTS 시가 총액: {}", currentStockPriceInfo.getHtsMarketCapitalization());
+            log.info("[buy] 누적 거래량: {}", currentStockPriceInfo.getAccumulationVolume());
+            log.info("[buy] PER: {}", Objects.isNull(currentStockPriceInfo.getPer()) ? "Null" : currentStockPriceInfo.getPer());
+            log.info("[buy] PBR: {}", Objects.isNull(currentStockPriceInfo.getPbr()) ? "Null" : currentStockPriceInfo.getPbr());
+            log.info("[buy] 투자유의 여부: {}", currentStockPriceInfo.getInvtCarefulYn());
+            log.info("[buy] 정리매매 여부: {}", currentStockPriceInfo.getDelistingYn());
+            log.info("[buy] 단기과열 여부: {}", currentStockPriceInfo.getShortOverYn());
 
-            timeDelay();
-
-            // 매수 수량 결정
-            int orderQuantity = calculateOrderQuantity(myDeposit, currentPrice);
-            if (orderQuantity == 0) {
-                continue;
-            }
-            // 매수 가능 여부 체크
-            checkBuyOrderPossible(myDeposit, currentPrice, orderQuantity);
-
-            log.info("종목코드: {}", stockInfo.getStockCode());
-            log.info("현재가: {}", currentPrice);
-            log.info("HTS 시가 총액: {}", currentStockPriceInfo.getHtsMarketCapitalization());
-            log.info("누적 거래량: {}", currentStockPriceInfo.getAccumulationVolume());
-            log.info("PER: {}", Objects.isNull(currentStockPriceInfo.getPer()) ? "Null" : currentStockPriceInfo.getPer());
-            log.info("PBR: {}", Objects.isNull(currentStockPriceInfo.getPbr()) ? "Null" : currentStockPriceInfo.getPbr());
-            log.info("투자유의 여부: {}", currentStockPriceInfo.getInvtCarefulYn());
-            log.info("정리매매 여부: {}", currentStockPriceInfo.getDelistingYn());
-            log.info("단기과열 여부: {}", currentStockPriceInfo.getShortOverYn());
-
-            // 5. 지표 체크
+            // 4. 지표 체크
             if (!checkAccordingWithIndicators(currentStockPriceInfo)) {
                 continue;
             }
+            // 5. 매수 가능 금액 조회
+            int myDeposit = myService.getBuyOrderPossibleCash(stockInfo.getStockCode(), currentPrice, ORDER_DIVISION);
 
-            pickedStockItems.add(StockItemDto.builder()
-                    .stockCode(stockInfo.getStockCode())
-                    .stockNameKor(stockInfo.getHtsStockNameKor())
-                    .orderQuantity(orderQuantity)
-                    .currentStockPrice(currentPrice)
-                    .build());
+            OpenApiRequest.timeDelay();
+            // 6. 매수 금액 + 매수 수량 결정 (분할 매수 Case)
+            SplitBuyPercents splitBuyPercents = SplitBuyPercents.of(splitBuyPercentsByComma);
+
+            for (int idx = 0; idx < splitBuyPercents.getPercents().size(); idx++) {
+                int orderPriceByPriceUnit = orderPriceCuttingByPriceUnit(
+                        splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, idx),
+                        StockPriceUnit.getPriceUnitBy(currentPrice));
+                int orderQuantity = calculateOrderQuantity(myDeposit, orderPriceByPriceUnit);
+
+                if (isZero(orderQuantity)) {
+                    log.info("[buy] 매수 주문 금액이 부족.(종목명: {}, 예수금: {})", stockInfo.getHtsStockNameKor(), myDeposit);
+                    continue;
+                }
+
+                log.info("[buy] 주문 수량 : {}, 주문가: {} (분할 매수 퍼센트: {})", orderQuantity, orderPriceByPriceUnit,
+                        splitBuyPercents.getPercents().get(idx));
+                pickedStockItems.add(StockItemDto.from(stockInfo, orderQuantity, orderPriceByPriceUnit));
+            }
         }
         return pickedStockItems;
     }
 
-    protected boolean isAlreadyOrderedStockCode(String stockCode, String resultCode) {
-        LocalDateTime start = LocalDateTime.of(LocalDate.now(), LocalTime.of(8,59,0));
-        LocalDateTime end = LocalDateTime.of(LocalDate.now(), LocalTime.of(15,0,0));
 
-        log.error("========start : {}", start);
-        log.error("========end : {}", end);
-        return orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
-                stockCode, resultCode, txIdBuyOrder, start, end) > 0;
+    /**
+     * 호가 단위에 따라 주문가 조정
+     * @param calculatedOrderPrice
+     * @return
+     */
+    protected int orderPriceCuttingByPriceUnit(int calculatedOrderPrice, int priceUnit) {
+        Float decimal = calculatedOrderPrice / (float) priceUnit;
+        return decimal.intValue() * priceUnit;
     }
 
     /**
-     * KIS Open API를 초당 2회 이상 호출하지 않기 위해 시간 지연 수행.
+     * 매수 가능한지 체크
+     * @param stockInfo
+     * @return
      */
-    private void timeDelay() {
-        try {
-            Thread.sleep(TIME_DELAY_MILLIS);
-        } catch (InterruptedException ex) {
-            log.error("시간 지연 처리 중 이슈 발생하였습니다.");
-            log.error("{}", ex.getStackTrace());
+    private boolean isStockItemBuyOrderable(StockInfo stockInfo) {
+        if (1 > itemInfoRepository.countByItemCode(stockInfo.getStockCode())) {
+            return false;
         }
+        if (itemInfoRepository.countByItemCode(stockInfo.getStockCode()) < 1) {
+            return false;
+        }
+        return isNewOrder(stockInfo.getStockCode());
+    }
+
+    /**
+     * 종목에 대해 새 주문인지 체크
+     * @param stockCode
+     * @return
+     */
+    public boolean isNewOrder(String stockCode){
+        return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
+                stockCode, OPENAPI_SUCCESS_RESULT_CODE, txIdBuyOrder,
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(8,59,0)),
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(15,0,0)));
     }
 
     /**
@@ -218,7 +238,7 @@ public class BuyOrderServiceImpl extends TradingService {
      * @param currentStockPriceInfo
      * @return
      */
-    private boolean checkAccordingWithIndicators(CurrentStockPriceInfo currentStockPriceInfo) {
+    protected boolean checkAccordingWithIndicators(CurrentStockPriceInfo currentStockPriceInfo) {
         if (YES.getCode().equals(currentStockPriceInfo.getInvtCarefulYn()) ||
                 YES.getCode().equals(currentStockPriceInfo.getShortOverYn()) ||
                 YES.getCode().equals(currentStockPriceInfo.getDelistingYn())) {

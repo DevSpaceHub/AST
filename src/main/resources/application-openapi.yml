@@ -8,7 +8,10 @@ trading:
   limit-price-to-book-ratio: ${PBR}
   limit-hts-market-capital: ${HTS_MARKET_CAPITAL}
   limit-accumulation-volume: ${ACCUMULATION_VOLUME}
-
+  cash-buy-order-amount-percent: ${CASH_BUY_ORDER_AMOUNT_PERCENT}
+  # 분할매수는 콤마로 연결된 분할 매수 퍼센트
+  split-buy-count: ${SPLIT_BUY_COUNT}
+  split-buy-percents-by-comma: ${SPLIT_BUY_PERCENTS_BY_COMMA}
 ---
 spring:
   config:
