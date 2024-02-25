@@ -11,7 +11,7 @@ import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.constant.ResultCode;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.exception.error.NotificationException;
-import com.devspacehub.ast.exception.error.UnexpectedValueException;
+import com.devspacehub.ast.exception.error.InvalidValueException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -78,7 +78,7 @@ public class Notificator {
             case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER -> {
                 return ORDER_NOTI_SENDER_NAME;
             }
-            default -> throw new UnexpectedValueException(ResultCode.UNEXPECTED_OPENAPI_TYPE_ERROR);
+            default -> throw new InvalidValueException(ResultCode.INVALID_OPENAPI_TYPE_ERROR);
         }
     }
 

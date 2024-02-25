@@ -13,8 +13,8 @@ import com.devspacehub.ast.common.constant.ResultCode;
 /**
  * 예상치 못한 타입/값인 경우 발생하는 Exception.
  */
-public class UnexpectedValueException extends BusinessException {
-    public UnexpectedValueException(ResultCode resultCode) {
+public class InvalidValueException extends BusinessException {
+    public InvalidValueException(ResultCode resultCode) {
         super(resultCode);
     }
 }
