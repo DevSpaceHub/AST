@@ -8,6 +8,7 @@
 
 package com.devspacehub.ast.common.constant;
 
+import com.devspacehub.ast.exception.error.InvalidValueException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -31,11 +32,11 @@ public enum StockPriceUnit {
 
     /**
      * 주식 가격에 따른 호가 단위 구하기
-     * @param stockPrice
-     * @return
      */
-    public static int
-    getPriceUnitBy(int stockPrice) {
+    public static int getPriceUnitBy(int stockPrice) {
+        if (stockPrice < 0) {
+            throw new InvalidValueException(ResultCode.INVALID_CURRENT_PRICE);
+        }
         if (stockPrice < 2000) {
             return ONE.getCode();
         }
@@ -54,9 +55,8 @@ public enum StockPriceUnit {
         if (stockPrice < 500000) {
             return FIVE_HUNDRED.getCode();
         }
-        if (stockPrice >= 500000){
+        else {
             return THOUSAND.getCode();
         }
-        return 0;
     }
 }
