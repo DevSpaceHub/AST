@@ -22,6 +22,7 @@ import com.devspacehub.ast.domain.orderTrading.OrderTradingServiceFactory;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
 import com.devspacehub.ast.exception.error.NotFoundDataException;
+import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -97,6 +98,7 @@ public class MashupService {
                 log.info("===== [buy] order success ({}) =====", item.getStockNameKor());
                 notificator.sendMessage(DOMESTIC_STOCK_BUY_ORDER, accountStatusKor, orderTrading);
             }
+            OpenApiRequest.timeDelay();
         }
         // 4. 주문거래 정보 저장
         tradingService.saveInfos(orderTradings);

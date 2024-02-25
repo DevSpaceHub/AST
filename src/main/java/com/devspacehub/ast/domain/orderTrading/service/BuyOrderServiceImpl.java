@@ -77,7 +77,6 @@ public class BuyOrderServiceImpl extends TradingService {
     private String splitBuyPercentsByComma;
     @Value("${trading.split-buy-count}")
     private int splitBuyCount;
-    private static final long TIME_DELAY_MILLIS = 200L;
 
 
     /**
@@ -173,7 +172,7 @@ public class BuyOrderServiceImpl extends TradingService {
             // 5. 매수 가능 금액 조회
             int myDeposit = myService.getBuyOrderPossibleCash(stockInfo.getStockCode(), currentPrice, ORDER_DIVISION);
 
-            timeDelay();
+            OpenApiRequest.timeDelay();
             // 6. 매수 금액 + 매수 수량 결정 (분할 매수 Case)
             SplitBuyPercents splitBuyPercents = SplitBuyPercents.of(splitBuyPercentsByComma);
 
@@ -232,17 +231,6 @@ public class BuyOrderServiceImpl extends TradingService {
                 stockCode, OPENAPI_SUCCESS_RESULT_CODE, txIdBuyOrder,
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(8,59,0)),
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(15,0,0)));
-    }
-    /**
-     * KIS Open API를 초당 2회 이상 호출하지 않기 위해 시간 지연 수행.
-     */
-    private void timeDelay() {
-        try {
-            Thread.sleep(TIME_DELAY_MILLIS);
-        } catch (InterruptedException ex) {
-            log.error("시간 지연 처리 중 이슈 발생하였습니다.");
-            log.error("{}", ex.getStackTrace());
-        }
     }
 
     /**

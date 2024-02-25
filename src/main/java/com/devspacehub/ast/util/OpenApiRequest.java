@@ -40,6 +40,7 @@ public class OpenApiRequest {
 
     @Value("${openapi.rest.domain}")
     private String openApiDomain;
+    private static final long TIME_DELAY_MILLIS = 200L;
 
     /**
      * 접근 토큰 발급 OpenApi Api 호출 (Post)
@@ -168,4 +169,17 @@ public class OpenApiRequest {
             throw new OpenApiFailedResponseException();
         }
     }
+
+    /**
+     * KIS Open API를 초당 2회 이상 호출하지 않기 위해 시간 지연 수행.
+     */
+    public static void timeDelay() {
+        try {
+            Thread.sleep(TIME_DELAY_MILLIS);
+        } catch (InterruptedException ex) {
+            log.error("시간 지연 처리 중 이슈 발생하였습니다.");
+            log.error("{}", ex.getStackTrace());
+        }
+    }
+
 }
