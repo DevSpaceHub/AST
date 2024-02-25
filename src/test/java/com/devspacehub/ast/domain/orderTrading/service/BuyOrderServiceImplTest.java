@@ -154,13 +154,13 @@ class BuyOrderServiceImplTest {
     @Test
     @DisplayName("호가 단위에 맞춰서 현재가의 자릿수를 세팅한다.")
     void orderPriceCuttingByPriceUnit() {
-        final Float currentPriceUnder2000 = 1999.0F;
-        final Float currentPriceUnder5000 = 4999.0F;
-        final Float currentPriceUnder20000 = 19999.0F;
-        final Float currentPriceUnder50000 = 49999.0F;
-        final Float currentPriceUnder200000 = 199999.0F;
-        final Float currentPriceUnder500000 = 499999.0F;
-        final Float currentPriceOver500000 = 500000.0F;
+        final int currentPriceUnder2000 = 1999;
+        final int currentPriceUnder5000 = 4999;
+        final int currentPriceUnder20000 = 19999;
+        final int currentPriceUnder50000 = 49999;
+        final int currentPriceUnder200000 = 199999;
+        final int currentPriceUnder500000 = 499999;
+        final int currentPriceOver500000 = 500000;
 
         assertThat(buyOrderService.orderPriceCuttingByPriceUnit(currentPriceUnder2000, ONE.getCode())).isEqualTo(1999);
         assertThat(buyOrderService.orderPriceCuttingByPriceUnit(currentPriceUnder5000, FIVE.getCode())).isEqualTo(4995);

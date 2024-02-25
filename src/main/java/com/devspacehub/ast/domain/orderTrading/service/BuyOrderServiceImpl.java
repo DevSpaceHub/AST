@@ -36,7 +36,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -79,7 +78,6 @@ public class BuyOrderServiceImpl extends TradingService {
     @Value("${trading.split-buy-count}")
     private int splitBuyCount;
     private static final long TIME_DELAY_MILLIS = 200L;
-    private static final String COMMA = ",";
 
 
     /**
@@ -104,7 +102,7 @@ public class BuyOrderServiceImpl extends TradingService {
     }
 
     /**
-     * 매수 수량 구하기 (매수가능 현금 % {환경 변수}%) % 종목 현재가
+     * 매수 수량 구하기
      * 소수점 버림.
      * @param myCash
      * @param calculatedOrderPrice
@@ -177,21 +175,22 @@ public class BuyOrderServiceImpl extends TradingService {
 
             timeDelay();
             // 6. 매수 금액 + 매수 수량 결정 (분할 매수 Case)
-            Float[] percents = Arrays.stream(splitBuyPercentsByComma.split(COMMA))
-                    .map(percent -> NumberUtil.percentageToDecimal(Integer.parseInt(percent))).toArray(Float[]::new);
-            SplitBuyPercents splitBuyPercents = new SplitBuyPercents(percents);
+            SplitBuyPercents splitBuyPercents = SplitBuyPercents.of(splitBuyPercentsByComma);
 
             for (int idx = 0; idx < splitBuyPercents.getPercents().size(); idx++) {
-                Float calculatedOrderPrice = splitBuyPercents.calculateBuyPriceBySplitBuyPercents(currentPrice, idx);
-
-                int orderQuantity = calculateOrderQuantity(myDeposit, orderPriceCuttingByPriceUnit(calculatedOrderPrice, StockPriceUnit.getPriceUnitBy(currentPrice)));
-                log.info("[buy] 주문 수량 : {}, 주문 가격: {} ({})", orderQuantity, calculatedOrderPrice, splitBuyPercents.getPercents().get(idx));
+                int orderPriceByPriceUnit = orderPriceCuttingByPriceUnit(
+                        splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, idx),
+                        StockPriceUnit.getPriceUnitBy(currentPrice));
+                int orderQuantity = calculateOrderQuantity(myDeposit, orderPriceByPriceUnit);
 
                 if (isZero(orderQuantity)) {
                     log.info("[buy] 매수 주문 금액이 부족.(종목명: {}, 예수금: {})", stockInfo.getHtsStockNameKor(), myDeposit);
                     continue;
                 }
-                pickedStockItems.add(StockItemDto.from(stockInfo, orderQuantity, calculatedOrderPrice.intValue()));
+
+                log.info("[buy] 주문 수량 : {}, 주문가: {} (분할 매수 퍼센트: {})", orderQuantity, orderPriceByPriceUnit,
+                        splitBuyPercents.getPercents().get(idx));
+                pickedStockItems.add(StockItemDto.from(stockInfo, orderQuantity, orderPriceByPriceUnit));
             }
         }
         return pickedStockItems;
@@ -203,8 +202,8 @@ public class BuyOrderServiceImpl extends TradingService {
      * @param calculatedOrderPrice
      * @return
      */
-    protected int orderPriceCuttingByPriceUnit(Float calculatedOrderPrice, int priceUnit) {
-        Float decimal = calculatedOrderPrice / priceUnit;
+    protected int orderPriceCuttingByPriceUnit(int calculatedOrderPrice, int priceUnit) {
+        Float decimal = calculatedOrderPrice / (float) priceUnit;
         return decimal.intValue() * priceUnit;
     }
 
