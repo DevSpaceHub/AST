@@ -49,7 +49,7 @@ public class StockBalanceExternalResDto extends WebClientCommonResDto {
     private List<Output2> output2;
 
     @Getter
-    @NoArgsConstructor
+    @AllArgsConstructor
     public static class MyStockBalance {
         @JsonProperty("pdno")
         private String stockCode;   // 종목번호

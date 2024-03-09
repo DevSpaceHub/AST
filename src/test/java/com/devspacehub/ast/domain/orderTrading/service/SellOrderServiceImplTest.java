@@ -9,21 +9,26 @@
 package com.devspacehub.ast.domain.orderTrading.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
+import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
+import com.devspacehub.ast.domain.my.dto.response.StockBalanceExternalResDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.util.OpenApiRequest;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+
+import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SellOrderServiceImplTest {
     SellOrderServiceImpl sellOrderService;
 
@@ -36,8 +41,9 @@ class SellOrderServiceImplTest {
 
     private Float stopLossSellRatioDeadline = -5.0F;
     private Float profitSellDeadline = 10.0F;
+    private final String sellOrderTxId = "VTTC0801U";
 
-    @BeforeAll
+    @BeforeEach
     void setUp() {
         sellOrderService = new SellOrderServiceImpl(openApiRequest, openApiProperties, orderTradingRepository);
         ReflectionTestUtils.setField(sellOrderService, "stopLossSellRatio", stopLossSellRatioDeadline);
@@ -59,5 +65,97 @@ class SellOrderServiceImplTest {
         assertThat(sellOrderService.isEvaluateProfitLossRateBetweenProfitAndStopLossPercent(unsoldLossEvaluateProfitLossRate)).isTrue();
         final String unsoldProfitEvaluateProfitLossRate = "-0.22";
         assertThat(sellOrderService.isEvaluateProfitLossRateBetweenProfitAndStopLossPercent(unsoldProfitEvaluateProfitLossRate)).isTrue();
+    }
+    @Test
+    @DisplayName("주식 잔고 조회 시 보유 수량이 0이면 이미 체결된 주식이기 때문에 매도 주문할 수 없다.")
+    void isStockItemSellOrderable() {
+        // given
+        StockBalanceExternalResDto.MyStockBalance myStockBalance =
+                new StockBalanceExternalResDto.MyStockBalance("", "", "", "", "", "", "",
+                        "0", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
+
+        // when
+        boolean result = sellOrderService.isStockItemSellOrderable(myStockBalance);
+        // then
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    @DisplayName("보유 수량이 1개 이상이고 주문 성공 이력이 없으면 매도 주문 종목 리스트에 포함한다.")
+    void pickStockItems_포함되는_케이스() {
+        // given
+        ReflectionTestUtils.setField(sellOrderService, "txIdSellOrder", sellOrderTxId);
+
+        StockBalanceExternalResDto.MyStockBalance success1 = new StockBalanceExternalResDto.MyStockBalance(
+                "000002", "", "", "", "", "", "",
+                "1", "", "","",
+                "2000", "", "",
+                "-5.1", "", "", "", "", "", "", "", "", "", "", "");
+
+        StockBalanceExternalResDto.MyStockBalance success2 = new StockBalanceExternalResDto.MyStockBalance(
+                "000003", "", "", "", "", "", "",
+                "2", "", "","",
+                "3000", "", "",
+                "10.1", "", "", "", "", "", "", "", "", "", "", "");
+
+        StockBalanceExternalResDto dto = StockBalanceExternalResDto.builder()
+                .resultCode(OPENAPI_SUCCESS_RESULT_CODE)
+                .output2(null)
+                .myStockBalance(List.of(success1, success2))
+                .build();
+
+        given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
+                success1.getStockCode(), OPENAPI_SUCCESS_RESULT_CODE, sellOrderTxId,
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 0)),
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59)))
+        ).willReturn(0);
+        given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
+                success2.getStockCode(), OPENAPI_SUCCESS_RESULT_CODE, sellOrderTxId,
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 0)),
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59)))
+        ).willReturn(0);
+
+        // when
+        List<StockItemDto> result = sellOrderService.pickStockItems(dto);
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting("stockCode").containsExactly(success1.getStockCode(), success2.getStockCode());
+    }
+
+    @Test
+    @DisplayName("이미 체결된 종목이거나 매도 주문한 이력이 있으면 매도 주문 종목 리스트에 포함하지 않는다.")
+    void pickStockItems_포함되지않는_케이스() {
+        // given
+        ReflectionTestUtils.setField(sellOrderService, "txIdSellOrder", sellOrderTxId);
+
+        StockBalanceExternalResDto.MyStockBalance alreadyOrdered = new StockBalanceExternalResDto.MyStockBalance(
+                "000000", "", "", "", "", "", "",
+                "1", "", "","",
+                "1000", "", "",
+                "10.1", "", "", "", "", "", "", "", "", "", "", "");
+
+        StockBalanceExternalResDto.MyStockBalance alreadyConcluded = new StockBalanceExternalResDto.MyStockBalance(
+                "000001", "", "", "", "", "", "",
+                "0", "", "","",
+                "1500", "", "",
+                "10.1", "", "", "", "", "", "", "", "", "", "", "");
+
+        StockBalanceExternalResDto dto = StockBalanceExternalResDto.builder()
+                .resultCode(OPENAPI_SUCCESS_RESULT_CODE)
+                .output2(null)
+                .myStockBalance(List.of(alreadyOrdered, alreadyConcluded))
+                .build();
+        given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
+                alreadyOrdered.getStockCode(), OPENAPI_SUCCESS_RESULT_CODE, sellOrderTxId,
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 0)),
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59)))
+        ).willReturn(1);
+
+        // when
+        List<StockItemDto> result = sellOrderService.pickStockItems(dto);
+
+        // then
+        assertThat(result).isEmpty();
     }
 }

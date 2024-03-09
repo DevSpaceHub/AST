@@ -74,8 +74,8 @@ public class SellOrderServiceImpl extends TradingService {
     }
 
     /**
-     * 알고리즘에 따라 거래할 종목 선택 및 매도 금액&수량 결정
-     * - 현재가 시세 조회 API 호출 -> 매도 금액 결정
+     * 보유하고 있는 종목이 손절/수익 매도 조건에 충족한다면
+     * 보유하고 있는 종목 모두 매도 주문에 포함.
      */
     public List<StockItemDto> pickStockItems(WebClientCommonResDto resDto) {
         StockBalanceExternalResDto stockBalanceResponse = (StockBalanceExternalResDto) resDto;
