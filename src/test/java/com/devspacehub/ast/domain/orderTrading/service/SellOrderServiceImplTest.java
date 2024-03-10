@@ -39,8 +39,8 @@ class SellOrderServiceImplTest {
     @Mock
     OrderTradingRepository orderTradingRepository;
 
-    private Float stopLossSellRatioDeadline = -5.0F;
-    private Float profitSellDeadline = 10.0F;
+    private final Float stopLossSellRatioDeadline = -5.0F;
+    private final Float profitSellDeadline = 10.0F;
     private final String sellOrderTxId = "VTTC0801U";
 
     @BeforeEach
@@ -51,7 +51,7 @@ class SellOrderServiceImplTest {
     }
 
     @Test
-    @DisplayName("평가손익률이 지표 사이에 있다면 True 반환한다. 반대는 False")
+    @DisplayName("평가손익률이 지표 사이에 있다면 True 반환하여 매도할 수 없음을 알린다.")
     void isEvaluateProfitLossRateBetweenProfitAndStopLossPercent() {
         // True
         final String lossEvaluateProfitLossRate = "10.01";

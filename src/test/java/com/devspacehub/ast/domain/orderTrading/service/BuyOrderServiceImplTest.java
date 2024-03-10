@@ -11,27 +11,32 @@ package com.devspacehub.ast.domain.orderTrading.service;
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.domain.itemInfo.ItemInfoRepository;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
+import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
 import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.util.OpenApiRequest;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
+import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 import static com.devspacehub.ast.common.constant.StockPriceUnit.*;
 import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
 import static com.devspacehub.ast.common.constant.YesNoStatus.YES;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BuyOrderServiceImplTest {
+    @InjectMocks
     BuyOrderServiceImpl buyOrderService;
 
     @Mock
@@ -51,10 +56,11 @@ class BuyOrderServiceImplTest {
     private final float limitPER = 5.0F;
     private final Long limitHtsMarketCapital = 300000000000L;
     private final Integer limitAccumulationVolume = 100000;
-
-    @BeforeAll
+    @BeforeEach
     void setUp() {
-        buyOrderService = new BuyOrderServiceImpl(openApiRequest, openApiProperties, orderTradingRepository, myService, marketStatusService, itemInfoRepository);
+//        buyOrderService = new BuyOrderServiceImpl(openApiRequest, openApiProperties, orderTradingRepository, myService, marketStatusService, itemInfoRepository);
+        System.out.println("===========buyOrderService: " + buyOrderService.getClass());
+        System.out.println("===========orderTradingRepository: " + orderTradingRepository);     // 왜 Null이지?
     }
 
     @Test
@@ -74,7 +80,7 @@ class BuyOrderServiceImplTest {
     }
 
     @Test
-    @DisplayName("매수 수량이 0이면 True 반환한다. 아니면 False")
+    @DisplayName("매수 수량이 0이면 True 반환하여 예수금이 부족함을 알 수 있다.")
     void isZero_success() {
         // given
         final int orderQuantity = 0;
@@ -85,7 +91,7 @@ class BuyOrderServiceImplTest {
     }
 
     @Test
-    @DisplayName("지표 PER/PBR 초과 or 지표 시가총액 미만 or 지표 누적거래양 미만이면 False")
+    @DisplayName("지표 PER/PBR 초과 or 지표 시가총액 미만 or 지표 누적거래양 미만이면 매수할 수 없다.")
     void checkAccordingWithIndicators_falseCase() {
         // given
         ReflectionTestUtils.setField(buyOrderService, "txIdBuyOrder", txIdBuyOrder);
@@ -104,7 +110,6 @@ class BuyOrderServiceImplTest {
         final String accumulationVolumeUnderLimit = "99999";
         final String accumulationVolumeOverLimit = "100000";
 
-        // given
         CurrentStockPriceExternalResDto.CurrentStockPriceInfo falseByInvtCarefulYn = CurrentStockPriceInfoBuilder.buildWith(perUnderLimit, pbrUnderLimit, marketCapitalizationOverLimit, accumulationVolumeOverLimit, YES, NO, NO);
 
         CurrentStockPriceExternalResDto.CurrentStockPriceInfo falseByShortOverYn = CurrentStockPriceInfoBuilder.buildWith(perUnderLimit, pbrUnderLimit, marketCapitalizationOverLimit, accumulationVolumeOverLimit, NO, YES, NO);
@@ -129,7 +134,7 @@ class BuyOrderServiceImplTest {
         assertThat(buyOrderService.checkAccordingWithIndicators(falseByAccumulationVolume)).isFalse();
     }
     @Test
-    @DisplayName("지표 PER/PBR 이하 + 지표 시가총액 이상 + 지표 누적거래양 이상일 때 True")
+    @DisplayName("지표 PER/PBR 이하 + 지표 시가총액 이상 + 지표 누적거래양 이상일 때 매수할 수 있다.")
     void checkAccordingWithIndicators_trueCase() {
         // given
         ReflectionTestUtils.setField(buyOrderService, "txIdBuyOrder", txIdBuyOrder);
@@ -169,5 +174,29 @@ class BuyOrderServiceImplTest {
         assertThat(buyOrderService.orderPriceCuttingByPriceUnit(currentPriceUnder200000, HUNDRED.getCode())).isEqualTo(199900);
         assertThat(buyOrderService.orderPriceCuttingByPriceUnit(currentPriceUnder500000, FIVE_HUNDRED.getCode())).isEqualTo(499500);
         assertThat(buyOrderService.orderPriceCuttingByPriceUnit(currentPriceOver500000, THOUSAND.getCode())).isEqualTo(500000);
+    }
+
+    @Test
+    @DisplayName("ITEM_INFO 테이블에 있고 금일 매수 주문한 이력이 없다면 True 반환한다.")
+    void isStockItemBuyOrderable_true() {
+        // given
+        ReflectionTestUtils.setField(buyOrderService, "txIdBuyOrder", txIdBuyOrder);
+
+        DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo = new DomStockTradingVolumeRankingExternalResDto.StockInfo("",
+                "000155", "", "", "", "", "", "", "","", "", "",
+                "", "", "", "", "", "", "");
+
+        given(itemInfoRepository.countByItemCode("000155")).willReturn(1);
+        given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
+            "000155", OPENAPI_SUCCESS_RESULT_CODE, txIdBuyOrder,
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0,0)),
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(23,59, 59)))
+        ).willReturn(0);
+
+        // when
+        boolean result = buyOrderService.isStockItemBuyOrderable(stockInfo);
+
+        // then
+        assertThat(result).isTrue();
     }
 }

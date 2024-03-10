@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class NumberUtilTest {
 
     @Test
-    @DisplayName("정수의 퍼센트 값을 넘기면 소수점으로 변환한다.")
+    @DisplayName("정수의 퍼센트 값을 소수점으로 변환한다.")
     void percentageToDecimal() {
         // given
         final int onePercent = 1;

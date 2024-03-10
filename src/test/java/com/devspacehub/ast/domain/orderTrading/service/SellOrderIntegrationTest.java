@@ -33,8 +33,8 @@ class SellOrderIntegrationTest {
     final String sellTxId = "VTTC0801U";
 
     @Test
-    @DisplayName("(실패)동일 종목에 대해 매도 주문은 각 1번씩만 발생한다.")
-    void isNewOrder_failed() {
+    @DisplayName("동일 종목에 대해 매도 주문은 1회 초과 할 수 없다.")
+    void isNewOrder_false() {
         // given
         final String alreadyOrderedStockCode = "000000";
         orderTradingRepository.save(OrderTrading.builder()
@@ -58,8 +58,8 @@ class SellOrderIntegrationTest {
     }
 
     @Test
-    @DisplayName("(성공)동일 종목에 대해 매도 주문은 각 1번씩만 발생한다.")
-    void isNewOrder_success() {
+    @DisplayName("동일 종목에 대해 매도 주문은 각 1번씩만 발생한다.")
+    void isNewOrder_true() {
         // given
         final String alreadyOrderedStockCode = "000000";
         final String notOrderedStockCode = "100000";

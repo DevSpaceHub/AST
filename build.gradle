@@ -48,3 +48,22 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+test {
+	systemProperty 'COMPREHENSIVE_ACCOUNTNUMBER', '50099723'
+	systemProperty 'ACCOUNTNUMBER_PRODUCT_CODE', '01'
+	systemProperty 'APP_KEY', 'PSOspPtEknXDIqdg3X4k8DRMz7LZydtY2gdh'
+	systemProperty 'APP_SECRET', '9QdgtjzwUNXWGrow7omqxz8moly7wCXpxM80gapiAv9C1XDG5x6imzzjZ8ULs1rNv8eit8qNpPnLOicqIgYV0RcMH2MYQJPeQ6iHDZE8ccY6cLMEonHKX8besKXSDtg9sbMTsoZAD06R3RC7wb/4/PT8tIcErIUAwGhaxK2Yiwd9hTG57Q4='
+	systemProperty 'PER', '100.0'
+	systemProperty 'PBR', '5.0'
+	systemProperty 'HTS_MARKET_CAPITAL', '300000000000'
+	systemProperty 'ACCUMULATION_VOLUME', '100000'
+	systemProperty 'CASH_BUY_ORDER_AMOUNT_PERCENT', '10'
+	systemProperty 'SPLIT_BUY_PERCENTS_BY_COMMA', '2,5,8'
+	systemProperty 'SPLIT_BUY_COUNT', '3'
+	systemProperty 'STOP_LOSS_SELL_RATIO', '-5.0'
+	systemProperty 'PROFIT_SELL_RATIO', '10.0'
+	systemProperty 'DB_URL', 'jdbc:mysql://35.188.90.86:3306/astDB_BETA?serverTimezone=Asia/Seoul&characterEncoding=UTF-8'
+	systemProperty 'DB_PASSWORD', 'devSpaceHub_BETA123'
+	systemProperty 'DB_USERNAME', 'devSpaceHub_BETA'
+}

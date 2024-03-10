@@ -101,11 +101,10 @@ public class BuyOrderServiceImpl extends TradingService {
     }
 
     /**
-     * 매수 수량 구하기
-     * 소수점 버림.
-     * @param myCash
-     * @param calculatedOrderPrice
-     * @return
+     * 예수금의 ** 퍼센트와 주문가를 이용여 알고리즘을 이용해 매수 수량 구한다.
+     * @param myCash 예수금
+     * @param calculatedOrderPrice 주문가
+     * @return 소수점 버려진 int 타입의 매수 수량
      */
     public int calculateOrderQuantity(int myCash, int calculatedOrderPrice) {
         Float orderQuantity = ((myCash * NumberUtil.percentageToDecimal(cashBuyOrderAmountPercent)) / splitBuyCount) / calculatedOrderPrice;
@@ -113,7 +112,9 @@ public class BuyOrderServiceImpl extends TradingService {
     }
 
     /**
-     * 매수 수량이 0이면 매수 불가능.
+     * 계산된 수량 값이 0인지 체크한다.
+     * @param orderQuantity 주문 수량
+     * @return 수량이 0이면 True 반환. 아니면 False.
      */
     public boolean isZero(int orderQuantity) {
         return orderQuantity == 0;
@@ -134,8 +135,8 @@ public class BuyOrderServiceImpl extends TradingService {
      * - 매수 수량 결정
      * - 매수 가능 여부 확인
      * 6. 분할 매수
-     * @param resDto
-     * @return
+     * @param resDto 거래량 순위 종목 조회 DTO
+     * @return 매수 주문할 종목들의 List 타입
      */
     public List<StockItemDto> pickStockItems(WebClientCommonResDto resDto) {
         // 1. 거래량 순위 종목 조회
@@ -197,9 +198,9 @@ public class BuyOrderServiceImpl extends TradingService {
 
 
     /**
-     * 호가 단위에 따라 주문가 조정
-     * @param calculatedOrderPrice
-     * @return
+     * 호가 단위에 따라 주문가 조정하여 반환한다.
+     * @param calculatedOrderPrice 주문가
+     * @return int 타입의 주문가
      */
     protected int orderPriceCuttingByPriceUnit(int calculatedOrderPrice, int priceUnit) {
         Float decimal = calculatedOrderPrice / (float) priceUnit;
@@ -207,14 +208,11 @@ public class BuyOrderServiceImpl extends TradingService {
     }
 
     /**
-     * 매수 가능한지 체크
-     * @param stockInfo
-     * @return
+     * 매수 가능한지 체크한다.
+     * @param stockInfo 종목 정보 DTO
+     * @return 유효한 종목이고 신규 주문이면 True 반환한다. 반대는 False.
      */
-    private boolean isStockItemBuyOrderable(StockInfo stockInfo) {
-        if (1 > itemInfoRepository.countByItemCode(stockInfo.getStockCode())) {
-            return false;
-        }
+    protected boolean isStockItemBuyOrderable(StockInfo stockInfo) {
         if (itemInfoRepository.countByItemCode(stockInfo.getStockCode()) < 1) {
             return false;
         }
@@ -223,20 +221,20 @@ public class BuyOrderServiceImpl extends TradingService {
 
     /**
      * 종목에 대해 새 주문인지 체크
-     * @param stockCode
-     * @return
+     * @param stockCode String 타입의 종목 코드
+     * @return 금일 기준 신규 주문이면 True 반환. 이미 주문 이력 있으면 False 반환.
      */
     public boolean isNewOrder(String stockCode){
         return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
                 stockCode, OPENAPI_SUCCESS_RESULT_CODE, txIdBuyOrder,
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(8,59,0)),
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(15,0,0)));
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(0,0,0)),
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59)));
     }
 
     /**
      * 지표(per, pbr, 투자유의여부(N), 단기과열여부(N), 정리매매여부(N), 시가총액, 거래량) 고려
-     * @param currentStockPriceInfo
-     * @return
+     * @param currentStockPriceInfo 현재가 시세 조회 응답 DTO
+     * @return 매수 지표 기준에 부합하면 True 반환. 부합하지 않으면 False 반환.
      */
     protected boolean checkAccordingWithIndicators(CurrentStockPriceInfo currentStockPriceInfo) {
         if (YES.getCode().equals(currentStockPriceInfo.getInvtCarefulYn()) ||
@@ -259,6 +257,10 @@ public class BuyOrderServiceImpl extends TradingService {
         return true;
     }
 
+    /**
+     * 매수 주문 후 이력 테이블에 저장.
+     * @param orderTradingInfos 매수 주문 성공 정보
+     */
     @Transactional
     @Override
     public void saveInfos(List<OrderTrading> orderTradingInfos) {
