@@ -21,6 +21,9 @@ logging:
 notify:
   discord-webhook:
     url: https://discord.com/api/webhooks/1200783808279101572/58SyrsR6ZnWmbPCBDll6ONWAqY7AMZIV15V5L3g2Grb_KQtNkkJrZSaTuNqOBWLlUv3d
+
+#TODO TEST 용도
+comprehensive-test: ${COMPREHENSIVE_ACCOUNTNUMBER_TEST}
 ---
 spring:
   config:
@@ -40,6 +43,9 @@ spring:
     defer-datasource-initialization: false #true
     hibernate:
       ddl-auto: none #create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
 
   sql:
     init:
