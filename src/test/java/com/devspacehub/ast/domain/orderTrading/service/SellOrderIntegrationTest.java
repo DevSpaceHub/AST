@@ -8,13 +8,14 @@
 
 package com.devspacehub.ast.domain.orderTrading.service;
 
+import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 
@@ -23,18 +24,31 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+//@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SellOrderIntegrationTest {
     @Autowired
     private OrderTradingRepository orderTradingRepository;
     @Autowired
     private SellOrderServiceImpl sellOrderService;
-
+    @Autowired
+    private OpenApiProperties openApiProperties;
     final String sellTxId = "VTTC0801U";
 
     @Test
     @DisplayName("(실패)동일 종목에 대해 매도 주문은 각 1번씩만 발생한다.")
     void isNewOrder_failed() {
+        assertThat(openApiProperties).isNotNull();
+//        System.setProperty("DB_URL", "jdbc:mysql://35.188.90.86:3306/astDB_BETA?serverTimezone=Asia/Seoul&characterEncoding=UTF-8");
+//        System.setProperty("DB_USERNAME", "devSpaceHub_BETA");
+//        System.setProperty("DB_PASSWORD", "devSpaceHub_BETA123");
+//        System.setProperty("COMPREHENSIVE_ACCOUNTNUMBER_TEST", "50099723");
+//        System.setProperty("ACCOUNTNUMBER_PRODUCT_CODE", "01");
+        ReflectionTestUtils.setField(orderTradingRepository, "DB_URL", "jdbc:mysql://35.188.90.86:3306/astDB_BETA?serverTimezone=Asia/Seoul&characterEncoding=UTF-8");
+        ReflectionTestUtils.setField(orderTradingRepository, "DB_USERNAME", "devSpaceHub_BETA");
+        ReflectionTestUtils.setField(orderTradingRepository, "DB_PASSWORD", "devSpaceHub_BETA123");
+        ReflectionTestUtils.setField(openApiProperties, "test", "50099723");
+        ReflectionTestUtils.setField(openApiProperties, "accntProductCode", "01");
+
         // given
         final String alreadyOrderedStockCode = "000000";
         orderTradingRepository.save(OrderTrading.builder()
