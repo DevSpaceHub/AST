@@ -19,6 +19,8 @@ import org.springframework.stereotype.Component;
 @Getter
 @Component
 public class OpenApiProperties {
+    @Value("${comprehensive-test}")
+    private String test;        // TODO Test 용도
     @Value("${my.comprehensive-accountnumber}")
     private String accntNumber;
     @Value("${my.accountnumber-product-code}")

@@ -1,4 +1,20 @@
 /*
+ © 2024 devspacehub, Inc. All rights reserved.
+
+ name : MyServiceImpl
+ creation : 2024.3.19
+ author : Yoonji Moon
+ */
+
+/*
+ © 2024 devspacehub, Inc. All rights reserved.
+
+ name : MyServiceImpl
+ creation : 2024.3.18
+ author : Yoonji Moon
+ */
+
+/*
  © 2023 devspacehub, Inc. All rights reserved.
 
  name : MyServiceImpl
@@ -6,13 +22,14 @@
  author : Yoonji Moon
  */
 
-package com.devspacehub.ast.domain.my.service;
+package com.devspacehub.ast.domain.my.stockBalance.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
-import com.devspacehub.ast.domain.my.dto.request.StockBalanceExternalReqDto;
-import com.devspacehub.ast.domain.my.dto.response.BuyPossibleCheckExternalResDto;
-import com.devspacehub.ast.domain.my.dto.response.StockBalanceExternalResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.request.StockBalanceExternalReqDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.BuyPossibleCheckExternalResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.request.BuyPossibleCheckExternalReqDto;
 import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
 import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +42,12 @@ import org.springframework.util.MultiValueMap;
 import java.util.function.Consumer;
 
 import static com.devspacehub.ast.common.constant.OpenApiType.BUY_ORDER_POSSIBLE_CASH;
-import static com.devspacehub.ast.domain.my.dto.request.BuyPossibleCheckExternalReqDto.*;
 
 /**
- * 사용자 My 서비스 구현체.
+ * 사용자 개인 서비스 구현체.
+ * - 매수 가능 금액 조회 (외부 API)
+ * - 주식 잔고 조회 (외부 API)
+ * - 예약 주문 정보 조회 (Table)
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -48,8 +67,8 @@ public class MyServiceImpl implements MyService {
     @Override
     public int getBuyOrderPossibleCash(String stockCode, Integer orderPrice, String orderDivision) {
         // 헤더 & 파라미터 값 생성
-        Consumer<HttpHeaders> httpHeaders = setHeaders(openApiProperties.getOauth(), txIdBuyPossibleCashFind);
-        MultiValueMap<String, String> queryParams = createParameter(
+        Consumer<HttpHeaders> httpHeaders = BuyPossibleCheckExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdBuyPossibleCashFind);
+        MultiValueMap<String, String> queryParams = BuyPossibleCheckExternalReqDto.createParameter(
                 openApiProperties.getAccntNumber(), openApiProperties.getAccntProductCode(), stockCode, orderPrice, orderDivision);
 
         BuyPossibleCheckExternalResDto responseDto = (BuyPossibleCheckExternalResDto) openApiRequest.httpGetRequest(BUY_ORDER_POSSIBLE_CASH, httpHeaders, queryParams);
@@ -79,7 +98,7 @@ public class MyServiceImpl implements MyService {
         if (!responseDto.isSuccess()) {
             throw new OpenApiFailedResponseException();
         }
-        // log (TODO 삭제 예정)
+
         log.info("[sell] 주식잔고조회 : {}", responseDto.getMessage());
         for(StockBalanceExternalResDto.MyStockBalance myStockBalance : responseDto.getMyStockBalance()) {
             log.info("[sell] 1. 주식 종목 : {}({})", myStockBalance.getStockCode(), myStockBalance.getStockName());

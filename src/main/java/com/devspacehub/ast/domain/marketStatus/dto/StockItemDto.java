@@ -7,7 +7,7 @@
  */
 package com.devspacehub.ast.domain.marketStatus.dto;
 
-import com.devspacehub.ast.domain.my.dto.response.StockBalanceExternalResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
 import lombok.*;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION;
