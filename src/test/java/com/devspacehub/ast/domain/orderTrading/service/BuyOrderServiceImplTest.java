@@ -188,7 +188,7 @@ class BuyOrderServiceImplTest {
         ).willReturn(0);
 
         // when
-        boolean result = buyOrderService.isStockItemBuyOrderable(stockInfo);
+        boolean result = buyOrderService.isStockItemBuyOrderable(stockInfo, txIdBuyOrder);
 
         // then
         assertThat(result).isTrue();

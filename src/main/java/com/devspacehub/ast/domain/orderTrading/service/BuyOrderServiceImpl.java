@@ -9,6 +9,7 @@
 package com.devspacehub.ast.domain.orderTrading.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
+import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.constant.StockPriceUnit;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.itemInfo.ItemInfoRepository;
@@ -42,7 +43,6 @@ import java.util.function.Consumer;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION;
-import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_BUY_ORDER;
 import static com.devspacehub.ast.common.constant.YesNoStatus.YES;
 import static com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto.*;
 
@@ -54,7 +54,6 @@ import static com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeR
 @Service
 public class BuyOrderServiceImpl extends TradingService {
     private final OpenApiRequest openApiRequest;
-    private final OpenApiProperties openApiProperties;
     private final OrderTradingRepository orderTradingRepository;
     private final MyService myService;
     private final MarketStatusService marketStatusService;
@@ -85,19 +84,12 @@ public class BuyOrderServiceImpl extends TradingService {
      * : stockCode 종목코드(6자리) / orderDivision 주문구분(지정가,00) / orderQuantity 주문수량 / orderPrice 주문단가
      */
     @Override
-    public DomesticStockOrderExternalResDto order(StockItemDto stockItem) {
+    public DomesticStockOrderExternalResDto order(OpenApiProperties openApiProperties, StockItemDto stockItem, OpenApiType openApiType, String transactionId) {
         // 매수 주문
-        Consumer<HttpHeaders> httpHeaders = DomesticStockOrderExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdBuyOrder);
-        DomesticStockOrderExternalReqDto bodyDto = DomesticStockOrderExternalReqDto.builder()
-                .accntNumber(openApiProperties.getAccntNumber())
-                .accntProductCode(openApiProperties.getAccntProductCode())
-                .stockCode(stockItem.getStockCode())
-                .orderDivision(stockItem.getOrderDivision())
-                .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
-                .orderPrice(String.valueOf(stockItem.getOrderPrice()))
-                .build();
+        Consumer<HttpHeaders> httpHeaders = DomesticStockOrderExternalReqDto.setHeaders(openApiProperties.getOauth(), transactionId);
+        DomesticStockOrderExternalReqDto bodyDto = DomesticStockOrderExternalReqDto.from(openApiProperties, stockItem);
 
-        return (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(DOMESTIC_STOCK_BUY_ORDER, httpHeaders, bodyDto);
+        return (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(openApiType, httpHeaders, bodyDto);
     }
 
     /**
@@ -136,9 +128,10 @@ public class BuyOrderServiceImpl extends TradingService {
      * - 매수 가능 여부 확인
      * 6. 분할 매수
      * @param resDto 거래량 순위 종목 조회 DTO
+     * @param transactionId 트랜잭션 Id
      * @return 매수 주문할 종목들의 List 타입
      */
-    public List<StockItemDto> pickStockItems(WebClientCommonResDto resDto) {
+    public List<StockItemDto> pickStockItems(WebClientCommonResDto resDto, String transactionId) {
         // 1. 거래량 순위 종목 조회
         DomStockTradingVolumeRankingExternalResDto stockItems = (DomStockTradingVolumeRankingExternalResDto) resDto;
 
@@ -148,7 +141,7 @@ public class BuyOrderServiceImpl extends TradingService {
         while (count++ < 10) {
             StockInfo stockInfo = stockItems.getStockInfos().get(count);
             // 2. 매수 가능 여부 체크
-            if (!isStockItemBuyOrderable(stockInfo)) {
+            if (!isStockItemBuyOrderable(stockInfo, transactionId)) {
                 continue;
             }
 
@@ -210,23 +203,25 @@ public class BuyOrderServiceImpl extends TradingService {
     /**
      * 매수 가능한지 체크한다.
      * @param stockInfo 종목 정보 DTO
+     * @param transactionId 트랜잭션 Id
      * @return 유효한 종목이고 신규 주문이면 True 반환한다. 반대는 False.
      */
-    protected boolean isStockItemBuyOrderable(StockInfo stockInfo) {
+    protected boolean isStockItemBuyOrderable(StockInfo stockInfo, String transactionId) {
         if (itemInfoRepository.countByItemCode(stockInfo.getStockCode()) < 1) {
             return false;
         }
-        return isNewOrder(stockInfo.getStockCode());
+        return isNewOrder(stockInfo.getStockCode(), transactionId);
     }
 
     /**
      * 종목에 대해 새 주문인지 체크
-     * @param stockCode String 타입의 종목 코드
+     * @param stockCode     String 타입의 종목 코드
+     * @param transactionId 트랜잭션 Id
      * @return 금일 기준 신규 주문이면 True 반환. 이미 주문 이력 있으면 False 반환.
      */
-    public boolean isNewOrder(String stockCode){
+    public boolean isNewOrder(String stockCode, String transactionId){
         return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
-                stockCode, OPENAPI_SUCCESS_RESULT_CODE, txIdBuyOrder,
+                stockCode, OPENAPI_SUCCESS_RESULT_CODE, transactionId,
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(0,0,0)),
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59)));
     }

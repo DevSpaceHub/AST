@@ -35,8 +35,6 @@ class SellOrderServiceImplTest {
     @Mock
     OpenApiRequest openApiRequest;
     @Mock
-    OpenApiProperties openApiProperties;
-    @Mock
     OrderTradingRepository orderTradingRepository;
 
     private final String sellOrderTxId = "VTTC0801U";
@@ -45,7 +43,7 @@ class SellOrderServiceImplTest {
     void setUp() {
         Float stopLossSellRatioDeadline = -5.0F;
         Float profitSellDeadline = 10.0F;
-        sellOrderService = new SellOrderServiceImpl(openApiRequest, openApiProperties, orderTradingRepository);
+        sellOrderService = new SellOrderServiceImpl(openApiRequest, orderTradingRepository);
         ReflectionTestUtils.setField(sellOrderService, "stopLossSellRatio", stopLossSellRatioDeadline);
         ReflectionTestUtils.setField(sellOrderService, "profitSellRatio", profitSellDeadline);
     }
@@ -75,7 +73,7 @@ class SellOrderServiceImplTest {
                         "0", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
 
         // when
-        boolean result = sellOrderService.isStockItemSellOrderable(myStockBalance);
+        boolean result = sellOrderService.isStockItemSellOrderable(myStockBalance, sellOrderTxId);
         // then
         assertThat(result).isFalse();
     }
@@ -84,8 +82,6 @@ class SellOrderServiceImplTest {
     @DisplayName("보유 수량이 1개 이상이고 주문 성공 이력이 없고 매도 지표에 부합하면 매도 주문 종목 리스트에 포함한다.")
     void pickStockItemsIncluded() {
         // given
-        ReflectionTestUtils.setField(sellOrderService, "txIdSellOrder", sellOrderTxId);
-
         StockBalanceExternalResDto.MyStockBalance givenLossSellItem = new StockBalanceExternalResDto.MyStockBalance(
                 "000002", "", "", "", "", "", "",
                 "1", "", "","",
@@ -116,7 +112,7 @@ class SellOrderServiceImplTest {
         ).willReturn(0);
 
         // when
-        List<StockItemDto> result = sellOrderService.pickStockItems(dto);
+        List<StockItemDto> result = sellOrderService.pickStockItems(dto, sellOrderTxId);
 
         // then
         assertThat(result).hasSize(2);
@@ -127,8 +123,6 @@ class SellOrderServiceImplTest {
     @DisplayName("이미 체결된 종목이거나 매도 주문한 이력이 있으면 매도 주문 종목 리스트에 포함하지 않는다.")
     void pickStockItemsNotIncluded() {
         // given
-        ReflectionTestUtils.setField(sellOrderService, "txIdSellOrder", sellOrderTxId);
-
         StockBalanceExternalResDto.MyStockBalance alreadyOrdered = new StockBalanceExternalResDto.MyStockBalance(
                 "000000", "", "", "", "", "", "",
                 "1", "", "","",
@@ -153,7 +147,7 @@ class SellOrderServiceImplTest {
         ).willReturn(1);
 
         // when
-        List<StockItemDto> result = sellOrderService.pickStockItems(dto);
+        List<StockItemDto> result = sellOrderService.pickStockItems(dto, sellOrderTxId);
 
         // then
         assertThat(result).isEmpty();

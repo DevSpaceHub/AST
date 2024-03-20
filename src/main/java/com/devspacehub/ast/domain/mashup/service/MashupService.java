@@ -8,6 +8,7 @@
 
 package com.devspacehub.ast.domain.mashup.service;
 
+import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.ResultCode;
 import com.devspacehub.ast.common.constant.TokenType;
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
@@ -51,6 +52,7 @@ public class MashupService {
     private final MyService myService;
     private final Notificator notificator;
     private final Environment environment;
+    private final OpenApiProperties openApiProperties;
 
     @Value("${openapi.rest.header.transaction-id.buy-order}")
     private String txIdBuyOrder;
@@ -84,13 +86,13 @@ public class MashupService {
 
         // 2. 종목 선택 (거래량 순위 API) 및 매입수량 결정 (현재가 시세 조회 API)
         TradingService tradingService = orderTradingServiceFactory.getServiceImpl(DOMESTIC_STOCK_BUY_ORDER);
-        List<StockItemDto> stockItems = tradingService.pickStockItems(items);
+        List<StockItemDto> stockItems = tradingService.pickStockItems(items, txIdBuyOrder);
         log.info("[buy] 최종 매수 가능 종목 : {}", stockItems.size());
 
         // 3. 매수
         List<OrderTrading> orderTradings = new ArrayList<>();
         for (StockItemDto item : stockItems) {
-            DomesticStockOrderExternalResDto result = tradingService.order(item);
+            DomesticStockOrderExternalResDto result = tradingService.order(openApiProperties, item, DOMESTIC_STOCK_BUY_ORDER, txIdBuyOrder);
             OrderTrading orderTrading = OrderTrading.from(item, result, txIdBuyOrder);
             orderTradings.add(orderTrading);
 
@@ -126,8 +128,8 @@ public class MashupService {
         TradingService tradingService = orderTradingServiceFactory.getServiceImpl(DOMESTIC_STOCK_SELL_ORDER);
         // 2. 주식 선택 후 매도 주문 (손절매도 & 수익매도)
         List<OrderTrading> orderTradings = new ArrayList<>();
-        for (StockItemDto item : tradingService.pickStockItems(myStockBalance)) {
-            DomesticStockOrderExternalResDto result = tradingService.order(item);
+        for (StockItemDto item : tradingService.pickStockItems(myStockBalance, txIdSellOrder)) {
+            DomesticStockOrderExternalResDto result = tradingService.order(openApiProperties, item, DOMESTIC_STOCK_SELL_ORDER, txIdSellOrder);
             OrderTrading orderTrading = OrderTrading.from(item, result, txIdSellOrder);
             orderTradings.add(orderTrading);
 

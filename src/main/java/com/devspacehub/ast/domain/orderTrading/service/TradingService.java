@@ -8,6 +8,8 @@
 
 package com.devspacehub.ast.domain.orderTrading.service;
 
+import com.devspacehub.ast.common.config.OpenApiProperties;
+import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
@@ -22,11 +24,11 @@ public abstract class TradingService {
     /**
      * 알고리즘에 따라 거래할 종목 선택
      */
-    public abstract <T extends WebClientCommonResDto> List<StockItemDto> pickStockItems(T stockItems);
+    public abstract <T extends WebClientCommonResDto> List<StockItemDto> pickStockItems(T stockItems, String transactionId);
     /**
      * 주식 주문 (매수/매도).
      */
-    public abstract DomesticStockOrderExternalResDto order(StockItemDto stockItemDto);
+    public abstract DomesticStockOrderExternalResDto order(OpenApiProperties openApiProperties, StockItemDto stockItemDto, OpenApiType openApiType, String transactionId);
 
     /**
      * 주식 주문 정보 저장.
@@ -36,8 +38,9 @@ public abstract class TradingService {
     /**
      * 금일 한번도 매수/매도 주문되지 않은 종목인지 체크.
      * @param stockCode
+     * @param transactionId
      * @return
      */
-    public abstract boolean isNewOrder(String stockCode);
+    public abstract boolean isNewOrder(String stockCode, String transactionId);
 
 }

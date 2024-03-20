@@ -9,6 +9,7 @@
 package com.devspacehub.ast.domain.orderTrading.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
+import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
@@ -32,7 +33,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
-import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_SELL_ORDER;
 
 /**
  * 주식 주문 서비스 구현체 - 매도
@@ -42,11 +42,7 @@ import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_SEL
 @Service
 public class SellOrderServiceImpl extends TradingService {
     private final OpenApiRequest openApiRequest;
-    private final OpenApiProperties openApiProperties;
     private final OrderTradingRepository orderTradingRepository;
-
-    @Value("${openapi.rest.header.transaction-id.sell-order}")
-    private String txIdSellOrder;
 
     @Value("${trading.stop-loss-sell-ratio}")
     private Float stopLossSellRatio;
@@ -59,30 +55,23 @@ public class SellOrderServiceImpl extends TradingService {
      * - 국내주식주문 API 호출
      */
     @Override
-    public DomesticStockOrderExternalResDto order(StockItemDto stockItem) {
-        Consumer<HttpHeaders> httpHeaders = DomesticStockOrderExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdSellOrder);
-        DomesticStockOrderExternalReqDto bodyDto = DomesticStockOrderExternalReqDto.builder()
-                .accntNumber(openApiProperties.getAccntNumber())
-                .accntProductCode(openApiProperties.getAccntProductCode())
-                .stockCode(stockItem.getStockCode())
-                .orderDivision(stockItem.getOrderDivision())
-                .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
-                .orderPrice(String.valueOf(stockItem.getOrderPrice()))
-                .build();
+    public DomesticStockOrderExternalResDto order(OpenApiProperties openApiProperties, StockItemDto stockItem, OpenApiType openApiType, String transactionId) {
+        Consumer<HttpHeaders> httpHeaders = DomesticStockOrderExternalReqDto.setHeaders(openApiProperties.getOauth(), transactionId);
+        DomesticStockOrderExternalReqDto bodyDto = DomesticStockOrderExternalReqDto.from(openApiProperties, stockItem);
 
-        return (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(DOMESTIC_STOCK_SELL_ORDER, httpHeaders, bodyDto);
+        return (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(openApiType, httpHeaders, bodyDto);
     }
 
     /**
      * 알고리즘에 따라 거래할 종목 선택 및 매도 금액&수량 결정
      * - 현재가 시세 조회 API 호출 -> 매도 금액 결정
      */
-    public List<StockItemDto> pickStockItems(WebClientCommonResDto resDto) {
+    public List<StockItemDto> pickStockItems(WebClientCommonResDto resDto, String transactionId) {
         StockBalanceExternalResDto stockBalanceResponse = (StockBalanceExternalResDto) resDto;
         List<StockItemDto> pickedStockItems = new ArrayList<>();
 
         for (StockBalanceExternalResDto.MyStockBalance myStockBalance : stockBalanceResponse.getMyStockBalance()) {
-            if (!isStockItemSellOrderable(myStockBalance)) {
+            if (!isStockItemSellOrderable(myStockBalance, transactionId)) {
                 continue;
             }
 
@@ -96,7 +85,7 @@ public class SellOrderServiceImpl extends TradingService {
      * @param myStockBalance
      * @return
      */
-    protected boolean isStockItemSellOrderable(StockBalanceExternalResDto.MyStockBalance myStockBalance) {
+    protected boolean isStockItemSellOrderable(StockBalanceExternalResDto.MyStockBalance myStockBalance, String transactionId) {
         // 이미 체결된 주식인지 체크 (KIS : 체결 + 2일동안 0으로 응답함)
         if (0 == Integer.parseInt(myStockBalance.getHoldingQuantity())) {
             return false;
@@ -105,7 +94,7 @@ public class SellOrderServiceImpl extends TradingService {
         if (isEvaluateProfitLossRateBetweenProfitAndStopLossPercent(myStockBalance.getEvaluateProfitLossRate())) {
             return false;
         }
-        return isNewOrder(myStockBalance.getStockCode());
+        return isNewOrder(myStockBalance.getStockCode(), transactionId);
     }
 
     /**
@@ -133,12 +122,13 @@ public class SellOrderServiceImpl extends TradingService {
      * 매수됐지만 체결되지 않은 종목은 주문하지 않는다.
      * 매수됐던 이력도 없다면 주문할 수 있다.
      * @param stockCode
+     * @param transactionId
      * @return
      */
-    public boolean isNewOrder(String stockCode){
+    public boolean isNewOrder(String stockCode, String transactionId){
         // 주문 가능 수량 초과 시 주문 불가.
         return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
-                stockCode, OPENAPI_SUCCESS_RESULT_CODE, txIdSellOrder,
+                stockCode, OPENAPI_SUCCESS_RESULT_CODE, transactionId,
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 0)),
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59))
         );
