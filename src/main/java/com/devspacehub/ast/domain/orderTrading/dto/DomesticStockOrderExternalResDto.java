@@ -38,6 +38,7 @@ public class DomesticStockOrderExternalResDto extends WebClientCommonResDto {
      * 응답 body (실패 시 null)
      */
     @Getter
+    @Setter
     public static class Output {
         @JsonProperty("KRX_FWDG_ORD_ORGNO")
         private String krxFwdgOrdOrgno; // 주문시 한국투자증권 시스템에서 지정된 영업점코드

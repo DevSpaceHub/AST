@@ -10,7 +10,6 @@ package com.devspacehub.ast.domain.orderTrading.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
-import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
@@ -22,14 +21,19 @@ import java.util.List;
  */
 public abstract class TradingService {
     /**
-     * 알고리즘에 따라 거래할 종목 선택
-     */
-    public abstract <T extends WebClientCommonResDto> List<StockItemDto> pickStockItems(T stockItems, String transactionId);
-    /**
      * 주식 주문 (매수/매도).
      */
-    public abstract DomesticStockOrderExternalResDto order(OpenApiProperties openApiProperties, StockItemDto stockItemDto, OpenApiType openApiType, String transactionId);
+    public abstract List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType, String transactionId);
 
+    /**
+     * 주문 API 요청 위해 Header, Body 세팅 후 OpenApiRequest 클래스 내 메서드 호출.
+     * @param openApiProperties
+     * @param stockItem
+     * @param openApiType
+     * @param transactionId
+     * @return
+     */
+    public abstract DomesticStockOrderExternalResDto callOrderApi(OpenApiProperties openApiProperties, StockItemDto stockItem, OpenApiType openApiType, String transactionId);
     /**
      * 주식 주문 정보 저장.
      */
@@ -41,6 +45,8 @@ public abstract class TradingService {
      * @param transactionId
      * @return
      */
-    public abstract boolean isNewOrder(String stockCode, String transactionId);
+    public boolean isNewOrder(String stockCode, String transactionId) {
+        return true;
+    }
 
 }

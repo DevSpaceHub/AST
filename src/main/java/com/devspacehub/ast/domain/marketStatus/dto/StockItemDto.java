@@ -7,6 +7,7 @@
  */
 package com.devspacehub.ast.domain.marketStatus.dto;
 
+import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
 import lombok.*;
 
@@ -30,25 +31,25 @@ public class StockItemDto {
     private Integer orderPrice;
 
     @Builder
-    private static StockItemDto StockItemDto(String stockCode, String stockNameKor,
-                                             int orderQuantity, int currentStockPrice) {
+    private static StockItemDto stockItemDto(String stockCode, String stockNameKor,
+                                             int orderQuantity, int orderPrice) {
         return new StockItemDto(stockCode, stockNameKor, ORDER_DIVISION,
-                orderQuantity, currentStockPrice);
+                orderQuantity, orderPrice);
     }
 
     /**
      * 매수 종목 DTO 생성
      * @param stockInfo
      * @param orderQuantity
-     * @param calculatedBuyPrice
+     * @param orderPrice
      * @return
      */
-    public static StockItemDto from(DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo, int orderQuantity, int calculatedBuyPrice) {
+    public static StockItemDto from(DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo, int orderQuantity, int orderPrice) {
         return StockItemDto.builder()
                 .stockCode(stockInfo.getStockCode())
                 .stockNameKor(stockInfo.getHtsStockNameKor())
                 .orderQuantity(orderQuantity)
-                .currentStockPrice(calculatedBuyPrice)
+                .orderPrice(orderPrice)
                 .build();
     }
 
@@ -62,7 +63,21 @@ public class StockItemDto {
                 .stockCode(myStockBalance.getStockCode())
                 .stockNameKor(myStockBalance.getStockName())
                 .orderQuantity(Integer.parseInt(myStockBalance.getHoldingQuantity()))     // 전량 매도
-                .currentStockPrice(Integer.parseInt(myStockBalance.getCurrentPrice()))
+                .orderPrice(Integer.parseInt(myStockBalance.getCurrentPrice()))
+                .build();
+    }
+
+    /**
+     * 예약 매수 종목 DTO
+     * @param reservationOrderInfo
+     * @return
+     */
+    public static StockItemDto of(ReservationOrderInfo reservationOrderInfo) {
+        return StockItemDto.builder()
+                .stockCode(reservationOrderInfo.getItemCode())
+                .stockNameKor(reservationOrderInfo.getKoreanItemName())
+                .orderQuantity(reservationOrderInfo.getOrderQuantity())
+                .orderPrice(reservationOrderInfo.getOrderPrice())
                 .build();
     }
 }
