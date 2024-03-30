@@ -11,7 +11,10 @@ package com.devspacehub.ast.domain.orderTrading.service;
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
+import com.devspacehub.ast.domain.my.stockBalance.service.MyService;
+import com.devspacehub.ast.domain.notification.Notificator;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
+import com.devspacehub.ast.util.EnvironmentUtil;
 import com.devspacehub.ast.util.OpenApiRequest;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +38,10 @@ class SellOrderServiceImplTest {
     @Mock
     OpenApiRequest openApiRequest;
     @Mock
+    Notificator notificator;
+    @Mock
+    MyService myService;
+    @Mock
     OrderTradingRepository orderTradingRepository;
 
     private final String sellOrderTxId = "VTTC0801U";
@@ -43,7 +50,7 @@ class SellOrderServiceImplTest {
     void setUp() {
         Float stopLossSellRatioDeadline = -5.0F;
         Float profitSellDeadline = 10.0F;
-        sellOrderService = new SellOrderServiceImpl(openApiRequest, orderTradingRepository);
+        sellOrderService = new SellOrderServiceImpl(openApiRequest, orderTradingRepository, notificator, myService);
         ReflectionTestUtils.setField(sellOrderService, "stopLossSellRatio", stopLossSellRatioDeadline);
         ReflectionTestUtils.setField(sellOrderService, "profitSellRatio", profitSellDeadline);
     }

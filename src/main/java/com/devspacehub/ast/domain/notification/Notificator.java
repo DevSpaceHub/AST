@@ -21,6 +21,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import java.util.function.Consumer;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.*;
+
 /**
  * Discord Webhook 이용한 알림 서비스
  */
@@ -34,13 +36,13 @@ public class Notificator {
     /**
      * 알림 요청
      * @param openApiType
-     * @param accountStatusKor
+     * @param activeProfile
      * @param orderTrading
      */
-    public void sendMessage(OpenApiType openApiType, String accountStatusKor, OrderTrading orderTrading) {
+    public void sendMessage(OpenApiType openApiType, String activeProfile, OrderTrading orderTrading) {
         // body 생성
         String senderName = getSenderName(openApiType);
-        String msg = createMessage(openApiType, accountStatusKor, orderTrading);
+        String msg = createMessage(openApiType, getAccountStatus(activeProfile), orderTrading);
         // API 호출
         Consumer<HttpHeaders> headers = DiscordWebhookNotifyRequestDto.setHeaders();
         DiscordWebhookNotifyRequestDto requestBody = DiscordWebhookNotifyRequestDto.builder()
@@ -68,6 +70,10 @@ public class Notificator {
         }
     }
 
+    private String getAccountStatus(String activeProfile) {
+        return ACTIVE_PROD.equals(activeProfile) ? REAL_ACCOUNT_STATUS_KOR : TEST_ACCOUNT_STATUS_KOR;
+    }
+
     /**
      * 알림 봇 이름 지정
      * @param openApiType
@@ -75,7 +81,7 @@ public class Notificator {
      */
     private String getSenderName(OpenApiType openApiType) {
         switch (openApiType) {
-            case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER -> {
+            case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER, DOMESTIC_STOCK_RESERVATION_BUY_ORDER -> {
                 return ORDER_NOTI_SENDER_NAME;
             }
             default -> throw new InvalidValueException(ResultCode.INVALID_OPENAPI_TYPE_ERROR);

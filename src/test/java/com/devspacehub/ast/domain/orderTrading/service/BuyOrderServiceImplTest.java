@@ -88,7 +88,6 @@ class BuyOrderServiceImplTest {
     @DisplayName("지표 PER/PBR 초과 or 지표 시가총액 미만 or 지표 누적거래양 미만이면 매수할 수 없다.")
     void checkAccordingWithIndicators_falseCase() {
         // given
-        ReflectionTestUtils.setField(buyOrderService, "txIdBuyOrder", txIdBuyOrder);
         ReflectionTestUtils.setField(buyOrderService, "limitPBR", limitPBR);
         ReflectionTestUtils.setField(buyOrderService, "limitPER", limitPER);
         ReflectionTestUtils.setField(buyOrderService, "limitHtsMarketCapital", limitHtsMarketCapital);
@@ -131,7 +130,6 @@ class BuyOrderServiceImplTest {
     @DisplayName("지표 PER/PBR 이하 + 지표 시가총액 이상 + 지표 누적거래양 이상일 때 매수할 수 있다.")
     void checkAccordingWithIndicators_trueCase() {
         // given
-        ReflectionTestUtils.setField(buyOrderService, "txIdBuyOrder", txIdBuyOrder);
         ReflectionTestUtils.setField(buyOrderService, "limitPBR", limitPBR);
         ReflectionTestUtils.setField(buyOrderService, "limitPER", limitPER);
         ReflectionTestUtils.setField(buyOrderService, "limitHtsMarketCapital", limitHtsMarketCapital);
@@ -151,31 +149,9 @@ class BuyOrderServiceImplTest {
     }
 
     @Test
-    @DisplayName("호가 단위에 맞춰서 현재가의 자릿수를 세팅한다.")
-    void orderPriceCuttingByPriceUnit() {
-        final int currentPriceUnder2000 = 1999;
-        final int currentPriceUnder5000 = 4999;
-        final int currentPriceUnder20000 = 19999;
-        final int currentPriceUnder50000 = 49999;
-        final int currentPriceUnder200000 = 199999;
-        final int currentPriceUnder500000 = 499999;
-        final int currentPriceOver500000 = 500000;
-
-        assertThat(buyOrderService.orderPriceCuttingByPriceUnit(currentPriceUnder2000, ONE.getCode())).isEqualTo(1999);
-        assertThat(buyOrderService.orderPriceCuttingByPriceUnit(currentPriceUnder5000, FIVE.getCode())).isEqualTo(4995);
-        assertThat(buyOrderService.orderPriceCuttingByPriceUnit(currentPriceUnder20000, TEN.getCode())).isEqualTo(19990);
-        assertThat(buyOrderService.orderPriceCuttingByPriceUnit(currentPriceUnder50000, FIFTY.getCode())).isEqualTo(49950);
-        assertThat(buyOrderService.orderPriceCuttingByPriceUnit(currentPriceUnder200000, HUNDRED.getCode())).isEqualTo(199900);
-        assertThat(buyOrderService.orderPriceCuttingByPriceUnit(currentPriceUnder500000, FIVE_HUNDRED.getCode())).isEqualTo(499500);
-        assertThat(buyOrderService.orderPriceCuttingByPriceUnit(currentPriceOver500000, THOUSAND.getCode())).isEqualTo(500000);
-    }
-
-    @Test
     @DisplayName("ITEM_INFO 테이블에 있고 금일 매수 주문한 이력이 없다면 True 반환한다.")
     void isStockItemBuyOrderable_true() {
         // given
-        ReflectionTestUtils.setField(buyOrderService, "txIdBuyOrder", txIdBuyOrder);
-
         DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo = new DomStockTradingVolumeRankingExternalResDto.StockInfo("",
                 "000155", "", "", "", "", "", "", "","", "", "",
                 "", "", "", "", "", "", "");

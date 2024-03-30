@@ -86,7 +86,7 @@ public class MarketStatusService {
     /**
      * 국내 주식 현재가 시세 조회
      */
-    public CurrentStockPriceExternalResDto getCurrentStockPrice(String stockCode) {
+    public CurrentStockPriceExternalResDto.CurrentStockPriceInfo getCurrentStockPrice(String stockCode) {
         Consumer<HttpHeaders> httpHeaders = CurrentStockPriceExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdCurrentStockPriceFind);
         MultiValueMap<String, String> queryParams = CurrentStockPriceExternalReqDto.createParameter(stockCode);
 
@@ -95,6 +95,6 @@ public class MarketStatusService {
         if (!response.isSuccess()) {
             throw new OpenApiFailedResponseException();
         }
-        return response;
+        return response.getCurrentStockPriceInfo();
     }
 }
