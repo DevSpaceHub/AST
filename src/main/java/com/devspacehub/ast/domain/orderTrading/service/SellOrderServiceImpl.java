@@ -13,10 +13,13 @@ import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
+import com.devspacehub.ast.domain.my.stockBalance.service.MyService;
+import com.devspacehub.ast.domain.notification.Notificator;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
+import com.devspacehub.ast.util.EnvironmentUtil;
 import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,17 +35,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
+import static com.devspacehub.ast.common.constant.CommonConstants.*;
+import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_SELL_ORDER;
 
 /**
  * 주식 주문 서비스 구현체 - 매도
  */
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Service
 public class SellOrderServiceImpl extends TradingService {
     private final OpenApiRequest openApiRequest;
     private final OrderTradingRepository orderTradingRepository;
+    private final Notificator notificator;
+    private final MyService myService;
 
     @Value("${trading.stop-loss-sell-ratio}")
     private Float stopLossSellRatio;
@@ -55,7 +62,37 @@ public class SellOrderServiceImpl extends TradingService {
      * - 국내주식주문 API 호출
      */
     @Override
-    public DomesticStockOrderExternalResDto order(OpenApiProperties openApiProperties, StockItemDto stockItem, OpenApiType openApiType, String transactionId) {
+    public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType, String transactionId) {
+        // 1. 주식 잔고 조회
+        StockBalanceExternalResDto myStockBalance = myService.getMyStockBalance();
+
+
+        // 2. 주식 선택 후 매도 주문 (손절매도 & 수익매도)
+        List<OrderTrading> orderTradings = new ArrayList<>();
+        for (StockItemDto item : pickStockItems(myStockBalance, transactionId)) {
+            DomesticStockOrderExternalResDto result = callOrderApi(openApiProperties, item, DOMESTIC_STOCK_SELL_ORDER, transactionId);
+            OrderTrading orderTrading = OrderTrading.from(item, result, transactionId);
+            orderTradings.add(orderTrading);
+
+            if (result.isSuccess()) {
+                log.info("===== [sell] order success ({}) =====", item.getStockNameKor());
+                notificator.sendMessage(DOMESTIC_STOCK_SELL_ORDER, EnvironmentUtil.getActiveProfile(), orderTrading);
+            }
+        }
+        return orderTradings;
+    }
+
+    /**
+     * 주문 API 호출 메서드 호출
+     * @param openApiProperties
+     * @param stockItem
+     * @param openApiType
+     * @param transactionId
+     * @return DomesticStockOrderExternalResDto
+     */
+    @Override
+    public DomesticStockOrderExternalResDto callOrderApi(OpenApiProperties openApiProperties, StockItemDto stockItem, OpenApiType openApiType, String transactionId) {
+
         Consumer<HttpHeaders> httpHeaders = DomesticStockOrderExternalReqDto.setHeaders(openApiProperties.getOauth(), transactionId);
         DomesticStockOrderExternalReqDto bodyDto = DomesticStockOrderExternalReqDto.from(openApiProperties, stockItem);
 
@@ -125,6 +162,7 @@ public class SellOrderServiceImpl extends TradingService {
      * @param transactionId
      * @return
      */
+    @Override
     public boolean isNewOrder(String stockCode, String transactionId){
         // 주문 가능 수량 초과 시 주문 불가.
         return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(

@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     protected ResponseEntity<ApiResult> handleBusinessException(BusinessException ex) {
-        log.error("handleBusinessException", ex);
+        log.error("ResultCode : {}, Messeage : {}", ex.getResultCode(), ex.getMessage());
 
         ResultCode resultCode = ex.getResultCode();
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResult.failed(resultCode));

@@ -59,4 +59,27 @@ public enum StockPriceUnit {
             return THOUSAND.getCode();
         }
     }
+
+    /**
+     * 주문 가격을 인자로 받아서 호가단위에 따라 주문가 조정하여 반환한다.
+     * @param orderPrice 주문가
+     * @return int 타입. 호가 단위에 의해 조정된 주문가
+     */
+    public static int orderPriceCuttingByPriceUnit(int orderPrice) {
+        int priceUnit = getPriceUnitBy(orderPrice);
+        Float decimal = orderPrice / (float) priceUnit;
+        return decimal.intValue() * priceUnit;
+    }
+
+    /**
+     * 주문 가격과 호가 단위를 인자로 받아서 호가단위에 따라 주문가 조정하여 반환한다.
+     * @param orderPrice 주문가
+     * @param priceUnit 호가 단위
+     * @return int 타입. 호가 단위에 의해 조정된 주문가
+     */
+    public static int orderPriceCuttingByPriceUnit(int orderPrice, int priceUnit) {
+        Float decimal = orderPrice / (float) priceUnit;
+        return decimal.intValue() * priceUnit;
+    }
+
 }
