@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Getter
 @SQLRestriction("use_yn = 'Y'")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(schema = "astDB_BETA", name = "reservation_order_info")
+@Table(name = "reservation_order_info")
 @Entity
 public class ReservationOrderInfo extends OrderTradingBaseEntity {
     @Id
