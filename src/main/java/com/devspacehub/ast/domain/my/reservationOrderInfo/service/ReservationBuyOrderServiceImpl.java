@@ -57,7 +57,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
     public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType, String transactionId) {
         // 1. 예약 종목들 조회
         List<ReservationOrderInfo> reservationOrderInfos = reservationOrderInfoRepo
-                .findAllByOrderStartDateBeforeOrOrderStartDateEqualsAndOrderEndDateAfterOrOrderEndDateEquals(
+                .findAllByOrderStartDateBeforeOrOrderStartDateEqualsAndOrderEndDateAfterOrOrderEndDateEqualsOrderByPriority(
                         LocalDate.now(), LocalDate.now(), LocalDate.now(), LocalDate.now());
 
         // 2. 매수 종목 선택 및 주문
