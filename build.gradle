@@ -5,33 +5,10 @@ plugins {
 }
 
 group = 'com.devspacehub'
-version = '0.0.4'
+version = '0.0.5'
 
 java {
 	sourceCompatibility = '17'
-}
-
-test {
-	// 테스트에 사용할 환경 변수 설정
-	systemProperty "DB_URL", "jdbc:mysql://35.188.90.86:3306/astDB_BETA?serverTimezone=Asia/Seoul&characterEncoding=UTF-8"
-	systemProperty "DB_USERNAME", "devSpaceHub_BETA"
-	systemProperty "DB_PASSWORD", "devSpaceHub_BETA123"
-	systemProperty "test", "50099723"
-	systemProperty "accntProductCode", "01"
-	systemProperty "COMPREHENSIVE_ACCOUNTNUMBER_TEST", "50099723"
-	systemProperty "COMPREHENSIVE_ACCOUNTNUMBER", "50099723"
-	systemProperty "ACCOUNTNUMBER_PRODUCT_CODE", "01"
-	systemProperty "APP_KEY", "01"
-	systemProperty "APP_SECRET", "01"
-	systemProperty "PBR", "10"
-	systemProperty "PER", "10"
-	systemProperty "HTS_MARKET_CAPITAL", "10000"
-	systemProperty "ACCUMULATION_VOLUME", "10000"
-	systemProperty "CASH_BUY_ORDER_AMOUNT_PERCENT", "10"
-	systemProperty "SPLIT_BUY_PERCENTS_BY_COMMA", "5,8,10"
-	systemProperty "SPLIT_BUY_COUNT", "3"
-	systemProperty "STOP_LOSS_SELL_RATIO", "5"
-	systemProperty "PROFIT_SELL_RATIO", "10"
 }
 
 test {

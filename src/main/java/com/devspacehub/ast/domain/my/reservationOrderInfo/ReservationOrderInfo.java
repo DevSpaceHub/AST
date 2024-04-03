@@ -16,6 +16,9 @@ import org.hibernate.annotations.SQLRestriction;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * 예약 매수 Entity.
+ */
 @Getter
 @SQLRestriction("use_yn = 'Y'")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
