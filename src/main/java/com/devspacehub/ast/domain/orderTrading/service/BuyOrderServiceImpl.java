@@ -95,12 +95,7 @@ public class BuyOrderServiceImpl extends TradingService {
         if (EnvironmentUtil.isProdActive()) {
             items = marketStatusService.findTradingVolume();
         } else {
-            try {
-                items = marketStatusService.getTradingVolumeLocalData();
-            } catch (IOException ex) {
-                log.error("프로젝트 내 Json 파일을 읽는데 실패하였습니다.");
-                throw new NotFoundDataException(ResultCode.NOT_FOUND_RANKING_VOLUME_DATA_JSON_FILE);
-            }
+            items = marketStatusService.getTradingVolumeLocalData();
         }
 
         // 2. 종목 선택 (거래량 순위 API) 및 매입수량 결정 (현재가 시세 조회 API)

@@ -1,20 +1,4 @@
 /*
- © 2024 devspacehub, Inc. All rights reserved.
-
- name : MyServiceImpl
- creation : 2024.3.19
- author : Yoonji Moon
- */
-
-/*
- © 2024 devspacehub, Inc. All rights reserved.
-
- name : MyServiceImpl
- creation : 2024.3.18
- author : Yoonji Moon
- */
-
-/*
  © 2023 devspacehub, Inc. All rights reserved.
 
  name : MyServiceImpl
@@ -108,5 +92,10 @@ public class MyServiceImpl implements MyService {
         }
 
         return responseDto;
+    }
+
+    @Override
+    public boolean isMyDepositLowerThanOrderPrice(int myDeposit, int orderPrice) {
+        return myDeposit < orderPrice;
     }
 }

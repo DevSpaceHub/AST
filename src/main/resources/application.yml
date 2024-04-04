@@ -41,9 +41,6 @@ spring:
     defer-datasource-initialization: false #true
     hibernate:
       ddl-auto: none #create
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
 
   sql:
     init:

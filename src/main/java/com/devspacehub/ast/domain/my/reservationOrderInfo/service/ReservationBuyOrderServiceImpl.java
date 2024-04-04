@@ -15,6 +15,7 @@ import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfoRepository;
+import com.devspacehub.ast.domain.my.stockBalance.service.MyService;
 import com.devspacehub.ast.domain.notification.Notificator;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
@@ -36,6 +37,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION;
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_RESERVATION_BUY_ORDER;
 import static com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto.*;
 
@@ -51,6 +53,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
     private final ReservationOrderInfoRepository reservationOrderInfoRepo;
     private final OrderTradingRepository orderTradingRepository;
     private final MarketStatusService marketStatusService;
+    private final MyService myService;
     private final Notificator notificator;
 
     @Override
@@ -80,30 +83,41 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
      * 매수 주문할 종목들 선택
      * - 현재가 시세 조회
      * - 호가 단위에 맞게 조정
+     * - 충분한 예수금 있는지, 하한가보다 높은지 체크
      * @param reservationOrderInfos
      * @return
      */
     public List<StockItemDto> pickStockItems(List<ReservationOrderInfo> reservationOrderInfos) {
-        Map<String, ReservationOrderInfo> itemCodeReservationOrderInfoMap = reservationOrderInfos.stream()
-                .collect(Collectors.toMap(ReservationOrderInfo::getItemCode, stock -> stock));
+        Map<Long, ReservationOrderInfo> itemCodeReservationOrderInfoMap = reservationOrderInfos.stream()
+                .collect(Collectors.toMap(ReservationOrderInfo::getSeq, stock -> stock));
 
         // 현재가 시세 조회 API
-        Map<String, CurrentStockPriceInfo> itemCodeResponseMap = reservationOrderInfos.stream()
-                .collect(Collectors.toMap(ReservationOrderInfo::getItemCode, orderInfo -> marketStatusService.getCurrentStockPrice(orderInfo.getItemCode())));
+        Map<Long, CurrentStockPriceInfo> itemCodeResponseMap = reservationOrderInfos.stream()
+                .collect(Collectors.toMap(ReservationOrderInfo::getSeq, orderInfo -> marketStatusService.getCurrentStockPrice(orderInfo.getItemCode())));
 
         List<StockItemDto> pickedStockItems = new ArrayList<>();
-        // 하한가 비교
-        for (String itemCode : itemCodeReservationOrderInfoMap.keySet()) {
-            int responseLowerLimitPrice = Integer.parseInt(itemCodeResponseMap.get(itemCode).getStockLowerLimitPrice());
+        for (Long seq : itemCodeReservationOrderInfoMap.keySet()) {
+            OpenApiRequest.timeDelay();
+
+            ReservationOrderInfo currReservationOrderInfo = itemCodeReservationOrderInfoMap.get(seq);
+
             // 호가 단위 조정
-            ReservationOrderInfo currReservationOrderInfo = itemCodeReservationOrderInfoMap.get(itemCode);
             int adjustedOrderPrice = StockPriceUnit.orderPriceCuttingByPriceUnit(currReservationOrderInfo.getOrderPrice());
             currReservationOrderInfo.updateToAdjustedPrice(adjustedOrderPrice);
 
+            // 예수금 체크
+            int myDeposit = myService.getBuyOrderPossibleCash(currReservationOrderInfo.getItemCode(), adjustedOrderPrice, ORDER_DIVISION);
+            if (myService.isMyDepositLowerThanOrderPrice(myDeposit, adjustedOrderPrice * currReservationOrderInfo.getOrderQuantity())) {
+                log.info("[reservation buy] 예약 매수 주문 금액이 부족.(종목명: {}, 예수금: {})", currReservationOrderInfo.getKoreanItemName(), myDeposit);
+                continue;
+            }
+            // 하한가 비교
+            int responseLowerLimitPrice = Integer.parseInt(itemCodeResponseMap.get(seq).getStockLowerLimitPrice());
             if (currReservationOrderInfo.isOrderPriceGreaterOrEqualThan(responseLowerLimitPrice)) {
                 pickedStockItems.add(StockItemDto.of(currReservationOrderInfo));
             }
         }
+        log.info("[reservation buy] 선택된 주식 종목 SIZE : {}", pickedStockItems.size());
         return pickedStockItems;
     }
 

@@ -30,4 +30,6 @@ public interface MyService {
      * @return 나의 주식 잔고
      */
     StockBalanceExternalResDto getMyStockBalance();
+
+    boolean isMyDepositLowerThanOrderPrice(int myDeposit, int orderPrice);
 }
