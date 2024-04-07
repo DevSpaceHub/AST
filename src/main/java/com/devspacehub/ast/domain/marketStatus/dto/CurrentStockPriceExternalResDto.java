@@ -106,7 +106,7 @@ public class CurrentStockPriceExternalResDto extends WebClientCommonResDto {
         private String stckMxpr;
 
         @JsonProperty("stck_llam")
-        private String stckLlam;
+        private String stockLowerLimitPrice;
 
         @JsonProperty("stck_sdpr")
         private String stckSdpr;

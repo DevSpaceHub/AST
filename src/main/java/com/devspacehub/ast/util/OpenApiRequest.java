@@ -13,8 +13,8 @@ import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
-import com.devspacehub.ast.domain.my.dto.response.BuyPossibleCheckExternalResDto;
-import com.devspacehub.ast.domain.my.dto.response.StockBalanceExternalResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.BuyPossibleCheckExternalResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
 import com.devspacehub.ast.domain.oauth.dto.AccessTokenIssueExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
@@ -145,7 +145,7 @@ public class OpenApiRequest {
 
     private Class<? extends WebClientCommonResDto> implyReturnType(OpenApiType openApiType) {
         switch (openApiType) {
-            case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER -> {
+            case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER, DOMESTIC_STOCK_RESERVATION_BUY_ORDER -> {
                 return DomesticStockOrderExternalResDto.class;
             }
             case BUY_ORDER_POSSIBLE_CASH -> {

@@ -26,7 +26,7 @@ public class MashupOrderController {
     private final MashupService mashupService;
 
     /**
-     * Buy order response entity.
+     * 매수 주문 API
      *
      * @return the response entity
      */
@@ -37,7 +37,7 @@ public class MashupOrderController {
     }
 
     /**
-     * Sell order response entity.
+     * 매도 주문 API
      *
      * @return the response entity
      */
@@ -46,5 +46,19 @@ public class MashupOrderController {
         mashupService.startSellOrder();
         return ResponseEntity.ok(ApiResult.success());
     }
+
+
+    /**
+     * 예약 매수 주문 API
+     *
+     * @return the response entity
+     */
+    @PostMapping("/reserve/buy")
+    public ResponseEntity<ApiResult> reservationBuyOrder() {
+        mashupService.startReservationBuyOrder();
+        return ResponseEntity.ok(ApiResult.success());
+    }
+
+
 
 }

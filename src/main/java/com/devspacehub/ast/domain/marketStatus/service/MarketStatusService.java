@@ -9,9 +9,13 @@
 package com.devspacehub.ast.domain.marketStatus.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
+import com.devspacehub.ast.common.constant.ResultCode;
 import com.devspacehub.ast.domain.marketStatus.dto.*;
+import com.devspacehub.ast.exception.error.DtoConversionException;
+import com.devspacehub.ast.exception.error.NotFoundDataException;
 import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
 import com.devspacehub.ast.util.OpenApiRequest;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +29,7 @@ import org.springframework.util.StreamUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
@@ -73,20 +78,37 @@ public class MarketStatusService {
      * @throws IOException the io exception
      */
     @Profile("!prod")
-    public DomStockTradingVolumeRankingExternalResDto getTradingVolumeLocalData() throws IOException {
-            File file = ResourceUtils.getFile(TRADING_VOLUME_RANKING_DATA_SAMPLE_JSON_PATH);
-            FileInputStream inputStream = new FileInputStream(file);
-            String response = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
+    public DomStockTradingVolumeRankingExternalResDto getTradingVolumeLocalData() {
+        FileInputStream inputStream;
+        try {
+                File file = ResourceUtils.getFile(TRADING_VOLUME_RANKING_DATA_SAMPLE_JSON_PATH);
+                inputStream = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+                log.error("Json 파일이 존재하지 않습니다.");
+                throw new NotFoundDataException(ResultCode.NOT_FOUND_RANKING_VOLUME_DATA_JSON_FILE);
+        }
+        String response;
+        try {
+            response = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
             inputStream.close();
+        } catch (IOException e) {
+            log.error("InputStream을 String으로 복사하는 과정에서 문제 발생하였습니다.");
+            throw new DtoConversionException();
+        }
+        try {
             return objectMapper.readValue(
                     response,
                     DomStockTradingVolumeRankingExternalResDto.class);
+        } catch (JsonProcessingException e) {
+            log.error("Json 데이터를 DTO 객체로 변환하는데 실패하였습니다.");
+            throw new DtoConversionException();
+        }
     }
 
     /**
      * 국내 주식 현재가 시세 조회
      */
-    public CurrentStockPriceExternalResDto getCurrentStockPrice(String stockCode) {
+    public CurrentStockPriceExternalResDto.CurrentStockPriceInfo getCurrentStockPrice(String stockCode) {
         Consumer<HttpHeaders> httpHeaders = CurrentStockPriceExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdCurrentStockPriceFind);
         MultiValueMap<String, String> queryParams = CurrentStockPriceExternalReqDto.createParameter(stockCode);
 
@@ -95,6 +117,6 @@ public class MarketStatusService {
         if (!response.isSuccess()) {
             throw new OpenApiFailedResponseException();
         }
-        return response;
+        return response.getCurrentStockPriceInfo();
     }
 }

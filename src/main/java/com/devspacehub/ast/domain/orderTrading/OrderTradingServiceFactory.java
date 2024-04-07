@@ -8,6 +8,7 @@
 package com.devspacehub.ast.domain.orderTrading;
 
 import com.devspacehub.ast.common.constant.OpenApiType;
+import com.devspacehub.ast.domain.my.reservationOrderInfo.service.ReservationBuyOrderServiceImpl;
 import com.devspacehub.ast.domain.orderTrading.service.BuyOrderServiceImpl;
 import com.devspacehub.ast.domain.orderTrading.service.SellOrderServiceImpl;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 public class OrderTradingServiceFactory {
     private final BuyOrderServiceImpl buyOrderService;
     private final SellOrderServiceImpl sellOrderService;
+    private final ReservationBuyOrderServiceImpl reservationBuyOrderService;
 
     public TradingService getServiceImpl(OpenApiType type) {
         switch (type) {
@@ -27,6 +29,9 @@ public class OrderTradingServiceFactory {
             }
             case DOMESTIC_STOCK_SELL_ORDER -> {
                 return sellOrderService;
+            }
+            case DOMESTIC_STOCK_RESERVATION_BUY_ORDER ->  {
+                return reservationBuyOrderService;
             }
             default -> throw new IllegalArgumentException("적절하지 않은 구매 타입입니다.");
         }

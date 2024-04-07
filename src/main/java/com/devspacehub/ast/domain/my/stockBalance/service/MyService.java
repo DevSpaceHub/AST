@@ -6,9 +6,9 @@
  author : Yoonji Moon
  */
 
-package com.devspacehub.ast.domain.my.service;
+package com.devspacehub.ast.domain.my.stockBalance.service;
 
-import com.devspacehub.ast.domain.my.dto.response.StockBalanceExternalResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
 
 /**
  * 사용자 My 서비스 인터페이스.
@@ -27,7 +27,9 @@ public interface MyService {
     /**
      * 주식 잔고 조회 (Get)
      *
-     * @return the my stock balance
+     * @return 나의 주식 잔고
      */
     StockBalanceExternalResDto getMyStockBalance();
+
+    boolean isMyDepositLowerThanOrderPrice(int myDeposit, int orderPrice);
 }

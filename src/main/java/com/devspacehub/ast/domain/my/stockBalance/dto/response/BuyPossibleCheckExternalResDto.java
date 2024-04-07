@@ -6,7 +6,7 @@
  author : Yoonji Moon
  */
 
-package com.devspacehub.ast.domain.my.dto.response;
+package com.devspacehub.ast.domain.my.stockBalance.dto.response;
 
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
