@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 @Repository
-public interface ReservationOrderInfoRepository extends JpaRepository<ReservationOrderInfo, Long>, ReservationOrderInfoRepositoryCustom{
+public interface ReservationOrderInfoRepository extends JpaRepository<ReservationOrderInfo, Long> {
     // TODO QueryDsl 추가하여 더 간결하게 리팩토링 필요.
     List<ReservationOrderInfo> findAllByOrderStartDateBeforeOrOrderStartDateEqualsAndOrderEndDateAfterOrOrderEndDateEqualsOrderByPriority(LocalDate orderStartDate, LocalDate equalStartDate, LocalDate orderEndDate, LocalDate equalEndDate);
 }
