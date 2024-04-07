@@ -46,7 +46,7 @@ class ReservationOrderInfoRepositoryTest {
                 .build());
         // when
         List<ReservationOrderInfo> result = reservationOrderInfoRepository
-                .findAllByOrderStartDateBeforeOrOrderStartDateEqualsAndOrderEndDateAfterOrOrderEndDateEquals(
+                .findAllByOrderStartDateBeforeOrOrderStartDateEqualsAndOrderEndDateAfterOrOrderEndDateEqualsOrderByPriority(
                         LocalDate.now(), LocalDate.now(), LocalDate.now(), LocalDate.now());
         // then
         assertThat(result).hasSize(1)
