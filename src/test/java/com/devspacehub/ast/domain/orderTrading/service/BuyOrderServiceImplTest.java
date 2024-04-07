@@ -28,7 +28,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
-import static com.devspacehub.ast.common.constant.StockPriceUnit.*;
 import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
 import static com.devspacehub.ast.common.constant.YesNoStatus.YES;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -152,9 +151,8 @@ class BuyOrderServiceImplTest {
     @DisplayName("ITEM_INFO 테이블에 있고 금일 매수 주문한 이력이 없다면 True 반환한다.")
     void isStockItemBuyOrderable_true() {
         // given
-        DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo = new DomStockTradingVolumeRankingExternalResDto.StockInfo("",
-                "000155", "", "", "", "", "", "", "","", "", "",
-                "", "", "", "", "", "", "");
+        DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo = new DomStockTradingVolumeRankingExternalResDto.StockInfo();
+        stockInfo.setStockCode("000155");
 
         given(itemInfoRepository.countByItemCode("000155")).willReturn(1);
         given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
