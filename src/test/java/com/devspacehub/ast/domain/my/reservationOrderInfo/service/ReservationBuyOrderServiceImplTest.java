@@ -12,6 +12,7 @@ import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResD
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
+import com.devspacehub.ast.domain.my.stockBalance.service.MyService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,8 @@ import static org.mockito.BDDMockito.given;
 class ReservationBuyOrderServiceImplTest {
     @Mock
     private MarketStatusService marketStatusService;
+    @Mock
+    private MyService myService;
     @InjectMocks
     private ReservationBuyOrderServiceImpl reservationBuyOrderService;
 

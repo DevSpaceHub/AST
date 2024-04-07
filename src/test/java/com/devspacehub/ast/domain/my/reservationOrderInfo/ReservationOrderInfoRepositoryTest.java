@@ -32,8 +32,9 @@ class ReservationOrderInfoRepositoryTest {
     @DisplayName("ORDER_START_DATE가 현재와 같거나 과거이고, ORDER_END_DATE가 현재와 같거나 미래인 종목을 조회한다.")
     void findAllByOrderStartDateBeforeAndOrderEndDateAfter() {
         // given
-        LocalDate givenStart = LocalDate.now().minusDays(1);
-        LocalDate givenEnd = LocalDate.now();
+        LocalDate givenStart = LocalDate.parse("2021-12-20");
+        LocalDate givenEnd = LocalDate.parse("2021-12-21");
+        LocalDate givenNow = LocalDate.parse("2021-12-21");
         reservationOrderInfoRepository.save(ReservationOrderInfo.builder()
                         .itemCode("000000")
                         .orderStartDate(givenStart)
@@ -47,7 +48,7 @@ class ReservationOrderInfoRepositoryTest {
         // when
         List<ReservationOrderInfo> result = reservationOrderInfoRepository
                 .findAllByOrderStartDateBeforeOrOrderStartDateEqualsAndOrderEndDateAfterOrOrderEndDateEqualsOrderByPriority(
-                        LocalDate.now(), LocalDate.now(), LocalDate.now(), LocalDate.now());
+                        givenNow, givenNow, givenNow, givenNow);
         // then
         assertThat(result).hasSize(1)
                 .extracting("orderStartDate", "orderEndDate", "itemCode")
@@ -73,7 +74,9 @@ class ReservationOrderInfoRepositoryTest {
         List<ReservationOrderInfo> result = reservationOrderInfoRepository.findAll();
 
         // then
-        assertThat(result).isEmpty();
+        assertThat(result)
+                .extracting("useYn")
+                .contains('Y')
+                .doesNotContain('N');
     }
-
 }
