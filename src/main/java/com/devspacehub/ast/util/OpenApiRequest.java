@@ -66,7 +66,7 @@ public class OpenApiRequest {
                     .block();
         } catch (Exception ex) {
             log.error("요청 실패하였습니다.(요청 uri : {})", uri);
-            log.error("{}", ex.getStackTrace());
+            log.error(ex.getMessage());
             throw new OpenApiFailedResponseException();
         }
         checkResponseIsNull(response);
@@ -100,7 +100,7 @@ public class OpenApiRequest {
                 .block();
         } catch (Exception ex) {
             log.error("요청 실패하였습니다.(요청 uri : {})", openApiType.getUri());
-            log.error("{}", ex.getStackTrace());
+            log.error(ex.getMessage());
             throw new OpenApiFailedResponseException();
         }
         checkResponseIsNull(response);
@@ -136,7 +136,7 @@ public class OpenApiRequest {
                     .block();
         } catch (Exception ex) {
             log.error("요청 실패하였습니다.(요청 uri : {})", openApiType.getUri());
-            log.error("{}", ex.getStackTrace());
+            log.error(ex.getMessage());
             throw new OpenApiFailedResponseException();
         }
         checkResponseIsNull(response);
