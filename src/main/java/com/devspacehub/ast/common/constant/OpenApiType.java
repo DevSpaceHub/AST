@@ -17,9 +17,9 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum OpenApiType {
-    DOMESTIC_STOCK_BUY_ORDER("/uapi/domestic-stock/v1/trading/order-cash", "국내 주식(현금) - 매수"),
-    DOMESTIC_STOCK_RESERVATION_BUY_ORDER("/uapi/domestic-stock/v1/trading/order-cash", "국내 주식(현금) - 예약 매수"),
-    DOMESTIC_STOCK_SELL_ORDER("/uapi/domestic-stock/v1/trading/order-cash", "국내 주식(현금) - 매도"),
+    DOMESTIC_STOCK_BUY_ORDER("/uapi/domestic-stock/v1/trading/order-cash", "국내 주식(현금)-매수"),
+    DOMESTIC_STOCK_RESERVATION_BUY_ORDER("/uapi/domestic-stock/v1/trading/order-cash", "국내 주식(현금)-예약 매수"),
+    DOMESTIC_STOCK_SELL_ORDER("/uapi/domestic-stock/v1/trading/order-cash", "국내 주식(현금)-매도"),
     BUY_ORDER_POSSIBLE_CASH("/uapi/domestic-stock/v1/trading/inquire-psbl-order", "매수 가능 조회"),
     STOCK_BALANCE("/uapi/domestic-stock/v1/trading/inquire-balance", "주식 잔고 조회"),
     DOMSTOCK_TRADING_VOLUME_RANKING("/uapi/domestic-stock/v1/quotations/volume-rank", "국내 주식 거래량 순위 조회"),

@@ -30,7 +30,7 @@ public enum ResultCode {
     INVALID_CURRENT_PRICE(5005, "유효하지 않은 현재가 입니다."),
 
     // KIS server error
-    OPENAPI_SERVER_RESPONSE_ERROR(5002, "OpenApi 서버와 통신 중 오류 발생하였습니다"),
+    OPENAPI_SERVER_RESPONSE_ERROR(5002, "OpenApi 서버에서 오류 응답을 반환하였습니다."),
     INTERNAL_SERVER_ERROR(5000, "서버 문제 발생하였습니다."),
 
     // notification error

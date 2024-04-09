@@ -14,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 
 /**
@@ -77,7 +79,7 @@ public class BuyPossibleCheckExternalResDto extends WebClientCommonResDto {
     @JsonIgnore
     @Override
     public boolean isSuccess() {
-        return OPENAPI_SUCCESS_RESULT_CODE.equals(this.resultCode);
+        return !Objects.isNull(output) && OPENAPI_SUCCESS_RESULT_CODE.equals(this.resultCode);
     }
 
 }

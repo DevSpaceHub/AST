@@ -60,10 +60,10 @@ public class MyServiceImpl implements MyService {
         if (!responseDto.isSuccess()) {
             throw new OpenApiFailedResponseException();
         }
-        log.info("[buy] 매수가능금액조회 : {}", responseDto.getMessage());
-        log.info("[buy] 주문 가능 현금 : {}", responseDto.getOutput().getOrderPossibleCash());
-        log.info("[buy] 최대 구매 가능 금액 : {}", responseDto.getOutput().getMaxBuyAmount());
-        log.info("[buy] 최대 구매 가능 수량 : {}", responseDto.getOutput().getMaxBuyQuantity());
+        log.info("[매수가능금액 조회] API 응답 메시지 : {}", responseDto.getMessage());
+        log.info("[매수가능금액 조회] 주문 가능 현금 : {}", responseDto.getOutput().getOrderPossibleCash());
+        log.info("[매수가능금액 조회] 최대 구매 가능 금액 : {}", responseDto.getOutput().getMaxBuyAmount());
+        log.info("[매수가능금액 조회] 최대 구매 가능 수량 : {}", responseDto.getOutput().getMaxBuyQuantity());
         return Integer.parseInt(responseDto.getOutput().getOrderPossibleCash());
     }
 
@@ -83,12 +83,12 @@ public class MyServiceImpl implements MyService {
             throw new OpenApiFailedResponseException();
         }
 
-        log.info("[sell] 주식잔고조회 : {}", responseDto.getMessage());
+        log.info("[매도 주문] 주식잔고조회 : {}", responseDto.getMessage());
         for(StockBalanceExternalResDto.MyStockBalance myStockBalance : responseDto.getMyStockBalance()) {
-            log.info("[sell] 1. 주식 종목 : {}({})", myStockBalance.getStockCode(), myStockBalance.getStockName());
-            log.info("[sell] 2. 보유 수량 : {}", myStockBalance.getHoldingQuantity());
-            log.info("[sell] 3. 현재가 : {}", myStockBalance.getCurrentPrice());
-            log.info("[sell] 4. 평가손익율 : {}\n", myStockBalance.getEvaluateProfitLossRate());
+            log.info("[매도 주문] 1. 주식 종목 : {}({})", myStockBalance.getStockCode(), myStockBalance.getStockName());
+            log.info("[매도 주문] 2. 보유 수량 : {}", myStockBalance.getHoldingQuantity());
+            log.info("[매도 주문] 3. 현재가 : {}", myStockBalance.getCurrentPrice());
+            log.info("[매도 주문] 4. 평가손익율 : {}\n", myStockBalance.getEvaluateProfitLossRate());
         }
 
         return responseDto;
