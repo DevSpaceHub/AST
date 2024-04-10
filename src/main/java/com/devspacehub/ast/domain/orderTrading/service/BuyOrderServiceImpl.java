@@ -108,7 +108,6 @@ public class BuyOrderServiceImpl extends TradingService {
             orderTradings.add(orderTrading);
 
             orderApiResultProcess(result, orderTrading);
-            OpenApiRequest.timeDelay();
         }
         return orderTradings;
     }
@@ -203,7 +202,6 @@ public class BuyOrderServiceImpl extends TradingService {
             // 5. 매수 가능 금액 조회
             int myDeposit = myService.getBuyOrderPossibleCash(stockInfo.getStockCode(), currentPrice, ORDER_DIVISION);
 
-            OpenApiRequest.timeDelay();
             // 6. 매수 금액 + 매수 수량 결정 (분할 매수 Case)
             SplitBuyPercents splitBuyPercents = SplitBuyPercents.of(splitBuyPercentsByComma);
 

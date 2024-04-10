@@ -67,8 +67,6 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
         // 2. 매수 종목 선택 및 주문
         List<OrderTrading> orderTradings = new ArrayList<>();
         for (StockItemDto item : pickStockItems(reservationOrderInfos)) {
-            OpenApiRequest.timeDelay();
-
             DomesticStockOrderExternalResDto result = callOrderApi(openApiProperties, item, DOMESTIC_STOCK_RESERVATION_BUY_ORDER, transactionId);
             OrderTrading orderTrading = OrderTrading.from(item, result, transactionId);
             orderTradings.add(orderTrading);
@@ -93,14 +91,11 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
         // 현재가 시세 조회 API
         Map<Long, CurrentStockPriceInfo> itemCodeResponseMap = reservationOrderInfos.stream()
                 .collect(Collectors.toMap(ReservationOrderInfo::getSeq, orderInfo -> {
-                    OpenApiRequest.timeDelay();
                     return marketStatusService.getCurrentStockPrice(orderInfo.getItemCode());
                 }));
 
         List<StockItemDto> pickedStockItems = new ArrayList<>();
         for (Long seq : itemCodeReservationOrderInfoMap.keySet()) {
-            OpenApiRequest.timeDelay();
-
             ReservationOrderInfo currReservationOrderInfo = itemCodeReservationOrderInfoMap.get(seq);
 
             // 호가 단위 조정
@@ -119,7 +114,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
                 pickedStockItems.add(StockItemDto.of(currReservationOrderInfo));
             }
         }
-        log.info("[reservation buy] 선택된 주식 종목 SIZE : {}", pickedStockItems.size());
+        log.info("[예약매수 주문] 최종 선택된 주식 종목 갯수 : {}", pickedStockItems.size());
         return pickedStockItems;
     }
 

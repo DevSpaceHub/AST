@@ -83,6 +83,8 @@ public class OpenApiRequest {
      * @return the web client common res dto
      */
     public WebClientCommonResDto httpGetRequest(OpenApiType openApiType, Consumer<HttpHeaders> headers, MultiValueMap<String, String> queryParams) {
+        timeDelay();
+
         Class<? extends WebClientCommonResDto> implResDtoClass = implyReturnType(openApiType);
         WebClientCommonResDto response;
         try {
@@ -117,6 +119,7 @@ public class OpenApiRequest {
      * @return the web client response dto
      */
     public <T extends WebClientCommonReqDto> WebClientCommonResDto httpPostRequest(OpenApiType openApiType, Consumer<HttpHeaders> headers, T requestDto) {
+        timeDelay();
 
         Class<? extends WebClientCommonResDto> implResDtoClass = implyReturnType(openApiType);
         WebClientCommonResDto response;
@@ -177,7 +180,7 @@ public class OpenApiRequest {
     /**
      * KIS Open API를 초당 2회 이상 호출하지 않기 위해 0.5초 시간 지연 수행.
      */
-    public static void timeDelay() {
+    private void timeDelay() {
         try {
             Thread.sleep(TIME_DELAY_MILLIS);
         } catch (InterruptedException ex) {
