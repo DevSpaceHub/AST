@@ -51,6 +51,8 @@ public class OpenApiRequest {
      * @return the string
      */
     public String httpOAuthRequest(String uri, AccessTokenIssueExternalReqDto requestDto) {
+        timeDelay();
+
         String response;
         try {
             response = WebClient.builder()
