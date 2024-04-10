@@ -41,7 +41,7 @@ public class OpenApiRequest {
 
     @Value("${openapi.rest.domain}")
     private String openApiDomain;
-    private static final long TIME_DELAY_MILLIS = 500L;
+    private static final long TIME_DELAY_MILLIS = 700L;
 
     /**
      * 접근 토큰 발급 OpenApi Api 호출 (Post)
@@ -170,7 +170,6 @@ public class OpenApiRequest {
 
     /**
      * 응답값이 null이면 예외를 발생시킨다.
-     * @param response
      */
     private void checkResponseIsNull(OpenApiType openApiType, Object response) {
         if (Objects.isNull(response)) {
