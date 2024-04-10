@@ -15,6 +15,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Objects;
+
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 @Getter
 @Setter
@@ -22,7 +24,7 @@ import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCES
 public class CurrentStockPriceExternalResDto extends WebClientCommonResDto {
     @Override
     public boolean isSuccess() {
-        return OPENAPI_SUCCESS_RESULT_CODE.equals(resultCode);
+        return !Objects.isNull(currentStockPriceInfo) && OPENAPI_SUCCESS_RESULT_CODE.equals(resultCode);
     }
 
     @JsonProperty("output")

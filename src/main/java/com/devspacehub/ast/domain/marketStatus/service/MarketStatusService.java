@@ -9,7 +9,9 @@
 package com.devspacehub.ast.domain.marketStatus.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
+import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.constant.ResultCode;
+import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.*;
 import com.devspacehub.ast.exception.error.DtoConversionException;
 import com.devspacehub.ast.exception.error.NotFoundDataException;
@@ -112,11 +114,12 @@ public class MarketStatusService {
         Consumer<HttpHeaders> httpHeaders = CurrentStockPriceExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdCurrentStockPriceFind);
         MultiValueMap<String, String> queryParams = CurrentStockPriceExternalReqDto.createParameter(stockCode);
 
-        CurrentStockPriceExternalResDto response = (CurrentStockPriceExternalResDto) openApiRequest.httpGetRequest(CURRENT_STOCK_PRICE, httpHeaders, queryParams);
+        CurrentStockPriceExternalResDto result = (CurrentStockPriceExternalResDto) openApiRequest.httpGetRequest(CURRENT_STOCK_PRICE, httpHeaders, queryParams);
 
-        if (!response.isSuccess()) {
+        if (!result.isSuccess()) {
+            LogUtils.openApiFailedResponseMessage(OpenApiType.CURRENT_STOCK_PRICE, result.getMsg1(), result.getMessageCode());
             throw new OpenApiFailedResponseException();
         }
-        return response.getCurrentStockPriceInfo();
+        return result.getCurrentStockPriceInfo();
     }
 }

@@ -11,6 +11,7 @@ package com.devspacehub.ast.domain.my.reservationOrderInfo.service;
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.constant.StockPriceUnit;
+import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
@@ -70,10 +71,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
             OrderTrading orderTrading = OrderTrading.from(item, result, transactionId);
             orderTradings.add(orderTrading);
 
-            if (result.isSuccess()) {
-                log.info("===== [reservation buy order] order success ({}) =====", item.getStockNameKor());
-                notificator.sendMessage(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, EnvironmentUtil.getActiveProfile(), orderTrading);
-            }
+            orderApiResultProcess(result, orderTrading);
         }
 
         return orderTradings;
@@ -85,7 +83,6 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
      * - 호가 단위에 맞게 조정
      * - 충분한 예수금 있는지, 하한가보다 높은지 체크
      * @param reservationOrderInfos
-     * @return
      */
     public List<StockItemDto> pickStockItems(List<ReservationOrderInfo> reservationOrderInfos) {
         Map<Long, ReservationOrderInfo> itemCodeReservationOrderInfoMap = reservationOrderInfos.stream()
@@ -93,12 +90,12 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
 
         // 현재가 시세 조회 API
         Map<Long, CurrentStockPriceInfo> itemCodeResponseMap = reservationOrderInfos.stream()
-                .collect(Collectors.toMap(ReservationOrderInfo::getSeq, orderInfo -> marketStatusService.getCurrentStockPrice(orderInfo.getItemCode())));
+                .collect(Collectors.toMap(ReservationOrderInfo::getSeq, orderInfo -> {
+                    return marketStatusService.getCurrentStockPrice(orderInfo.getItemCode());
+                }));
 
         List<StockItemDto> pickedStockItems = new ArrayList<>();
         for (Long seq : itemCodeReservationOrderInfoMap.keySet()) {
-            OpenApiRequest.timeDelay();
-
             ReservationOrderInfo currReservationOrderInfo = itemCodeReservationOrderInfoMap.get(seq);
 
             // 호가 단위 조정
@@ -108,7 +105,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
             // 예수금 체크
             int myDeposit = myService.getBuyOrderPossibleCash(currReservationOrderInfo.getItemCode(), adjustedOrderPrice, ORDER_DIVISION);
             if (myService.isMyDepositLowerThanOrderPrice(myDeposit, adjustedOrderPrice * currReservationOrderInfo.getOrderQuantity())) {
-                log.info("[reservation buy] 예약 매수 주문 금액이 부족.(종목명: {}, 예수금: {})", currReservationOrderInfo.getKoreanItemName(), myDeposit);
+                LogUtils.insufficientAmountError(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, currReservationOrderInfo.getKoreanItemName(), myDeposit);
                 continue;
             }
             // 하한가 비교
@@ -117,7 +114,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
                 pickedStockItems.add(StockItemDto.of(currReservationOrderInfo));
             }
         }
-        log.info("[reservation buy] 선택된 주식 종목 SIZE : {}", pickedStockItems.size());
+        log.info("[예약매수 주문] 최종 선택된 주식 종목 갯수 : {}", pickedStockItems.size());
         return pickedStockItems;
     }
 
@@ -134,6 +131,16 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
     public void saveInfos(List<OrderTrading> orderTradingInfos) {
         if (!orderTradingInfos.isEmpty()) {
             orderTradingRepository.saveAll(orderTradingInfos);
+        }
+    }
+
+    @Override
+    public void orderApiResultProcess(DomesticStockOrderExternalResDto result, OrderTrading orderTrading) {
+        if (result.isSuccess()) {
+            LogUtils.tradingOrderSuccess(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, orderTrading.getItemNameKor());
+            notificator.sendMessage(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, EnvironmentUtil.getActiveProfile(), orderTrading);
+        } else {
+            LogUtils.openApiFailedResponseMessage(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, result.getMessage(), result.getMessageCode());
         }
     }
 }

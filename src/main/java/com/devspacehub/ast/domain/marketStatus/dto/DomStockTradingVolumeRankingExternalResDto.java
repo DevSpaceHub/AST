@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.util.List;
+import java.util.Objects;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 
@@ -36,7 +37,7 @@ public class DomStockTradingVolumeRankingExternalResDto extends WebClientCommonR
     @JsonIgnore
     @Override
     public boolean isSuccess() {
-        return OPENAPI_SUCCESS_RESULT_CODE.equals(this.resultCode);
+        return !Objects.isNull(stockInfos) && OPENAPI_SUCCESS_RESULT_CODE.equals(this.resultCode);
     }
 
     @Setter

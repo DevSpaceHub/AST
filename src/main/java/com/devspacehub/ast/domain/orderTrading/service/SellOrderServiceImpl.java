@@ -11,6 +11,7 @@ package com.devspacehub.ast.domain.orderTrading.service;
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
+import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
 import com.devspacehub.ast.domain.my.stockBalance.service.MyService;
@@ -74,10 +75,7 @@ public class SellOrderServiceImpl extends TradingService {
             OrderTrading orderTrading = OrderTrading.from(item, result, transactionId);
             orderTradings.add(orderTrading);
 
-            if (result.isSuccess()) {
-                log.info("===== [sell] order success ({}) =====", item.getStockNameKor());
-                notificator.sendMessage(DOMESTIC_STOCK_SELL_ORDER, EnvironmentUtil.getActiveProfile(), orderTrading);
-            }
+            orderApiResultProcess(result, orderTrading);
         }
         return orderTradings;
     }
@@ -172,4 +170,13 @@ public class SellOrderServiceImpl extends TradingService {
         );
     }
 
+    @Override
+    public void orderApiResultProcess(DomesticStockOrderExternalResDto result, OrderTrading orderTrading) {
+        if (result.isSuccess()) {
+            LogUtils.tradingOrderSuccess(DOMESTIC_STOCK_SELL_ORDER, orderTrading.getItemNameKor());
+            notificator.sendMessage(DOMESTIC_STOCK_SELL_ORDER, EnvironmentUtil.getActiveProfile(), orderTrading);
+        } else {
+            LogUtils.openApiFailedResponseMessage(DOMESTIC_STOCK_SELL_ORDER, result.getMessage(), result.getMessageCode());
+        }
+    }
 }

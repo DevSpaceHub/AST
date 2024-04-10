@@ -49,4 +49,13 @@ public abstract class TradingService {
         return true;
     }
 
+    /**
+     * OpenAPI 매수/매도 주문 요청의 응답에 대한 결과 처리
+     * - 성공 -> 메세지 발송
+     * - 실패 -> 에러 로그
+     * @param result
+     * @param orderTrading
+     */
+    public abstract void orderApiResultProcess(DomesticStockOrderExternalResDto result, OrderTrading orderTrading);
+
 }
