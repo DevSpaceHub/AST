@@ -46,7 +46,7 @@ public class StockItemDto {
      */
     public static StockItemDto from(DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo, int orderQuantity, int orderPrice) {
         return StockItemDto.builder()
-                .stockCode(stockInfo.getStockCode())
+                .stockCode(stockInfo.getItemCode())
                 .stockNameKor(stockInfo.getHtsStockNameKor())
                 .orderQuantity(orderQuantity)
                 .orderPrice(orderPrice)

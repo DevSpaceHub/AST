@@ -182,10 +182,10 @@ public class BuyOrderServiceImpl extends TradingService {
             }
 
             // 3. 현재가 시세 조회
-            CurrentStockPriceInfo currentStockPriceInfo = marketStatusService.getCurrentStockPrice(stockInfo.getStockCode());
+            CurrentStockPriceInfo currentStockPriceInfo = marketStatusService.getCurrentStockPrice(stockInfo.getItemCode());
             int currentPrice = Integer.parseInt(currentStockPriceInfo.getCurrentStockPrice());
 
-            log.info("[매수 주문] 종목: {}({})", stockInfo.getStockCode(), stockInfo.getHtsStockNameKor());
+            log.info("[매수 주문] 종목: {}({})", stockInfo.getItemCode(), stockInfo.getHtsStockNameKor());
             log.info("[매수 주문] 현재가: {}", currentPrice);
             log.info("[매수 주문] HTS 시가 총액: {}", currentStockPriceInfo.getHtsMarketCapitalization());
             log.info("[매수 주문] 누적 거래량: {}", currentStockPriceInfo.getAccumulationVolume());
@@ -200,7 +200,7 @@ public class BuyOrderServiceImpl extends TradingService {
                 continue;
             }
             // 5. 매수 가능 금액 조회
-            int myDeposit = myService.getBuyOrderPossibleCash(stockInfo.getStockCode(), currentPrice, ORDER_DIVISION);
+            int myDeposit = myService.getBuyOrderPossibleCash(stockInfo.getItemCode(), currentPrice, ORDER_DIVISION);
 
             // 6. 매수 금액 + 매수 수량 결정 (분할 매수 Case)
             SplitBuyPercents splitBuyPercents = SplitBuyPercents.of(splitBuyPercentsByComma);
@@ -231,22 +231,22 @@ public class BuyOrderServiceImpl extends TradingService {
      * @return 유효한 종목이고 신규 주문이면 True 반환한다. 반대는 False.
      */
     protected boolean isStockItemBuyOrderable(StockInfo stockInfo, String transactionId) {
-        if (itemInfoRepository.countByItemCode(stockInfo.getStockCode()) < 1) {
+        if (itemInfoRepository.countByItemCode(stockInfo.getItemCode()) < 1) {
             return false;
         }
-        return isNewOrder(stockInfo.getStockCode(), transactionId);
+        return isNewOrder(stockInfo.getItemCode(), transactionId);
     }
 
     /**
      * 종목에 대해 새 주문인지 체크
-     * @param stockCode     String 타입의 종목 코드
+     * @param itemCode     String 타입의 종목 코드
      * @param transactionId 트랜잭션 Id
      * @return 금일 기준 신규 주문이면 True 반환. 이미 주문 이력 있으면 False 반환.
      */
     @Override
-    public boolean isNewOrder(String stockCode, String transactionId){
+    public boolean isNewOrder(String itemCode, String transactionId){
         return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
-                stockCode, OPENAPI_SUCCESS_RESULT_CODE, transactionId,
+                itemCode, OPENAPI_SUCCESS_RESULT_CODE, transactionId,
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(0,0,0)),
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59)));
     }

@@ -152,7 +152,7 @@ class BuyOrderServiceImplTest {
     void isStockItemBuyOrderable_true() {
         // given
         DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo = new DomStockTradingVolumeRankingExternalResDto.StockInfo();
-        stockInfo.setStockCode("000155");
+        stockInfo.setItemCode("000155");
 
         given(itemInfoRepository.countByItemCode("000155")).willReturn(1);
         given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
