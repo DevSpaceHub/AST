@@ -29,6 +29,6 @@ public class OrderTradingBaseEntity {
     private LocalDateTime registrationDateTime;
 
     @Builder.Default
-    @Column(name = "registration_id")
+    @Column(name = "registration_id", length = 100)
     private String registrationId = CommonConstants.REGISTER_ID;
 }

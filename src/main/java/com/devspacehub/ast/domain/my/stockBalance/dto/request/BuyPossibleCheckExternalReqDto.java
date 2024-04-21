@@ -6,7 +6,7 @@
  author : Yoonji Moon
  */
 
-package com.devspacehub.ast.domain.my.dto.request;
+package com.devspacehub.ast.domain.my.stockBalance.dto.request;
 
 import lombok.Builder;
 import org.springframework.http.HttpHeaders;

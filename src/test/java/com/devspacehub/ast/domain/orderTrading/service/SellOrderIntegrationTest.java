@@ -12,7 +12,6 @@ import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,13 +22,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SellOrderIntegrationTest {
     @Autowired
     private OrderTradingRepository orderTradingRepository;
     @Autowired
     private SellOrderServiceImpl sellOrderService;
-
     final String sellTxId = "VTTC0801U";
 
     @Test
@@ -52,7 +49,7 @@ class SellOrderIntegrationTest {
                 .orderTime("090008")
                 .build());
         // when
-        boolean result = sellOrderService.isNewOrder(alreadyOrderedStockCode);
+        boolean result = sellOrderService.isNewOrder(alreadyOrderedStockCode, sellTxId);
         // then
         assertThat(result).isFalse();
     }
@@ -78,7 +75,7 @@ class SellOrderIntegrationTest {
                 .orderTime("090008")
                 .build());
         // when
-        boolean result = sellOrderService.isNewOrder(notOrderedStockCode);
+        boolean result = sellOrderService.isNewOrder(notOrderedStockCode, sellTxId);
         // then
         assertThat(result).isTrue();
     }

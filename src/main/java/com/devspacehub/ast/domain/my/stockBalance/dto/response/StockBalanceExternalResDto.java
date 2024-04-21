@@ -6,7 +6,7 @@
  author : Yoonji Moon
  */
 
-package com.devspacehub.ast.domain.my.dto.response;
+package com.devspacehub.ast.domain.my.stockBalance.dto.response;
 
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Objects;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 
@@ -50,6 +51,7 @@ public class StockBalanceExternalResDto extends WebClientCommonResDto {
 
     @Getter
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class MyStockBalance {
         @JsonProperty("pdno")
         private String stockCode;   // 종목번호
@@ -210,6 +212,6 @@ public class StockBalanceExternalResDto extends WebClientCommonResDto {
     @JsonIgnore
     @Override
     public boolean isSuccess() {
-        return OPENAPI_SUCCESS_RESULT_CODE.equals(this.resultCode);
+        return !Objects.isNull(myStockBalance) && OPENAPI_SUCCESS_RESULT_CODE.equals(this.resultCode);
     }
 }

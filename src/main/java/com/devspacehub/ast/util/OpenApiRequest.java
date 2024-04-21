@@ -11,10 +11,11 @@ package com.devspacehub.ast.util;
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
+import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
-import com.devspacehub.ast.domain.my.dto.response.BuyPossibleCheckExternalResDto;
-import com.devspacehub.ast.domain.my.dto.response.StockBalanceExternalResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.BuyPossibleCheckExternalResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
 import com.devspacehub.ast.domain.oauth.dto.AccessTokenIssueExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
@@ -40,7 +41,7 @@ public class OpenApiRequest {
 
     @Value("${openapi.rest.domain}")
     private String openApiDomain;
-    private static final long TIME_DELAY_MILLIS = 200L;
+    private static final long TIME_DELAY_MILLIS = 700L;
 
     /**
      * 접근 토큰 발급 OpenApi Api 호출 (Post)
@@ -50,6 +51,8 @@ public class OpenApiRequest {
      * @return the string
      */
     public String httpOAuthRequest(String uri, AccessTokenIssueExternalReqDto requestDto) {
+        timeDelay();
+
         String response;
         try {
             response = WebClient.builder()
@@ -65,13 +68,13 @@ public class OpenApiRequest {
                     .bodyToMono(String.class)
                     .block();
         } catch (Exception ex) {
-            log.error("요청 실패하였습니다.(요청 uri : {})", uri);
-            log.error("{}", ex.getStackTrace());
+            LogUtils.openApiRequestFailed(uri, ex.getMessage());
             throw new OpenApiFailedResponseException();
         }
-        checkResponseIsNull(response);
+        checkResponseIsNull(OpenApiType.OAUTH_ACCESS_TOKEN_ISSUE, response);
         return response;
     }
+
 
     /**
      * web client 통해 OpenApi 호출 (Get)
@@ -82,6 +85,8 @@ public class OpenApiRequest {
      * @return the web client common res dto
      */
     public WebClientCommonResDto httpGetRequest(OpenApiType openApiType, Consumer<HttpHeaders> headers, MultiValueMap<String, String> queryParams) {
+        timeDelay();
+
         Class<? extends WebClientCommonResDto> implResDtoClass = implyReturnType(openApiType);
         WebClientCommonResDto response;
         try {
@@ -99,11 +104,10 @@ public class OpenApiRequest {
                 .bodyToMono(implResDtoClass)
                 .block();
         } catch (Exception ex) {
-            log.error("요청 실패하였습니다.(요청 uri : {})", openApiType.getUri());
-            log.error("{}", ex.getStackTrace());
+            LogUtils.openApiRequestFailed(openApiType.getUri(), ex.getMessage());
             throw new OpenApiFailedResponseException();
         }
-        checkResponseIsNull(response);
+        checkResponseIsNull(openApiType, response);
         return response;
     }
 
@@ -117,6 +121,7 @@ public class OpenApiRequest {
      * @return the web client response dto
      */
     public <T extends WebClientCommonReqDto> WebClientCommonResDto httpPostRequest(OpenApiType openApiType, Consumer<HttpHeaders> headers, T requestDto) {
+        timeDelay();
 
         Class<? extends WebClientCommonResDto> implResDtoClass = implyReturnType(openApiType);
         WebClientCommonResDto response;
@@ -135,17 +140,16 @@ public class OpenApiRequest {
                     .bodyToMono(implResDtoClass)
                     .block();
         } catch (Exception ex) {
-            log.error("요청 실패하였습니다.(요청 uri : {})", openApiType.getUri());
-            log.error("{}", ex.getStackTrace());
+            LogUtils.openApiRequestFailed(openApiType.getUri(), ex.getMessage());
             throw new OpenApiFailedResponseException();
         }
-        checkResponseIsNull(response);
+        checkResponseIsNull(openApiType, response);
         return response;
     }
 
     private Class<? extends WebClientCommonResDto> implyReturnType(OpenApiType openApiType) {
         switch (openApiType) {
-            case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER -> {
+            case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER, DOMESTIC_STOCK_RESERVATION_BUY_ORDER -> {
                 return DomesticStockOrderExternalResDto.class;
             }
             case BUY_ORDER_POSSIBLE_CASH -> {
@@ -164,16 +168,20 @@ public class OpenApiRequest {
         }
     }
 
-    private void checkResponseIsNull(Object response) {
+    /**
+     * 응답값이 null이면 예외를 발생시킨다.
+     */
+    private void checkResponseIsNull(OpenApiType openApiType, Object response) {
         if (Objects.isNull(response)) {
+            log.error("[{}] OpenApi 응답값이 Null입니다.", openApiType.getDiscription());
             throw new OpenApiFailedResponseException();
         }
     }
 
     /**
-     * KIS Open API를 초당 2회 이상 호출하지 않기 위해 시간 지연 수행.
+     * KIS Open API를 초당 2회 이상 호출하지 않기 위해 0.5초 시간 지연 수행.
      */
-    public static void timeDelay() {
+    private void timeDelay() {
         try {
             Thread.sleep(TIME_DELAY_MILLIS);
         } catch (InterruptedException ex) {

@@ -17,6 +17,7 @@ public class CommonConstants {
     public static final String ORDER_DIVISION = "00";   // 지정가
     public static final String TRADING_VOLUME_RANKING_DATA_SAMPLE_JSON_PATH = "/www/ast/trading-volume/sampleTradingVolumeGetData.json";
 
-    public static final String ACTIVE_LOCAL = "local";
-    public static final String ACTIVE_BETA = "beta";
+    public static final String ACTIVE_PROD = "prod";
+    public static final String REAL_ACCOUNT_STATUS_KOR = "실전";
+    public static final String TEST_ACCOUNT_STATUS_KOR = "모의";
 }

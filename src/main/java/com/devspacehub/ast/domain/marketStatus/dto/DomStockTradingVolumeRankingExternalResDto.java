@@ -10,11 +10,10 @@ package com.devspacehub.ast.domain.marketStatus.dto;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
+import java.util.Objects;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 
@@ -38,12 +37,13 @@ public class DomStockTradingVolumeRankingExternalResDto extends WebClientCommonR
     @JsonIgnore
     @Override
     public boolean isSuccess() {
-        return OPENAPI_SUCCESS_RESULT_CODE.equals(this.resultCode);
+        return !Objects.isNull(stockInfos) && OPENAPI_SUCCESS_RESULT_CODE.equals(this.resultCode);
     }
 
-    @Data
+    @Setter
+    @Getter
+    @NoArgsConstructor
     public static class StockInfo {
-
         @JsonProperty("hts_kor_isnm")
         private String htsStockNameKor;      // 한글 종목명
 

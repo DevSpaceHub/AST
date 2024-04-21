@@ -8,7 +8,9 @@
 
 package com.devspacehub.ast.domain.orderTrading.dto;
 
+import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
+import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.http.HttpHeaders;
@@ -50,6 +52,23 @@ public class DomesticStockOrderExternalReqDto extends WebClientCommonReqDto {
         headers.add("tr_id", txId);
         return httpHeaders -> httpHeaders.addAll(headers);
     }
+
+    /**
+     * @param openApiProperties
+     * @param stockItem 주식 종목 정보
+     * @return 매수/매도 주문 API의 요청 Dto
+     */
+    public static DomesticStockOrderExternalReqDto from(OpenApiProperties openApiProperties, StockItemDto stockItem) {
+        return DomesticStockOrderExternalReqDto.builder()
+                .accntNumber(openApiProperties.getAccntNumber())
+                .accntProductCode(openApiProperties.getAccntProductCode())
+                .stockCode(stockItem.getStockCode())
+                .orderDivision(stockItem.getOrderDivision())
+                .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
+                .orderPrice(String.valueOf(stockItem.getOrderPrice()))
+                .build();
+    }
+
     @Override
     public String toString() {
         return "{\"CANO\":\""+ this.accntNumber + "\"," +
