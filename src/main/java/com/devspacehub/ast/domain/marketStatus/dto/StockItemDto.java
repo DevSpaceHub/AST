@@ -21,8 +21,8 @@ import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class StockItemDto {
 
-    private String stockCode;
-    private String stockNameKor;
+    private String itemCode;
+    private String itemNameKor;
 
     private String orderDivision;
 
@@ -60,7 +60,7 @@ public class StockItemDto {
      */
     public static StockItemDto of(StockBalanceExternalResDto.MyStockBalance myStockBalance) {
         return StockItemDto.builder()
-                .stockCode(myStockBalance.getStockCode())
+                .stockCode(myStockBalance.getItemCode())
                 .stockNameKor(myStockBalance.getStockName())
                 .orderQuantity(Integer.parseInt(myStockBalance.getHoldingQuantity()))     // 전량 매도
                 .orderPrice(Integer.parseInt(myStockBalance.getCurrentPrice()))

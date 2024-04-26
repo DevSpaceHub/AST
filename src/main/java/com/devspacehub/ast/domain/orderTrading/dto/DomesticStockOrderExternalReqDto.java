@@ -62,7 +62,7 @@ public class DomesticStockOrderExternalReqDto extends WebClientCommonReqDto {
         return DomesticStockOrderExternalReqDto.builder()
                 .accntNumber(openApiProperties.getAccntNumber())
                 .accntProductCode(openApiProperties.getAccntProductCode())
-                .stockCode(stockItem.getStockCode())
+                .stockCode(stockItem.getItemCode())
                 .orderDivision(stockItem.getOrderDivision())
                 .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
                 .orderPrice(String.valueOf(stockItem.getOrderPrice()))
