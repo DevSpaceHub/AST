@@ -53,4 +53,8 @@ public class LogUtils {
         log.error("요청 실패하였습니다.(uri : {})", uri);
         log.error(message);
     }
+
+    public static void notFoundDataError(String dataDescription) {
+        log.error("{}가 존재하지 않습니다.", dataDescription);
+    }
 }
