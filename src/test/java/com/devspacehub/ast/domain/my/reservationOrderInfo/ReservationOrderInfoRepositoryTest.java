@@ -90,4 +90,32 @@ class ReservationOrderInfoRepositoryTest {
                                 .contains(tuple("000001", givenUseYnIsY));
     }
 
+    @Test
+    @DisplayName("ORDER_START_DATE가 현재와 같거나 과거이고, ORDER_END_DATE가 현재와 같거나 미래인 종목을 조회한다.")
+    void findOrderableAll() {
+        // given
+        LocalDate givenStart = LocalDate.parse("2021-12-20");
+        LocalDate givenEnd = LocalDate.parse("2021-12-21");
+        LocalDate givenNow = LocalDate.parse("2021-12-21");
+        reservationOrderInfoRepository.save(ReservationOrderInfo.builder()
+                .seq(0L)
+                .itemCode("000000")
+                .orderStartDate(givenStart)
+                .orderEndDate(givenEnd)
+                .orderPrice(1000)
+                .orderQuantity(1)
+                .useYn('Y')
+                .priority(1)
+                .koreanItemName("테스트 종목")
+                .conclusionQuantity(0)
+                .build());
+        reservationOrderInfoRepository.flush();
+
+        // when
+        List<ReservationOrderInfo> result = reservationOrderInfoRepository.findValidAll(givenNow);
+        // then
+        assertThat(result).hasSize(1)
+                .extracting("orderStartDate", "orderEndDate", "itemCode")
+                .contains(tuple(givenStart, givenEnd, "000000"));
+    }
 }
