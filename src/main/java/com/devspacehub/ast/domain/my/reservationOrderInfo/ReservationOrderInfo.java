@@ -60,8 +60,9 @@ public class ReservationOrderInfo extends BaseEntity {
     @Column(name = "update_id")
     private String updateId;
     @Builder
-    private ReservationOrderInfo(String itemCode, String koreanItemName, int orderPrice, int orderQuantity, LocalDate orderStartDate,
+    private ReservationOrderInfo(Long seq, String itemCode, String koreanItemName, int orderPrice, int orderQuantity, LocalDate orderStartDate,
                                  LocalDate orderEndDate, int priority, char useYn, int conclusionQuantity, String orderNumber) {
+        this.seq = seq;
         this.itemCode = itemCode;
         this.koreanItemName = koreanItemName;
         this.orderPrice = orderPrice;
@@ -92,7 +93,7 @@ public class ReservationOrderInfo extends BaseEntity {
     }
 
     /**
-     * 예약 매수 사용 여부를 비활성화한다.
+     * 예약 설정해놓은 orderQuantity의 수량만큼 모두 체결되어 예약 매수 사용 여부를 비활성화한다.
      */
     public void disable() {
         this.useYn = 'N';
@@ -116,7 +117,7 @@ public class ReservationOrderInfo extends BaseEntity {
     }
 
     /**
-     * 체결된 수량을 주문 수량에서 뺀다.
+     * 주문할 수량에서 이미 체결된 수량만큼 감소시킨다.
      */
     public void subtractConcludedQuantity(int concludedQuantity) {
         this.orderQuantity -= concludedQuantity;

@@ -13,7 +13,7 @@ import com.devspacehub.ast.domain.itemInfo.ItemInfoRepository;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
-import com.devspacehub.ast.domain.my.stockBalance.service.MyService;
+import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.util.OpenApiRequest;
 import org.junit.jupiter.api.*;

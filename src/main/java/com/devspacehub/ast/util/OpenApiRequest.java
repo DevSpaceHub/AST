@@ -195,7 +195,7 @@ public class OpenApiRequest {
             Thread.sleep(TIME_DELAY_MILLIS);
         } catch (InterruptedException ex) {
             log.error("시간 지연 처리 중 이슈 발생하였습니다.");
-            log.error("{}", ex.getStackTrace());
+            log.error("{}", ex.getMessage());
         }
     }
 

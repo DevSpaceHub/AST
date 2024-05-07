@@ -14,13 +14,13 @@ import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
-import com.devspacehub.ast.domain.my.stockBalance.service.MyService;
+import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.notification.Notificator;
+import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
-import com.devspacehub.ast.util.EnvironmentUtil;
 import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +38,7 @@ import java.util.function.Consumer;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.*;
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_SELL_ORDER;
+import static com.devspacehub.ast.common.constant.ProfileType.getAccountStatus;
 
 /**
  * 주식 주문 서비스 구현체 - 매도
@@ -129,7 +130,7 @@ public class SellOrderServiceImpl extends TradingService {
         if (isEvaluateProfitLossRateBetweenProfitAndStopLossPercent(myStockBalance.getEvaluateProfitLossRate())) {
             return false;
         }
-        return isNewOrder(myStockBalance.getStockCode(), transactionId);
+        return isNewOrder(myStockBalance.getItemCode(), transactionId);
     }
 
     /**
@@ -147,7 +148,7 @@ public class SellOrderServiceImpl extends TradingService {
 
     @Transactional
     @Override
-    public void saveInfos(List<OrderTrading> orderTradingInfos) {
+    public void saveOrderInfos(List<OrderTrading> orderTradingInfos) {
         if (!orderTradingInfos.isEmpty()) {
             orderTradingRepository.saveAll(orderTradingInfos);
         }
@@ -156,15 +157,15 @@ public class SellOrderServiceImpl extends TradingService {
     /**
      * 매수됐지만 체결되지 않은 종목은 주문하지 않는다.
      * 매수됐던 이력도 없다면 주문할 수 있다.
-     * @param stockCode
+     * @param itemCode
      * @param transactionId
      * @return
      */
     @Override
-    public boolean isNewOrder(String stockCode, String transactionId){
+    public boolean isNewOrder(String itemCode, String transactionId){
         // 주문 가능 수량 초과 시 주문 불가.
         return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
-                stockCode, OPENAPI_SUCCESS_RESULT_CODE, transactionId,
+                itemCode, OPENAPI_SUCCESS_RESULT_CODE, transactionId,
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 0)),
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59))
         );
@@ -174,7 +175,8 @@ public class SellOrderServiceImpl extends TradingService {
     public void orderApiResultProcess(DomesticStockOrderExternalResDto result, OrderTrading orderTrading) {
         if (result.isSuccess()) {
             LogUtils.tradingOrderSuccess(DOMESTIC_STOCK_SELL_ORDER, orderTrading.getItemNameKor());
-            notificator.sendMessage(DOMESTIC_STOCK_SELL_ORDER, EnvironmentUtil.getActiveProfile(), orderTrading);
+            notificator.sendMessage(MessageContentDto.OrderResult.fromOne(
+                    DOMESTIC_STOCK_SELL_ORDER, getAccountStatus(), orderTrading));
         } else {
             LogUtils.openApiFailedResponseMessage(DOMESTIC_STOCK_SELL_ORDER, result.getMessage(), result.getMessageCode());
         }

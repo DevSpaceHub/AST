@@ -41,7 +41,7 @@ public class LogUtils {
      * @param stockNameKor
      */
     public static void tradingOrderSuccess(OpenApiType openApiType, String stockNameKor) {
-        log.info("===== [{}] 주문 성공 ({}) =====", openApiType.getDiscription(), stockNameKor);
+        log.info("[{}] 주문 성공 ({})", openApiType.getDiscription(), stockNameKor);
     }
 
     /**

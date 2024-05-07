@@ -134,8 +134,8 @@ public class MyServiceImpl implements MyService {
 
     /**
      * 예약 매수 중 체결된 매수 수량에 따라 예약 매수 주문 수량 업데이트한다.
-     *
      * @param orderConclusion
+     * @param concludedDate
      */
     @Override
     @Transactional
@@ -151,6 +151,7 @@ public class MyServiceImpl implements MyService {
         validReservationItem.setConclusionQuantity(orderConclusion.getConcludedQuantity());
 
         if (validReservationItem.checkTotalConcluded(orderConclusion.getConcludedQuantity())) {
+            validReservationItem.updateOrderQuantity(orderConclusion.getConcludedQuantity());
             validReservationItem.disable();
         } else {
             validReservationItem.updateOrderQuantity(orderConclusion.getConcludedQuantity());
