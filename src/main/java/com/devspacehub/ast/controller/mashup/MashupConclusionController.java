@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * AST-BATCH에서 호출하는 매쉬업 컨트롤러 - 체결
+ * AST-BATCH에서 호출하는 매쉬업 컨트롤러 - 체결 결과 처리
  */
 @RestController
-@RequestMapping("/ast/conclustions")
+@RequestMapping("/ast/conclusions")
 @RequiredArgsConstructor
 public class MashupConclusionController {
     private final MashupService mashupService;
