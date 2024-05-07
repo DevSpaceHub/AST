@@ -8,11 +8,16 @@
 
 package com.devspacehub.ast.domain.my.reservationOrderInfo;
 
+import com.devspacehub.ast.common.config.QuerydslConfig;
+import com.devspacehub.ast.common.constant.YesNoStatus;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -22,9 +27,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 @DataJpaTest
+@Import(QuerydslConfig.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Transactional
 class ReservationOrderInfoRepositoryTest {
+    @Autowired
+    EntityManager em;
+    @Autowired
+    JPAQueryFactory queryFactory;
     @Autowired
     ReservationOrderInfoRepository reservationOrderInfoRepository;
 
@@ -36,47 +46,48 @@ class ReservationOrderInfoRepositoryTest {
         LocalDate givenEnd = LocalDate.parse("2021-12-21");
         LocalDate givenNow = LocalDate.parse("2021-12-21");
         reservationOrderInfoRepository.save(ReservationOrderInfo.builder()
-                        .itemCode("000000")
-                        .orderStartDate(givenStart)
-                        .orderEndDate(givenEnd)
-                        .orderPrice(1000)
-                        .orderQuantity(1)
-                        .useYn('Y')
-                        .priority(1)
-                        .koreanItemName("테스트 종목")
+                .itemCode("000000")
+                .orderStartDate(givenStart)
+                .orderEndDate(givenEnd)
+                .useYn(YesNoStatus.YES.getCharCode())
                 .build());
+        reservationOrderInfoRepository.flush();
         // when
         List<ReservationOrderInfo> result = reservationOrderInfoRepository
-                .findAllByOrderStartDateBeforeOrOrderStartDateEqualsAndOrderEndDateAfterOrOrderEndDateEqualsOrderByPriority(
-                        givenNow, givenNow, givenNow, givenNow);
+                .findValidAll(givenNow);
         // then
         assertThat(result).hasSize(1)
-                .extracting("orderStartDate", "orderEndDate", "itemCode")
-                .contains(tuple(givenStart, givenEnd, "000000"));
+                .extracting("orderStartDate", "orderEndDate", "itemCode", "useYn")
+                .contains(tuple(givenStart, givenEnd, "000000", YesNoStatus.YES.getCharCode()));
     }
-
-    @DisplayName("USE_YN=Y인 데이터만 조회한다.")
+    @DisplayName("유효한 예약 매수 종목 조회 시 USE_YN은 모두 Y이다.")
     @Test
     void findOnlyUseYnEqualTo() {
         // given
-        char givenUseYn = 'N';
+        LocalDate givenStart = LocalDate.parse("2021-12-20");
+        LocalDate givenEnd = LocalDate.parse("2021-12-21");
+        LocalDate givenNow = LocalDate.parse("2021-12-21");
+        char givenUseYnIsY = YesNoStatus.YES.getCharCode();
         reservationOrderInfoRepository.save(ReservationOrderInfo.builder()
                 .itemCode("000000")
-                .orderStartDate(LocalDate.now())
-                .orderEndDate(LocalDate.now())
-                .orderPrice(1000)
-                .orderQuantity(1)
-                .useYn(givenUseYn)
-                .priority(1)
-                .koreanItemName("테스트 종목")
+                .orderStartDate(givenStart)
+                .orderEndDate(givenEnd)
+                .useYn(YesNoStatus.NO.getCharCode())
                 .build());
+        reservationOrderInfoRepository.save(ReservationOrderInfo.builder()
+                .itemCode("000001")
+                .orderStartDate(givenStart)
+                .orderEndDate(givenEnd)
+                .useYn(givenUseYnIsY)
+                .build());
+
         // when
-        List<ReservationOrderInfo> result = reservationOrderInfoRepository.findAll();
+        List<ReservationOrderInfo> result = reservationOrderInfoRepository.findValidAll(givenNow);
 
         // then
-        assertThat(result)
-                .extracting("useYn")
-                .contains('Y')
-                .doesNotContain('N');
+        assertThat(result).hasSize(1)
+                        .extracting("itemCode", "useYn")
+                                .contains(tuple("000001", givenUseYnIsY));
     }
+
 }

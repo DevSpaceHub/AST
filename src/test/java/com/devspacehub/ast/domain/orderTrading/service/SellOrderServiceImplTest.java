@@ -8,13 +8,11 @@
 
 package com.devspacehub.ast.domain.orderTrading.service;
 
-import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
-import com.devspacehub.ast.domain.my.stockBalance.service.MyService;
+import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.notification.Notificator;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
-import com.devspacehub.ast.util.EnvironmentUtil;
 import com.devspacehub.ast.util.OpenApiRequest;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +32,6 @@ import static org.mockito.BDDMockito.given;
 @ExtendWith(MockitoExtension.class)
 class SellOrderServiceImplTest {
     SellOrderServiceImpl sellOrderService;
-
     @Mock
     OpenApiRequest openApiRequest;
     @Mock
@@ -108,12 +105,12 @@ class SellOrderServiceImplTest {
                 .build();
 
         given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
-                givenLossSellItem.getStockCode(), OPENAPI_SUCCESS_RESULT_CODE, sellOrderTxId,
+                givenLossSellItem.getItemCode(), OPENAPI_SUCCESS_RESULT_CODE, sellOrderTxId,
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 0)),
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59)))
         ).willReturn(0);
         given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
-                givenProfitSellItem.getStockCode(), OPENAPI_SUCCESS_RESULT_CODE, sellOrderTxId,
+                givenProfitSellItem.getItemCode(), OPENAPI_SUCCESS_RESULT_CODE, sellOrderTxId,
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 0)),
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59)))
         ).willReturn(0);
@@ -123,7 +120,7 @@ class SellOrderServiceImplTest {
 
         // then
         assertThat(result).hasSize(2);
-        assertThat(result).extracting("stockCode").containsExactly(givenLossSellItem.getStockCode(), givenProfitSellItem.getStockCode());
+        assertThat(result).extracting("itemCode").containsExactly(givenLossSellItem.getItemCode(), givenProfitSellItem.getItemCode());
     }
 
     @Test
@@ -148,7 +145,7 @@ class SellOrderServiceImplTest {
                 .myStockBalance(List.of(alreadyOrdered, alreadyConcluded))
                 .build();
         given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
-                alreadyOrdered.getStockCode(), OPENAPI_SUCCESS_RESULT_CODE, sellOrderTxId,
+                alreadyOrdered.getItemCode(), OPENAPI_SUCCESS_RESULT_CODE, sellOrderTxId,
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 0)),
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59)))
         ).willReturn(1);
