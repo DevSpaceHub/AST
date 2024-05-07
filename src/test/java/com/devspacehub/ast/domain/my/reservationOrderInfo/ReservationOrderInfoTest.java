@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ReservationOrderInfoTest {
-    @DisplayName("주문가가 인자로 전달받는 하한가보다 크거나 같은지 비교한다.")
+    @DisplayName("주문가가 인자로 전달받는 하한가보다 크거나 동일하면 False 반환한다.")
     @Test
     void isOrderPriceGreaterOrEqualThan() {
         // given
@@ -23,11 +23,11 @@ class ReservationOrderInfoTest {
                 .orderPrice(givenOrderPrice)
                 .build();
         // when
-        boolean resultSuccess = reservationOrderInfo.isOrderPriceGreaterOrEqualThan(3900);
-        boolean resultFailed = reservationOrderInfo.isOrderPriceGreaterOrEqualThan(4000);
+        boolean result1 = reservationOrderInfo.isOrderPriceLowerThan(3900);
+        boolean result2 = reservationOrderInfo.isOrderPriceLowerThan(3800);
         // then
-        assertThat(resultSuccess).isTrue();
-        assertThat(resultFailed).isFalse();
+        assertThat(result1).isFalse();
+        assertThat(result2).isFalse();
     }
 
     @DisplayName("주문가를 업데이트한다.")
@@ -40,8 +40,25 @@ class ReservationOrderInfoTest {
                 .orderPrice(givenBeforeUpdate)
                 .build();
         // when
-        reservationOrderInfo.updateToAdjustedPrice(givenAfterUpdate);
+        reservationOrderInfo.updateOrderPrice(givenAfterUpdate);
         // then
         assertThat(reservationOrderInfo.getOrderPrice()).isEqualTo(givenAfterUpdate);
+    }
+
+    @DisplayName("체결된 수량을 주문 수량에서 뺀다.")
+    @Test
+    void subtractConcludedQuantity() {
+        // given
+        int givenOrderQuantity = 10;
+        int givenConcludedQuantity = 3;
+        ReservationOrderInfo reservationOrderInfo = ReservationOrderInfo.builder()
+                .orderQuantity(givenOrderQuantity)
+                .conclusionQuantity(givenConcludedQuantity)
+                .build();
+        // when
+        reservationOrderInfo.subtractConcludedQuantity(givenConcludedQuantity);
+
+        // then
+        assertThat(reservationOrderInfo.getOrderQuantity()).isEqualTo(7);
     }
 }
