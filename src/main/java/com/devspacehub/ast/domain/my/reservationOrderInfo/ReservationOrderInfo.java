@@ -109,11 +109,11 @@ public class ReservationOrderInfo extends BaseEntity {
     }
 
     /**
-     * 체결된 주문 수량 업데이트한다.
+     * 금일 체결된 주문 수량을 더한다.
      * @param concludedQuantity
      */
-    public void updateOrderQuantity(int concludedQuantity) {
-        this.conclusionQuantity = concludedQuantity;
+    public void addConcludedQuantity(int concludedQuantity) {
+        this.conclusionQuantity += concludedQuantity;
     }
 
     /**

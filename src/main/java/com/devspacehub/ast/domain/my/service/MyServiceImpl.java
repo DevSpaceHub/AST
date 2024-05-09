@@ -10,6 +10,7 @@ package com.devspacehub.ast.domain.my.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
+import com.devspacehub.ast.common.constant.ResultCode;
 import com.devspacehub.ast.domain.my.orderConclusion.dto.OrderConclusionFindExternalReqDto;
 import com.devspacehub.ast.domain.my.orderConclusion.dto.OrderConclusionFindExternalResDto;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
@@ -19,6 +20,7 @@ import com.devspacehub.ast.domain.my.stockBalance.dto.response.BuyPossibleCheckE
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.request.BuyPossibleCheckExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.OrderConclusionDto;
+import com.devspacehub.ast.exception.error.NotFoundDataException;
 import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
 import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
@@ -134,27 +136,20 @@ public class MyServiceImpl implements MyService {
 
     /**
      * 예약 매수 중 체결된 매수 수량에 따라 예약 매수 주문 수량 업데이트한다.
-     * @param orderConclusion
+     * @param todayOrderConclusion
      * @param concludedDate
      */
     @Override
     @Transactional
-    public void updateMyReservationOrderUseYn(OrderConclusionDto orderConclusion, LocalDate concludedDate) {
-        Optional<ReservationOrderInfo> optionalValidReservationItem = reservationOrderInfoRepository.findValidOneByItemCodeAndOrderNumber(
-                concludedDate, orderConclusion.getItemCode(), orderConclusion.getOrderNumber());
-        
-        if (optionalValidReservationItem.isEmpty()) {
-            return;
-        }
+    public void updateMyReservationOrderUseYn(OrderConclusionDto todayOrderConclusion, LocalDate concludedDate) {
+        ReservationOrderInfo validReservationItem = reservationOrderInfoRepository.findValidOneByItemCodeAndOrderNumber(
+                concludedDate, todayOrderConclusion.getItemCode(), todayOrderConclusion.getOrderNumber())
+                .orElseThrow(() -> new NotFoundDataException(ResultCode.NOT_FOUND_RESERVATION_ORDER_INFO));
 
-        ReservationOrderInfo validReservationItem = optionalValidReservationItem.get();
-        validReservationItem.setConclusionQuantity(orderConclusion.getConcludedQuantity());
+        validReservationItem.addConcludedQuantity(todayOrderConclusion.getConcludedQuantity());
 
-        if (validReservationItem.checkTotalConcluded(orderConclusion.getConcludedQuantity())) {
-            validReservationItem.updateOrderQuantity(orderConclusion.getConcludedQuantity());
+        if (validReservationItem.checkTotalConcluded(todayOrderConclusion.getConcludedQuantity())) {
             validReservationItem.disable();
-        } else {
-            validReservationItem.updateOrderQuantity(orderConclusion.getConcludedQuantity());
         }
         validReservationItem.updateMetaData(LocalDateTime.now());
     }
