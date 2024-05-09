@@ -32,6 +32,7 @@ public class Notificator {
     @Value("${notify.discord-webhook.url}")
     private String discordWebhookUrl;
     private static final String ORDER_NOTI_SENDER_NAME = "주문 봇";
+    private static final String CONCLUSION_NOTI_SENDER_NAME = "체결 봇";
 
     /**
      * 단일 메시지 발송 요청
@@ -74,6 +75,9 @@ public class Notificator {
         switch (openApiType) {
             case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER, DOMESTIC_STOCK_RESERVATION_BUY_ORDER -> {
                 return ORDER_NOTI_SENDER_NAME;
+            }
+            case ORDER_CONCLUSION_FIND -> {
+                return CONCLUSION_NOTI_SENDER_NAME;
             }
             default -> throw new InvalidValueException(ResultCode.INVALID_OPENAPI_TYPE_ERROR);
         }
