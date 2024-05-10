@@ -94,7 +94,7 @@ public class MashupService {
     /**
      * 주문 체결 결과에 대해 후처리 진행
      * 대상 : 금일 체결된 주문
-     * 1. 체결 상태에 따른 예약 매수 사용 여부 업데이트
+     * 1. 예약 매수 종목인 경우 일부 데이터 업데이트 진행
      * 2. 체결 결과 메시지 전송
      */
     @Transactional
@@ -104,7 +104,7 @@ public class MashupService {
         // 체결 상태 확인
         List<OrderConclusionDto> concludedOrderTradingResults = myService.getConcludedStock(LocalDate.now());
         for (OrderConclusionDto orderConclusion : concludedOrderTradingResults) {
-            // 예약 매수 종목인 경우 처리 로직
+            // 예약 매수 종목인 경우 처리
             myService.updateMyReservationOrderUseYn(orderConclusion, LocalDate.now());
 
             // 체결된 종목들에 대해 디스코드 메시지 전달
