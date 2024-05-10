@@ -104,7 +104,7 @@ public class MashupService {
         // 체결 상태 확인
         List<OrderConclusionDto> concludedOrderTradingResults = myService.getConcludedStock(LocalDate.now());
         for (OrderConclusionDto orderConclusion : concludedOrderTradingResults) {
-            // 예약 매수 종목 사용 여부 업데이트
+            // 예약 매수 종목인 경우 처리 로직
             myService.updateMyReservationOrderUseYn(orderConclusion, LocalDate.now());
 
             // 체결된 종목들에 대해 디스코드 메시지 전달

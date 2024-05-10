@@ -28,8 +28,6 @@ public enum ResultCode {
     NOT_FOUND_RANKING_VOLUME_DATA_JSON_FILE(5004, "거래량 순위 JSON 파일이 존재하지 않습니다."),
     INVALID_OPENAPI_TYPE_ERROR(5005, "해당하는 OpenApiType이 존재하지 않습니다."),
     INVALID_CURRENT_PRICE(5005, "유효하지 않은 현재가 입니다."),
-    NOT_FOUND_RESERVATION_ORDER_INFO(5005, "예약 매수 정보 조회에 실패하였습니다."),
-
 
     // KIS server error
     OPENAPI_SERVER_RESPONSE_ERROR(5002, "OpenApi 서버에서 오류 응답을 반환하였습니다."),

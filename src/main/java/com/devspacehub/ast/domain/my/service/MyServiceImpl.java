@@ -10,7 +10,6 @@ package com.devspacehub.ast.domain.my.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
-import com.devspacehub.ast.common.constant.ResultCode;
 import com.devspacehub.ast.domain.my.orderConclusion.dto.OrderConclusionFindExternalReqDto;
 import com.devspacehub.ast.domain.my.orderConclusion.dto.OrderConclusionFindExternalResDto;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
@@ -20,7 +19,6 @@ import com.devspacehub.ast.domain.my.stockBalance.dto.response.BuyPossibleCheckE
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.request.BuyPossibleCheckExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.OrderConclusionDto;
-import com.devspacehub.ast.exception.error.NotFoundDataException;
 import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
 import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
@@ -136,16 +134,20 @@ public class MyServiceImpl implements MyService {
 
     /**
      * 예약 매수 중 체결된 매수 수량에 따라 예약 매수 주문 수량 업데이트한다.
-     * @param todayOrderConclusion
-     * @param concludedDate
+     * 체결 종목이 예약 매수 종목이 아니라면 아무런 동작을 하지 않는다.
+     * @param todayOrderConclusion 금일 체결 종목 조회 응답 Dto
+     * @param concludedDate 체결 일자
      */
     @Override
     @Transactional
     public void updateMyReservationOrderUseYn(OrderConclusionDto todayOrderConclusion, LocalDate concludedDate) {
-        ReservationOrderInfo validReservationItem = reservationOrderInfoRepository.findValidOneByItemCodeAndOrderNumber(
-                concludedDate, todayOrderConclusion.getItemCode(), todayOrderConclusion.getOrderNumber())
-                .orElseThrow(() -> new NotFoundDataException(ResultCode.NOT_FOUND_RESERVATION_ORDER_INFO));
+        Optional<ReservationOrderInfo> optionalReservationItem = reservationOrderInfoRepository.findValidOneByItemCodeAndOrderNumber(
+                concludedDate, todayOrderConclusion.getItemCode(), todayOrderConclusion.getOrderNumber());
 
+        if (optionalReservationItem.isEmpty()) {
+            return;
+        }
+        ReservationOrderInfo validReservationItem = optionalReservationItem.get();
         validReservationItem.addConcludedQuantity(todayOrderConclusion.getConcludedQuantity());
 
         if (validReservationItem.checkTotalConcluded(todayOrderConclusion.getConcludedQuantity())) {
