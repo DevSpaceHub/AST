@@ -100,7 +100,7 @@ public class BuyOrderServiceImpl extends TradingService {
 
         // 2. 종목 선택 (거래량 순위 API) 및 매입수량 결정 (현재가 시세 조회 API)
         List<StockItemDto> stockItems = pickStockItems(items, transactionId);
-        log.info("[매수 주문] 최종 매수 가능 종목 : {}", stockItems.size());
+        log.info("[매수 주문] 최종 매수 주문 예정 갯수 : {}", stockItems.size());
 
         // 3. 매수
         List<OrderTrading> orderTradings = new ArrayList<>();
