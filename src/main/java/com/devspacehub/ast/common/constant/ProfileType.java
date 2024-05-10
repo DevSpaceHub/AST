@@ -1,7 +1,7 @@
 /*
  © 2024 devspacehub, Inc. All rights reserved.
 
- name : ActiveType
+ name : ProfileType
  creation : 2024.4.25
  author : Yoonji Moon
  */

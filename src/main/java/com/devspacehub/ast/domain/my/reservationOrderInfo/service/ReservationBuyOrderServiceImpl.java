@@ -84,7 +84,6 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
         return orderTradings;
     }
 
-    // TODO 트랜잭션 동작하는지 확인 필요.
     /**
      * 최신 주문번호로 업데이트한다.
      * @param result

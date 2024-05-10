@@ -1,7 +1,7 @@
 /*
  © 2024 devspacehub, Inc. All rights reserved.
 
- name : OrderTradingResultDto
+ name : OrderConclusionDto
  creation : 2024.4.19
  author : Yoonji Moon
  */

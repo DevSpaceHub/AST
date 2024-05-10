@@ -1,7 +1,7 @@
 /*
  © 2024 devspacehub, Inc. All rights reserved.
 
- name : ReservationBuyOrderServiceImplTest
+ name : ReservationBuyOrderServiceIntegrationTest
  creation : 2024.3.22
  author : Yoonji Moon
  */
@@ -110,6 +110,8 @@ class ReservationBuyOrderServiceIntegrationTest {
         assertThat(result.getOrderNumber()).isEqualTo(response.getOutput().getOrderNumber());
     }
 
+    // TODO 테스트코드 메서드 자체가 Transactional 적용이 되어 있어 Dirty Checking 위한 올바른 테스트가 아니다.
+    @Deprecated
     @DisplayName("매수 예약 주문한 종목 주문 성공 시 최신 주문번호로 업데이트한다.")
     @Test
     void updateLatestOrderNumber() {
