@@ -13,7 +13,7 @@ import com.devspacehub.ast.domain.itemInfo.ItemInfoRepository;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
-import com.devspacehub.ast.domain.my.stockBalance.service.MyService;
+import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.util.OpenApiRequest;
 import org.junit.jupiter.api.*;
@@ -152,7 +152,7 @@ class BuyOrderServiceImplTest {
     void isStockItemBuyOrderable_true() {
         // given
         DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo = new DomStockTradingVolumeRankingExternalResDto.StockInfo();
-        stockInfo.setStockCode("000155");
+        stockInfo.setItemCode("000155");
 
         given(itemInfoRepository.countByItemCode("000155")).willReturn(1);
         given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(

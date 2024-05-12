@@ -14,6 +14,7 @@ import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
+import com.devspacehub.ast.domain.my.orderConclusion.dto.OrderConclusionFindExternalResDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.BuyPossibleCheckExternalResDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
 import com.devspacehub.ast.domain.oauth.dto.AccessTokenIssueExternalReqDto;
@@ -147,6 +148,11 @@ public class OpenApiRequest {
         return response;
     }
 
+    /**
+     * 형변환을 위해 WebClientCommonResDto를 상속하는 구현 클래스 타입 반환한다.
+     * @param openApiType
+     * @return
+     */
     private Class<? extends WebClientCommonResDto> implyReturnType(OpenApiType openApiType) {
         switch (openApiType) {
             case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER, DOMESTIC_STOCK_RESERVATION_BUY_ORDER -> {
@@ -163,6 +169,9 @@ public class OpenApiRequest {
             }
             case CURRENT_STOCK_PRICE -> {
                 return CurrentStockPriceExternalResDto.class;
+            }
+            case ORDER_CONCLUSION_FIND -> {
+                return OrderConclusionFindExternalResDto.class;
             }
             default -> throw new IllegalArgumentException("적절한 응답 DTO가 없습니다.");
         }
@@ -186,7 +195,7 @@ public class OpenApiRequest {
             Thread.sleep(TIME_DELAY_MILLIS);
         } catch (InterruptedException ex) {
             log.error("시간 지연 처리 중 이슈 발생하였습니다.");
-            log.error("{}", ex.getStackTrace());
+            log.error("{}", ex.getMessage());
         }
     }
 

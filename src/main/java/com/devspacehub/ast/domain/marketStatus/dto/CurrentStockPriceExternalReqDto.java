@@ -29,11 +29,11 @@ public class CurrentStockPriceExternalReqDto {
         return httpHeaders -> httpHeaders.addAll(headers);
     }
 
-    public static MultiValueMap<String, String> createParameter(String stockCode) {
+    public static MultiValueMap<String, String> createParameter(String itemCode) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
         queryParams.add("FID_COND_MRKT_DIV_CODE", FID_CONDITION_MARKET_DIVISION_CODE);
-        queryParams.add("FID_INPUT_ISCD", stockCode);
+        queryParams.add("FID_INPUT_ISCD", itemCode);
 
         return queryParams;
     }

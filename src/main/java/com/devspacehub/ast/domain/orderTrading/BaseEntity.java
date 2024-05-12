@@ -19,11 +19,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 /**
- * 주문 거래 정보 Base Entity.
+ * 데이터 생성 정보 Base Entity.
  */
 @EntityListeners(AuditingEntityListener.class)
 @MappedSuperclass
-public class OrderTradingBaseEntity {
+public class BaseEntity {
     @CreatedDate
     @Column(name = "registration_datetime")
     private LocalDateTime registrationDateTime;

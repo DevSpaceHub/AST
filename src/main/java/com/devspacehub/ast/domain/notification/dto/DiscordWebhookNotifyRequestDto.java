@@ -5,7 +5,7 @@
  creation : 2024.1.27
  author : Yoonji Moon
  */
-package com.devspacehub.ast.domain.notification;
+package com.devspacehub.ast.domain.notification.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;

@@ -22,7 +22,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "orders")
 @Entity
-public class OrderTrading extends OrderTradingBaseEntity {
+public class OrderTrading extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,8 +62,8 @@ public class OrderTrading extends OrderTradingBaseEntity {
 
     public static OrderTrading from(StockItemDto item, DomesticStockOrderExternalResDto result, String txId) {
         return OrderTrading.builder()
-                .itemCode(item.getStockCode())
-                .itemNameKor(item.getStockNameKor())
+                .itemCode(item.getItemCode())
+                .itemNameKor(item.getItemNameKor())
                 .transactionId(txId)
                 .orderDivision(item.getOrderDivision())
                 .orderPrice(item.getOrderPrice())

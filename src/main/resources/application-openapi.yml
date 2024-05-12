@@ -29,6 +29,7 @@ openapi:
         stock-balance-find: VTTC8434R
         trading-volume-ranking-find: FHPST01710000
         current-stock-price-find: FHKST01010100
+        order-conclusion-find: VTTC8001R
     appkey: ${APP_KEY}
     appsecret: ${APP_SECRET}
 
@@ -52,6 +53,7 @@ openapi:
         stock-balance-find: VTTC8434R
         trading-volume-ranking-find: FHPST01710000
         current-stock-price-find: FHKST01010100
+        order-conclusion-find: VTTC8001R
     appkey: ${APP_KEY}
     appsecret: ${APP_SECRET}
 
@@ -75,6 +77,7 @@ openapi:
         stock-balance-find: TTTC8434R
         trading-volume-ranking-find: FHPST01710000
         current-stock-price-find: FHKST01010100
+        order-conclusion-find: TTTC8001R
     appkey: ${APP_KEY}
     appSecret: ${APP_SECRET}
   websocket:

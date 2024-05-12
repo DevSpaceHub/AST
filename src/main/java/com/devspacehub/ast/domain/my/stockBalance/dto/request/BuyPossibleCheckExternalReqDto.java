@@ -24,11 +24,11 @@ import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
 @Builder
 public class BuyPossibleCheckExternalReqDto {
 
-    public static MultiValueMap<String, String> createParameter(String accntNumber, String accntProductCode, String stockCode, Integer orderPrice, String orderDivision) {
+    public static MultiValueMap<String, String> createParameter(String accntNumber, String accntProductCode, String itemCode, Integer orderPrice, String orderDivision) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
         queryParams.add("CANO", accntNumber);
         queryParams.add("ACNT_PRDT_CD", accntProductCode);
-        queryParams.add("PDNO", stockCode);
+        queryParams.add("PDNO", itemCode);
         queryParams.add("ORD_UNPR", String.valueOf(orderPrice));
         queryParams.add("ORD_DVSN", orderDivision);
         queryParams.add("CMA_EVLU_AMT_ICLD_YN", NO.getCode());  // CMA 평가 금액 포함 여부
