@@ -12,6 +12,8 @@ import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExter
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION;
+
 /**
  * 주식 정보 Dto.
  */
@@ -43,6 +45,7 @@ public class StockItemDto {
                 .itemNameKor(stockInfo.getHtsStockNameKor())
                 .orderQuantity(orderQuantity)
                 .orderPrice(orderPrice)
+                .orderDivision(ORDER_DIVISION)
                 .build();
     }
 
@@ -57,6 +60,7 @@ public class StockItemDto {
                 .itemNameKor(myStockBalance.getStockName())
                 .orderQuantity(Integer.parseInt(myStockBalance.getHoldingQuantity()))     // 전량 매도
                 .orderPrice(Integer.parseInt(myStockBalance.getCurrentPrice()))
+                .orderDivision(ORDER_DIVISION)
                 .build();
     }
     @SuperBuilder
@@ -76,6 +80,7 @@ public class StockItemDto {
                     .itemNameKor(reservationOrderInfo.getKoreanItemName())
                     .orderQuantity(reservationOrderInfo.getOrderQuantity())
                     .orderPrice(reservationOrderInfo.getOrderPrice())
+                    .orderDivision(ORDER_DIVISION)
                     .build();
         }
     }
