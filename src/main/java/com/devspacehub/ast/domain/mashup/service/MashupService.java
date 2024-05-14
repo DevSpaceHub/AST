@@ -18,6 +18,7 @@ import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingServiceFactory;
 import com.devspacehub.ast.domain.orderTrading.dto.OrderConclusionDto;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
+import com.devspacehub.ast.util.RequestUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -108,8 +109,8 @@ public class MashupService {
             myService.updateMyReservationOrderUseYn(orderConclusion, LocalDate.now());
 
             // 체결된 종목들에 대해 디스코드 메시지 전달
-            notificator.sendMessage(MessageContentDto.ConclusionResult.fromOne(
-                    ORDER_CONCLUSION_FIND, getAccountStatus(), orderConclusion));
+            notificator.sendMessage(MessageContentDto.ConclusionResult.fromOne(ORDER_CONCLUSION_FIND, getAccountStatus(), orderConclusion));
+            RequestUtil.timeDelay();
         }
     }
 }
