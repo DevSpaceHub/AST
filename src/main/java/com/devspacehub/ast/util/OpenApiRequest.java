@@ -42,7 +42,6 @@ public class OpenApiRequest {
 
     @Value("${openapi.rest.domain}")
     private String openApiDomain;
-    private static final long TIME_DELAY_MILLIS = 700L;
 
     /**
      * 접근 토큰 발급 OpenApi Api 호출 (Post)
@@ -52,7 +51,7 @@ public class OpenApiRequest {
      * @return the string
      */
     public String httpOAuthRequest(String uri, AccessTokenIssueExternalReqDto requestDto) {
-        timeDelay();
+        RequestUtil.timeDelay();
 
         String response;
         try {
@@ -86,7 +85,7 @@ public class OpenApiRequest {
      * @return the web client common res dto
      */
     public WebClientCommonResDto httpGetRequest(OpenApiType openApiType, Consumer<HttpHeaders> headers, MultiValueMap<String, String> queryParams) {
-        timeDelay();
+        RequestUtil.timeDelay();
 
         Class<? extends WebClientCommonResDto> implResDtoClass = implyReturnType(openApiType);
         WebClientCommonResDto response;
@@ -122,7 +121,7 @@ public class OpenApiRequest {
      * @return the web client response dto
      */
     public <T extends WebClientCommonReqDto> WebClientCommonResDto httpPostRequest(OpenApiType openApiType, Consumer<HttpHeaders> headers, T requestDto) {
-        timeDelay();
+        RequestUtil.timeDelay();
 
         Class<? extends WebClientCommonResDto> implResDtoClass = implyReturnType(openApiType);
         WebClientCommonResDto response;
@@ -184,18 +183,6 @@ public class OpenApiRequest {
         if (Objects.isNull(response)) {
             log.error("[{}] OpenApi 응답값이 Null입니다.", openApiType.getDiscription());
             throw new OpenApiFailedResponseException();
-        }
-    }
-
-    /**
-     * KIS Open API를 초당 2회 이상 호출하지 않기 위해 0.5초 시간 지연 수행.
-     */
-    private void timeDelay() {
-        try {
-            Thread.sleep(TIME_DELAY_MILLIS);
-        } catch (InterruptedException ex) {
-            log.error("시간 지연 처리 중 이슈 발생하였습니다.");
-            log.error("{}", ex.getMessage());
         }
     }
 
