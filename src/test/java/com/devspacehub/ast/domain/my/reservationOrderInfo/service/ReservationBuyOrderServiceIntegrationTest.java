@@ -16,6 +16,8 @@ import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfoRepository;
 import com.devspacehub.ast.domain.my.service.MyServiceImpl;
+import com.devspacehub.ast.domain.notification.Notificator;
+import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
@@ -42,6 +44,7 @@ import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 
 @Transactional
 @SpringBootTest
@@ -53,6 +56,8 @@ class ReservationBuyOrderServiceIntegrationTest {
     private MarketStatusService marketStatusService;
     @MockBean
     private MyServiceImpl myService;
+    @MockBean
+    private Notificator notificator;
     @SpyBean
     private ReservationOrderInfoRepository reservationOrderInfoRepository;
     @Autowired
@@ -103,6 +108,7 @@ class ReservationBuyOrderServiceIntegrationTest {
         given(myService.getBuyOrderPossibleCash(givenEntity.getItemCode(), givenEntity.getOrderPrice(), ORDER_DIVISION)).willReturn(10000);
         given(marketStatusService.getCurrentStockPrice(givenEntity.getItemCode())).willReturn(currentStockPriceResponseOutput);
 
+        doNothing().when(notificator).sendMessage(any(MessageContentDto.class));
         // when
         reservationBuyOrderService.order(openApiProperties, openApiType, buyTxId);
 
