@@ -10,6 +10,7 @@ package com.devspacehub.ast.domain.my.reservationOrderInfo.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
+import com.devspacehub.ast.common.constant.YesNoStatus;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
@@ -73,7 +74,7 @@ class ReservationBuyOrderServiceIntegrationTest {
                 .orderQuantity(1)
                 .itemCode("000000")
                 .koreanItemName("테스트 종목")
-                .useYn('Y')
+                .useYn(YesNoStatus.YES.getCharCode())
                 .orderStartDate(LocalDate.now().minusDays(1))
                 .orderEndDate(LocalDate.now().plusDays(1))
                 .priority(1)
