@@ -67,7 +67,7 @@ public class MarketStatusService {
         DomStockTradingVolumeRankingExternalResDto response = (DomStockTradingVolumeRankingExternalResDto) openApiRequest.httpGetRequest(
                 DOMSTOCK_TRADING_VOLUME_RANKING, httpHeaders, queryParams);
 
-        if (!response.isSuccess()) {
+        if (response.isFailed()) {
             throw new OpenApiFailedResponseException();
         }
         return response;
@@ -110,13 +110,13 @@ public class MarketStatusService {
     /**
      * 국내 주식 현재가 시세 조회
      */
-    public CurrentStockPriceExternalResDto.CurrentStockPriceInfo getCurrentStockPrice(String stockCode) {
+    public CurrentStockPriceExternalResDto.CurrentStockPriceInfo getCurrentStockPrice(String itemCode) {
         Consumer<HttpHeaders> httpHeaders = CurrentStockPriceExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdCurrentStockPriceFind);
-        MultiValueMap<String, String> queryParams = CurrentStockPriceExternalReqDto.createParameter(stockCode);
+        MultiValueMap<String, String> queryParams = CurrentStockPriceExternalReqDto.createParameter(itemCode);
 
         CurrentStockPriceExternalResDto result = (CurrentStockPriceExternalResDto) openApiRequest.httpGetRequest(CURRENT_STOCK_PRICE, httpHeaders, queryParams);
 
-        if (!result.isSuccess()) {
+        if (result.isFailed()) {
             LogUtils.openApiFailedResponseMessage(OpenApiType.CURRENT_STOCK_PRICE, result.getMsg1(), result.getMessageCode());
             throw new OpenApiFailedResponseException();
         }

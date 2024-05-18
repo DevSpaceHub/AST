@@ -41,7 +41,7 @@ public class LogUtils {
      * @param stockNameKor
      */
     public static void tradingOrderSuccess(OpenApiType openApiType, String stockNameKor) {
-        log.info("===== [{}] 주문 성공 ({}) =====", openApiType.getDiscription(), stockNameKor);
+        log.info("[{}] 주문 성공 ({})", openApiType.getDiscription(), stockNameKor);
     }
 
     /**
@@ -52,5 +52,9 @@ public class LogUtils {
     public static void openApiRequestFailed(String uri, String message) {
         log.error("요청 실패하였습니다.(uri : {})", uri);
         log.error(message);
+    }
+
+    public static void notFoundDataError(String dataDescription) {
+        log.error("{}가 존재하지 않습니다.", dataDescription);
     }
 }

@@ -19,4 +19,7 @@ import lombok.Setter;
 public abstract class WebClientCommonResDto {
     public abstract boolean isSuccess();
 
+    public boolean isFailed() {
+        return !isSuccess();
+    }
 }

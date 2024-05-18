@@ -37,15 +37,15 @@ public abstract class TradingService {
     /**
      * 주식 주문 정보 저장.
      */
-    public abstract void saveInfos(List<OrderTrading> orderTradingInfos);
+    public abstract void saveOrderInfos(List<OrderTrading> orderTradingInfos);
 
     /**
      * 금일 한번도 매수/매도 주문되지 않은 종목인지 체크.
-     * @param stockCode
+     * @param itemCode
      * @param transactionId
      * @return
      */
-    public boolean isNewOrder(String stockCode, String transactionId) {
+    public boolean isNewOrder(String itemCode, String transactionId) {
         return true;
     }
 

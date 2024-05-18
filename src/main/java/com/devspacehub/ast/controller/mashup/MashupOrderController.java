@@ -12,9 +12,7 @@ import com.devspacehub.ast.common.dto.ApiResult;
 import com.devspacehub.ast.domain.mashup.service.MashupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * AST-BATCH에서 호출하는 매쉬업 컨트롤러 - 주문

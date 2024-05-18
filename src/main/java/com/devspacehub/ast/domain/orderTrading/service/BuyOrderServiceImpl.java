@@ -10,6 +10,7 @@ package com.devspacehub.ast.domain.orderTrading.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
+import com.devspacehub.ast.common.constant.ProfileType;
 import com.devspacehub.ast.common.constant.StockPriceUnit;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.common.utils.LogUtils;
@@ -18,14 +19,14 @@ import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResD
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
-import com.devspacehub.ast.domain.my.stockBalance.service.MyService;
+import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.notification.Notificator;
+import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import com.devspacehub.ast.domain.orderTrading.dto.SplitBuyPercents;
-import com.devspacehub.ast.util.EnvironmentUtil;
 import com.devspacehub.ast.util.NumberUtil;
 import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,7 @@ import java.util.function.Consumer;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.*;
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_BUY_ORDER;
+import static com.devspacehub.ast.common.constant.ProfileType.*;
 import static com.devspacehub.ast.common.constant.YesNoStatus.YES;
 import static com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto.*;
 
@@ -81,7 +83,7 @@ public class BuyOrderServiceImpl extends TradingService {
 
     /**
      * 국내주식 매수 주문
-     * : stockCode 종목코드(6자리) / orderDivision 주문구분(지정가,00) / orderQuantity 주문수량 / orderPrice 주문단가
+     * : itemCode 종목코드(6자리) / orderDivision 주문구분(지정가,00) / orderQuantity 주문수량 / orderPrice 주문단가
      * @param openApiProperties
      * @param openApiType
      * @param transactionId
@@ -90,7 +92,7 @@ public class BuyOrderServiceImpl extends TradingService {
     public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType, String transactionId) {
         // 1. 거래량 조회 (상위 10위)
         DomStockTradingVolumeRankingExternalResDto items;
-        if (EnvironmentUtil.isProdActive()) {
+        if (ProfileType.isProdActive()) {
             items = marketStatusService.findTradingVolume();
         } else {
             items = marketStatusService.getTradingVolumeLocalData();
@@ -98,7 +100,7 @@ public class BuyOrderServiceImpl extends TradingService {
 
         // 2. 종목 선택 (거래량 순위 API) 및 매입수량 결정 (현재가 시세 조회 API)
         List<StockItemDto> stockItems = pickStockItems(items, transactionId);
-        log.info("[매수 주문] 최종 매수 가능 종목 : {}", stockItems.size());
+        log.info("[매수 주문] 최종 매수 주문 예정 갯수 : {}", stockItems.size());
 
         // 3. 매수
         List<OrderTrading> orderTradings = new ArrayList<>();
@@ -182,10 +184,10 @@ public class BuyOrderServiceImpl extends TradingService {
             }
 
             // 3. 현재가 시세 조회
-            CurrentStockPriceInfo currentStockPriceInfo = marketStatusService.getCurrentStockPrice(stockInfo.getStockCode());
+            CurrentStockPriceInfo currentStockPriceInfo = marketStatusService.getCurrentStockPrice(stockInfo.getItemCode());
             int currentPrice = Integer.parseInt(currentStockPriceInfo.getCurrentStockPrice());
 
-            log.info("[매수 주문] 종목: {}({})", stockInfo.getStockCode(), stockInfo.getHtsStockNameKor());
+            log.info("[매수 주문] 종목: {}({})", stockInfo.getItemCode(), stockInfo.getHtsStockNameKor());
             log.info("[매수 주문] 현재가: {}", currentPrice);
             log.info("[매수 주문] HTS 시가 총액: {}", currentStockPriceInfo.getHtsMarketCapitalization());
             log.info("[매수 주문] 누적 거래량: {}", currentStockPriceInfo.getAccumulationVolume());
@@ -200,7 +202,7 @@ public class BuyOrderServiceImpl extends TradingService {
                 continue;
             }
             // 5. 매수 가능 금액 조회
-            int myDeposit = myService.getBuyOrderPossibleCash(stockInfo.getStockCode(), currentPrice, ORDER_DIVISION);
+            int myDeposit = myService.getBuyOrderPossibleCash(stockInfo.getItemCode(), currentPrice, ORDER_DIVISION);
 
             // 6. 매수 금액 + 매수 수량 결정 (분할 매수 Case)
             SplitBuyPercents splitBuyPercents = SplitBuyPercents.of(splitBuyPercentsByComma);
@@ -231,22 +233,22 @@ public class BuyOrderServiceImpl extends TradingService {
      * @return 유효한 종목이고 신규 주문이면 True 반환한다. 반대는 False.
      */
     protected boolean isStockItemBuyOrderable(StockInfo stockInfo, String transactionId) {
-        if (itemInfoRepository.countByItemCode(stockInfo.getStockCode()) < 1) {
+        if (itemInfoRepository.countByItemCode(stockInfo.getItemCode()) < 1) {
             return false;
         }
-        return isNewOrder(stockInfo.getStockCode(), transactionId);
+        return isNewOrder(stockInfo.getItemCode(), transactionId);
     }
 
     /**
      * 종목에 대해 새 주문인지 체크
-     * @param stockCode     String 타입의 종목 코드
+     * @param itemCode     String 타입의 종목 코드
      * @param transactionId 트랜잭션 Id
      * @return 금일 기준 신규 주문이면 True 반환. 이미 주문 이력 있으면 False 반환.
      */
     @Override
-    public boolean isNewOrder(String stockCode, String transactionId){
+    public boolean isNewOrder(String itemCode, String transactionId){
         return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
-                stockCode, OPENAPI_SUCCESS_RESULT_CODE, transactionId,
+                itemCode, OPENAPI_SUCCESS_RESULT_CODE, transactionId,
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(0,0,0)),
                 LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59)));
     }
@@ -283,7 +285,7 @@ public class BuyOrderServiceImpl extends TradingService {
      */
     @Transactional
     @Override
-    public void saveInfos(List<OrderTrading> orderTradingInfos) {
+    public void saveOrderInfos(List<OrderTrading> orderTradingInfos) {
         if (!orderTradingInfos.isEmpty()) {
             orderTradingRepository.saveAll(orderTradingInfos);
         }
@@ -293,7 +295,8 @@ public class BuyOrderServiceImpl extends TradingService {
     public void orderApiResultProcess(DomesticStockOrderExternalResDto result, OrderTrading orderTrading) {
         if (result.isSuccess()) {
             LogUtils.tradingOrderSuccess(DOMESTIC_STOCK_BUY_ORDER, orderTrading.getItemNameKor());
-            notificator.sendMessage(DOMESTIC_STOCK_BUY_ORDER, EnvironmentUtil.getActiveProfile(), orderTrading);
+            notificator.sendMessage(MessageContentDto.OrderResult.fromOne(
+                    DOMESTIC_STOCK_BUY_ORDER, getAccountStatus(), orderTrading));
         } else {
             LogUtils.openApiFailedResponseMessage(DOMESTIC_STOCK_BUY_ORDER, result.getMessage(), result.getMessageCode());
         }

@@ -28,4 +28,10 @@ public class CurrentStockPriceInfoBuilder {
                 .delistingYn(delistingYn.getCode())
                 .build();
     }
+
+    public static CurrentStockPriceExternalResDto.CurrentStockPriceInfo buildWithLowerLimitPrice(String lowerLimitPrice) {
+        return CurrentStockPriceExternalResDto.CurrentStockPriceInfo.builder()
+                .stockLowerLimitPrice(lowerLimitPrice)
+                .build();
+    }
 }

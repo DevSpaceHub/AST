@@ -33,11 +33,11 @@ class SellOrderIntegrationTest {
     @DisplayName("(실패)동일 종목에 대해 매도 주문은 각 1번씩만 발생한다.")
     void isNewOrder_failed() {
         // given
-        final String alreadyOrderedStockCode = "000000";
+        final String alreadyOrderedItemCode = "000000";
         orderTradingRepository.save(OrderTrading.builder()
                 .seq(0L)
                 .orderDivision(ORDER_DIVISION)
-                .itemCode(alreadyOrderedStockCode)
+                .itemCode(alreadyOrderedItemCode)
                 .itemNameKor("한화생명")
                 .orderQuantity(2)
                 .orderPrice(4385)
@@ -49,7 +49,7 @@ class SellOrderIntegrationTest {
                 .orderTime("090008")
                 .build());
         // when
-        boolean result = sellOrderService.isNewOrder(alreadyOrderedStockCode, sellTxId);
+        boolean result = sellOrderService.isNewOrder(alreadyOrderedItemCode, sellTxId);
         // then
         assertThat(result).isFalse();
     }
@@ -58,12 +58,12 @@ class SellOrderIntegrationTest {
     @DisplayName("(성공)동일 종목에 대해 매도 주문은 각 1번씩만 발생한다.")
     void isNewOrder_success() {
         // given
-        final String alreadyOrderedStockCode = "000000";
-        final String notOrderedStockCode = "100000";
+        final String alreadyOrderedItemCode = "000000";
+        final String notOrderedItemCode = "100000";
         orderTradingRepository.save(OrderTrading.builder()
                 .seq(0L)
                 .orderDivision(ORDER_DIVISION)
-                .itemCode(alreadyOrderedStockCode)
+                .itemCode(alreadyOrderedItemCode)
                 .itemNameKor("한화생명")
                 .orderQuantity(2)
                 .orderPrice(4385)
@@ -75,7 +75,7 @@ class SellOrderIntegrationTest {
                 .orderTime("090008")
                 .build());
         // when
-        boolean result = sellOrderService.isNewOrder(notOrderedStockCode, sellTxId);
+        boolean result = sellOrderService.isNewOrder(notOrderedItemCode, sellTxId);
         // then
         assertThat(result).isTrue();
     }

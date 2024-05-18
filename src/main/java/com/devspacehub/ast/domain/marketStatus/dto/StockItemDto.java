@@ -10,32 +10,27 @@ package com.devspacehub.ast.domain.marketStatus.dto;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION;
 
 /**
  * 주식 정보 Dto.
  */
+@SuperBuilder
 @Getter
 @Setter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class StockItemDto {
 
-    private String stockCode;
-    private String stockNameKor;
+    private String itemCode;
+    private String itemNameKor;
 
     private String orderDivision;
 
     private Integer orderQuantity;
 
     private Integer orderPrice;
-
-    @Builder
-    private static StockItemDto stockItemDto(String stockCode, String stockNameKor,
-                                             int orderQuantity, int orderPrice) {
-        return new StockItemDto(stockCode, stockNameKor, ORDER_DIVISION,
-                orderQuantity, orderPrice);
-    }
 
     /**
      * 매수 종목 DTO 생성
@@ -46,10 +41,11 @@ public class StockItemDto {
      */
     public static StockItemDto from(DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo, int orderQuantity, int orderPrice) {
         return StockItemDto.builder()
-                .stockCode(stockInfo.getStockCode())
-                .stockNameKor(stockInfo.getHtsStockNameKor())
+                .itemCode(stockInfo.getItemCode())
+                .itemNameKor(stockInfo.getHtsStockNameKor())
                 .orderQuantity(orderQuantity)
                 .orderPrice(orderPrice)
+                .orderDivision(ORDER_DIVISION)
                 .build();
     }
 
@@ -60,24 +56,32 @@ public class StockItemDto {
      */
     public static StockItemDto of(StockBalanceExternalResDto.MyStockBalance myStockBalance) {
         return StockItemDto.builder()
-                .stockCode(myStockBalance.getStockCode())
-                .stockNameKor(myStockBalance.getStockName())
+                .itemCode(myStockBalance.getItemCode())
+                .itemNameKor(myStockBalance.getStockName())
                 .orderQuantity(Integer.parseInt(myStockBalance.getHoldingQuantity()))     // 전량 매도
                 .orderPrice(Integer.parseInt(myStockBalance.getCurrentPrice()))
+                .orderDivision(ORDER_DIVISION)
                 .build();
     }
+    @SuperBuilder
+    @Getter
+    public static class ReservationStockItem extends StockItemDto {
+        private  Long reservationSeq;
 
-    /**
-     * 예약 매수 종목 DTO
-     * @param reservationOrderInfo
-     * @return
-     */
-    public static StockItemDto of(ReservationOrderInfo reservationOrderInfo) {
-        return StockItemDto.builder()
-                .stockCode(reservationOrderInfo.getItemCode())
-                .stockNameKor(reservationOrderInfo.getKoreanItemName())
-                .orderQuantity(reservationOrderInfo.getOrderQuantity())
-                .orderPrice(reservationOrderInfo.getOrderPrice())
-                .build();
+        /**
+         * 예약 매수 종목 DTO
+         * @param reservationOrderInfo
+         * @return
+         */
+        public static ReservationStockItem of(ReservationOrderInfo reservationOrderInfo) {
+            return ReservationStockItem.builder()
+                    .reservationSeq(reservationOrderInfo.getSeq())
+                    .itemCode(reservationOrderInfo.getItemCode())
+                    .itemNameKor(reservationOrderInfo.getKoreanItemName())
+                    .orderQuantity(reservationOrderInfo.getOrderQuantity())
+                    .orderPrice(reservationOrderInfo.getOrderPrice())
+                    .orderDivision(ORDER_DIVISION)
+                    .build();
+        }
     }
 }

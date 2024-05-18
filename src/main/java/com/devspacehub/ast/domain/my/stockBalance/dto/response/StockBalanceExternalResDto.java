@@ -54,7 +54,7 @@ public class StockBalanceExternalResDto extends WebClientCommonResDto {
     @AllArgsConstructor
     public static class MyStockBalance {
         @JsonProperty("pdno")
-        private String stockCode;   // 종목번호
+        private String itemCode;   // 종목번호
 
         @JsonProperty("prdt_name")
         private String stockName;    // 종목명
