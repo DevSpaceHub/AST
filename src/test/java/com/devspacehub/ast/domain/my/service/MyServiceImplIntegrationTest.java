@@ -52,7 +52,6 @@ class MyServiceImplIntegrationTest {
                 .orderEndDate(givenDate)
                 .orderPrice(givenPrice)
                 .orderQuantity(givenQuantity)
-                .conclusionQuantity(givenQuantity)
                 .orderNumber(givenOrderNumber)
                 .build());
         reservationOrderInfoRepository.flush();
