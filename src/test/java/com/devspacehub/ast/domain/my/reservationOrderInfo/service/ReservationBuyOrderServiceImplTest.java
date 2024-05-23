@@ -8,6 +8,7 @@
 
 package com.devspacehub.ast.domain.my.reservationOrderInfo.service;
 
+import com.devspacehub.ast.common.constant.YesNoStatus;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
@@ -51,7 +52,7 @@ class ReservationBuyOrderServiceImplTest {
                 .orderStartDate(LocalDate.now().minusDays(1L))
                 .orderEndDate(LocalDate.now().plusDays(1L))
                 .priority(1)
-                .useYn('Y')
+                .useYn(YesNoStatus.YES.getCharCode())
                 .conclusionQuantity(0)
                 .build();
         CurrentStockPriceExternalResDto.CurrentStockPriceInfo givenCurrentStockPriceInfo = CurrentStockPriceExternalResDto.CurrentStockPriceInfo.builder()
@@ -80,7 +81,7 @@ class ReservationBuyOrderServiceImplTest {
                 .orderPrice(giveOrderPrice)
                 .orderStartDate(LocalDate.now().minusDays(1L))
                 .orderEndDate(LocalDate.now().plusDays(1L))
-                .useYn('Y')
+                .useYn(YesNoStatus.YES.getCharCode())
                 .build();
         CurrentStockPriceExternalResDto.CurrentStockPriceInfo givenCurrentStockPriceInfo = CurrentStockPriceExternalResDto.CurrentStockPriceInfo.builder()
                 .stockLowerLimitPrice(givenLowerLimitPrice)

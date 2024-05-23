@@ -29,7 +29,7 @@ public class OrderConclusionFindExternalReqDto {
         queryParams.add("SLL_BUY_DVSN_CD", "02");   // 매도매수구분코드 (02:매수)
         queryParams.add("INQR_DVSN", "01");     // 조회 구분 (01:정순)
         queryParams.add("PDNO", "");            // 종콕코드
-        queryParams.add("CCLD_DVSN", "00");     // 체결 구분
+        queryParams.add("CCLD_DVSN", "01");     // 체결 구분
         queryParams.add("ORD_GNO_BRNO", "");    // 주문채번지점번호
         queryParams.add("ODNO", "");            // 주문번호
         queryParams.add("INQR_DVSN_3", "01");   // 조회구분3 (01:현금)
