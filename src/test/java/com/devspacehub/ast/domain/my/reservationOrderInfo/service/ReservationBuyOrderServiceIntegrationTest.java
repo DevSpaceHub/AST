@@ -10,11 +10,14 @@ package com.devspacehub.ast.domain.my.reservationOrderInfo.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
+import com.devspacehub.ast.common.constant.YesNoStatus;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfoRepository;
 import com.devspacehub.ast.domain.my.service.MyServiceImpl;
+import com.devspacehub.ast.domain.notification.Notificator;
+import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
@@ -41,6 +44,7 @@ import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 
 @Transactional
 @SpringBootTest
@@ -52,6 +56,8 @@ class ReservationBuyOrderServiceIntegrationTest {
     private MarketStatusService marketStatusService;
     @MockBean
     private MyServiceImpl myService;
+    @MockBean
+    private Notificator notificator;
     @SpyBean
     private ReservationOrderInfoRepository reservationOrderInfoRepository;
     @Autowired
@@ -73,7 +79,7 @@ class ReservationBuyOrderServiceIntegrationTest {
                 .orderQuantity(1)
                 .itemCode("000000")
                 .koreanItemName("테스트 종목")
-                .useYn('Y')
+                .useYn(YesNoStatus.YES.getCharCode())
                 .orderStartDate(LocalDate.now().minusDays(1))
                 .orderEndDate(LocalDate.now().plusDays(1))
                 .priority(1)
@@ -102,6 +108,7 @@ class ReservationBuyOrderServiceIntegrationTest {
         given(myService.getBuyOrderPossibleCash(givenEntity.getItemCode(), givenEntity.getOrderPrice(), ORDER_DIVISION)).willReturn(10000);
         given(marketStatusService.getCurrentStockPrice(givenEntity.getItemCode())).willReturn(currentStockPriceResponseOutput);
 
+        doNothing().when(notificator).sendMessage(any(MessageContentDto.class));
         // when
         reservationBuyOrderService.order(openApiProperties, openApiType, buyTxId);
 
