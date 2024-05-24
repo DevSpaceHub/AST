@@ -32,7 +32,7 @@ public class DomStockTradingVolumeRankingExternalResDto extends WebClientCommonR
     private String messageCode;
 
     @JsonProperty("msg1")
-    private String msg1;
+    private String message;
 
     @JsonIgnore
     @Override

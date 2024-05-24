@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static com.devspacehub.ast.common.constant.OpenApiType.BUY_ORDER_POSSIBLE_CASH;
+import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_BUY_ORDER_POSSIBLE_CASH;
 import static com.devspacehub.ast.common.constant.OpenApiType.ORDER_CONCLUSION_FIND;
 
 /**
@@ -71,7 +71,7 @@ public class MyServiceImpl implements MyService {
         MultiValueMap<String, String> queryParams = BuyPossibleCheckExternalReqDto.createParameter(
                 openApiProperties.getAccntNumber(), openApiProperties.getAccntProductCode(), stockCode, orderPrice, orderDivision);
 
-        BuyPossibleCheckExternalResDto responseDto = (BuyPossibleCheckExternalResDto) openApiRequest.httpGetRequest(BUY_ORDER_POSSIBLE_CASH, httpHeaders, queryParams);
+        BuyPossibleCheckExternalResDto responseDto = (BuyPossibleCheckExternalResDto) openApiRequest.httpGetRequest(DOMESTIC_BUY_ORDER_POSSIBLE_CASH, httpHeaders, queryParams);
 
         if (responseDto.isFailed()) {
             throw new OpenApiFailedResponseException();
@@ -93,7 +93,7 @@ public class MyServiceImpl implements MyService {
         Consumer<HttpHeaders> headers = StockBalanceExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdStockBalanceFind);
         MultiValueMap<String, String> queryParams = StockBalanceExternalReqDto.createParameter(openApiProperties.getAccntNumber(), openApiProperties.getAccntProductCode());
 
-        StockBalanceExternalResDto responseDto = (StockBalanceExternalResDto) openApiRequest.httpGetRequest(OpenApiType.STOCK_BALANCE, headers, queryParams);
+        StockBalanceExternalResDto responseDto = (StockBalanceExternalResDto) openApiRequest.httpGetRequest(OpenApiType.DOMESTIC_STOCK_BALANCE, headers, queryParams);
 
         if (responseDto.isFailed()) {
             throw new OpenApiFailedResponseException();

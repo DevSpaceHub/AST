@@ -157,13 +157,13 @@ public class OpenApiRequest {
             case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER, DOMESTIC_STOCK_RESERVATION_BUY_ORDER -> {
                 return DomesticStockOrderExternalResDto.class;
             }
-            case BUY_ORDER_POSSIBLE_CASH -> {
+            case DOMESTIC_BUY_ORDER_POSSIBLE_CASH -> {
                 return BuyPossibleCheckExternalResDto.class;
             }
-            case STOCK_BALANCE -> {
+            case DOMESTIC_STOCK_BALANCE -> {
                 return StockBalanceExternalResDto.class;
             }
-            case DOMSTOCK_TRADING_VOLUME_RANKING -> {
+            case DOMESTIC_TRADING_VOLUME_RANKING -> {
                 return DomStockTradingVolumeRankingExternalResDto.class;
             }
             case CURRENT_STOCK_PRICE -> {

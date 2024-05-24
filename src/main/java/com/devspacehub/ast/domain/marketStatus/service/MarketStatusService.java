@@ -38,7 +38,7 @@ import java.util.function.Consumer;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.TRADING_VOLUME_RANKING_DATA_SAMPLE_JSON_PATH;
 import static com.devspacehub.ast.common.constant.OpenApiType.CURRENT_STOCK_PRICE;
-import static com.devspacehub.ast.common.constant.OpenApiType.DOMSTOCK_TRADING_VOLUME_RANKING;
+import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_TRADING_VOLUME_RANKING;
 
 /**
  * 주식 현황 조회 서비스.
@@ -65,7 +65,7 @@ public class MarketStatusService {
 
         MultiValueMap<String, String> queryParams = DomStockTradingVolumeRankingExternalReqDto.createParameter();
         DomStockTradingVolumeRankingExternalResDto response = (DomStockTradingVolumeRankingExternalResDto) openApiRequest.httpGetRequest(
-                DOMSTOCK_TRADING_VOLUME_RANKING, httpHeaders, queryParams);
+                DOMESTIC_TRADING_VOLUME_RANKING, httpHeaders, queryParams);
 
         if (response.isFailed()) {
             throw new OpenApiFailedResponseException();

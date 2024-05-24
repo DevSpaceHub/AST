@@ -42,10 +42,10 @@ public class OrderConclusionFindExternalResDto extends WebClientCommonResDto {
     private String resultCode;
 
     @JsonProperty("msg_cd")
-    private String msgCd;
+    private String messageCode;
 
     @JsonProperty("msg1")
-    private String msg1;
+    private String message;
 
     @Builder
     @Getter
