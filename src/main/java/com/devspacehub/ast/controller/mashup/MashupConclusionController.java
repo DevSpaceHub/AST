@@ -8,12 +8,14 @@
 
 package com.devspacehub.ast.controller.mashup;
 
+import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.dto.ApiResult;
 import com.devspacehub.ast.domain.mashup.service.MashupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -27,11 +29,11 @@ public class MashupConclusionController {
 
     /**
      * 체결 결과 후처리 API
-     * @return
+     * @return Api result
      */
     @PutMapping("/process")
-    public ResponseEntity<ApiResult> conclusionResultProcess() {
-        mashupService.startOrderConclusionResultProcess();
+    public ResponseEntity<ApiResult> conclusionResultProcess(@RequestParam("openApiType") OpenApiType openApiType) {
+        mashupService.startOrderConclusionResultProcess(openApiType);
         return ResponseEntity.ok(ApiResult.success());
     }
 }
