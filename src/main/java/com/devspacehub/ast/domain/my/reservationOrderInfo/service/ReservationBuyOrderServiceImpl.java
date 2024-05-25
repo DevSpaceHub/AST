@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -90,7 +91,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
      * @param reservationItemSeq
      */
     @Transactional
-    protected void updateLatestOrderNumber(DomesticStockOrderExternalResDto result, Long reservationItemSeq) {
+    public void updateLatestOrderNumber(DomesticStockOrderExternalResDto result, Long reservationItemSeq) {
         if (result.isFailed()) {
             return;
         }
@@ -100,7 +101,9 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
             return;
         }
 
-        optionalReservationOrderInfo.get().setOrderNumber(result.getOutput().getOrderNumber());
+        ReservationOrderInfo reservationOrderInfo = optionalReservationOrderInfo.get();
+        reservationOrderInfo.setOrderNumber(result.getOutput().getOrderNumber());
+        reservationOrderInfo.updateMetaData(LocalDateTime.now());
     }
 
     /**
