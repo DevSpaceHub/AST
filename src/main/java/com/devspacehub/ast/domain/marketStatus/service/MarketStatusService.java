@@ -50,9 +50,9 @@ public class MarketStatusService {
     private final OpenApiProperties openApiProperties;
     private final OpenApiRequest openApiRequest;
     private final ObjectMapper objectMapper;
-    @Value("${openapi.rest.header.transaction-id.trading-volume-ranking-find}")
+    @Value("${openapi.rest.header.transaction-id.domestic.trading-volume-ranking-find}")
     private String txIdTradingVolumeRankingFind;
-    @Value("${openapi.rest.header.transaction-id.current-stock-price-find}")
+    @Value("${openapi.rest.header.transaction-id.domestic.current-stock-price-find}")
     private String txIdCurrentStockPriceFind;
 
     /**

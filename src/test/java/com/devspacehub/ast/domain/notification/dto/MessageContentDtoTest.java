@@ -28,7 +28,7 @@ class MessageContentDtoTest {
                 .accountStatusKor("모의")
                 .itemNameKor("삼성전자")
                 .itemCode("005930")
-                .openApiType(OpenApiType.ORDER_CONCLUSION_FIND)
+                .openApiType(OpenApiType.DOMESTIC_ORDER_CONCLUSION_FIND)
                 .orderQuantity(10)
                 .orderPrice(80000)
                 .orderNumber("0123456")

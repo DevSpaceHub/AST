@@ -169,7 +169,7 @@ public class OpenApiRequest {
             case CURRENT_STOCK_PRICE -> {
                 return CurrentStockPriceExternalResDto.class;
             }
-            case ORDER_CONCLUSION_FIND -> {
+            case DOMESTIC_ORDER_CONCLUSION_FIND -> {
                 return OrderConclusionFindExternalResDto.class;
             }
             default -> throw new IllegalArgumentException("적절한 응답 DTO가 없습니다.");

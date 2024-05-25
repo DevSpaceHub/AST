@@ -37,7 +37,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_BUY_ORDER_POSSIBLE_CASH;
-import static com.devspacehub.ast.common.constant.OpenApiType.ORDER_CONCLUSION_FIND;
+import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_ORDER_CONCLUSION_FIND;
 
 /**
  * 사용자 개인 서비스 구현체.
@@ -53,12 +53,12 @@ public class MyServiceImpl implements MyService {
     private final OpenApiProperties openApiProperties;
     private final ReservationOrderInfoRepository reservationOrderInfoRepository;
 
-    @Value("${openapi.rest.header.transaction-id.buy-possible-cash-find}")
+    @Value("${openapi.rest.header.transaction-id.domestic.buy-possible-cash-find}")
     private String txIdBuyPossibleCashFind;
 
-    @Value("${openapi.rest.header.transaction-id.stock-balance-find}")
+    @Value("${openapi.rest.header.transaction-id.domestic.stock-balance-find}")
     private String txIdStockBalanceFind;
-    @Value("${openapi.rest.header.transaction-id.order-conclusion-find}")
+    @Value("${openapi.rest.header.transaction-id.domestic.order-conclusion-find}")
     private String txIdOrderConclusionFind;
 
     /**
@@ -123,7 +123,7 @@ public class MyServiceImpl implements MyService {
         MultiValueMap<String, String> queryParams = OrderConclusionFindExternalReqDto.createParameter(
                 openApiProperties.getAccntNumber(), openApiProperties.getAccntProductCode(), today.format(dateTimeFormatter));
 
-        OrderConclusionFindExternalResDto responseDto = (OrderConclusionFindExternalResDto) openApiRequest.httpGetRequest(ORDER_CONCLUSION_FIND, httpHeaders, queryParams);
+        OrderConclusionFindExternalResDto responseDto = (OrderConclusionFindExternalResDto) openApiRequest.httpGetRequest(DOMESTIC_ORDER_CONCLUSION_FIND, httpHeaders, queryParams);
 
         if (responseDto.isFailed()) {
             throw new OpenApiFailedResponseException();

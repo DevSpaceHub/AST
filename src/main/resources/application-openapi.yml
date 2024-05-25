@@ -12,53 +12,43 @@ trading:
   # 분할매수는 콤마로 연결된 분할 매수 퍼센트
   split-buy-count: ${SPLIT_BUY_COUNT}
   split-buy-percents-by-comma: ${SPLIT_BUY_PERCENTS_BY_COMMA}
+
+openapi:
+  rest:
+    domain: https://openapivts.koreainvestment.com:29443
+    header:
+      transaction-id:
+        domestic:
+          buy-order: VTTC0802U
+          sell-order: VTTC0801U
+          buy-possible-cash-find: VTTC8908R
+          stock-balance-find: VTTC8434R
+          trading-volume-ranking-find: FHPST01710000
+          current-stock-price-find: FHKST01010100
+          order-conclusion-find: VTTC8001R
+        overseas:
+          buy-order: VTTT1002U
+          sell-order: VTTT1001U
+          stock-balance-find: VTTS3012R
+          stock-condition-search: HHDFS76410000
+
+    appkey: ${APP_KEY}
+    appsecret: ${APP_SECRET}
+
+  websocket:
+    domain: ws://ops.koreainvestment.com:31000
+
 ---
 spring:
   config:
     activate:
       on-profile: local
 
-openapi:
-  rest:
-    domain: https://openapivts.koreainvestment.com:29443
-    header:
-      transaction-id:
-        buy-order: VTTC0802U
-        sell-order: VTTC0801U
-        buy-possible-cash-find: VTTC8908R
-        stock-balance-find: VTTC8434R
-        trading-volume-ranking-find: FHPST01710000
-        current-stock-price-find: FHKST01010100
-        order-conclusion-find: VTTC8001R
-    appkey: ${APP_KEY}
-    appsecret: ${APP_SECRET}
-
-  websocket:
-    domain: ws://ops.koreainvestment.com:31000
-
 ---
 spring:
   config:
     activate:
       on-profile: beta
-
-openapi:
-  rest:
-    domain: https://openapivts.koreainvestment.com:29443
-    header:
-      transaction-id:
-        buy-order: VTTC0802U
-        sell-order: VTTC0801U
-        buy-possible-cash-find: VTTC8908R
-        stock-balance-find: VTTC8434R
-        trading-volume-ranking-find: FHPST01710000
-        current-stock-price-find: FHKST01010100
-        order-conclusion-find: VTTC8001R
-    appkey: ${APP_KEY}
-    appsecret: ${APP_SECRET}
-
-  websocket:
-    domain: ws://ops.koreainvestment.com:31000
 
 ---
 spring:
@@ -71,13 +61,21 @@ openapi:
     domain: https://openapi.koreainvestment.com:9443
     header:
       transaction-id:
-        buy-order: TTTC0802U
-        sell-order: TTTC0801U
-        buy-possible-cash-find: TTTC8908R
-        stock-balance-find: TTTC8434R
-        trading-volume-ranking-find: FHPST01710000
-        current-stock-price-find: FHKST01010100
-        order-conclusion-find: TTTC8001R
+        domestic:
+          buy-order: TTTC0802U
+          sell-order: TTTC0801U
+          buy-possible-cash-find: TTTC8908R
+          stock-balance-find: TTTC8434R
+          trading-volume-ranking-find: FHPST01710000
+          current-stock-price-find: FHKST01010100
+          order-conclusion-find: TTTC8001R
+        overseas:
+          buy-order: TTTT1002U
+          sell-order: TTTT1006U
+          stock-balance-find: TTTS3012R
+          stock-condition-search: HHDFS76410000
+          buy-possible-cash-find: TTTS3007R
+
     appkey: ${APP_KEY}
     appSecret: ${APP_SECRET}
   websocket:

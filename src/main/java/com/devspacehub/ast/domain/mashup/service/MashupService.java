@@ -9,6 +9,7 @@
 package com.devspacehub.ast.domain.mashup.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
+import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.constant.TokenType;
 import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.notification.Notificator;
@@ -44,21 +45,16 @@ public class MashupService {
     private final OrderTradingServiceFactory orderTradingServiceFactory;
     private final OpenApiProperties openApiProperties;
 
-    @Value("${openapi.rest.header.transaction-id.buy-order}")
-    private String txIdBuyOrder;
-    @Value("${openapi.rest.header.transaction-id.sell-order}")
-    private String txIdSellOrder;
-
     /**
      * 매수 주문
      */
     @Transactional
-    public void startBuyOrder() {
+    public void startBuyOrder(OpenApiType openApiType) {
         oAuthService.setAccessToken(TokenType.AccessToken);
 
-        TradingService tradingService = orderTradingServiceFactory.getServiceImpl(DOMESTIC_STOCK_BUY_ORDER);
+        TradingService tradingService = orderTradingServiceFactory.getServiceImpl(openApiType);
         // 주문
-        List<OrderTrading> orderTradings = tradingService.order(openApiProperties, DOMESTIC_STOCK_BUY_ORDER, txIdBuyOrder);
+        List<OrderTrading> orderTradings = tradingService.order(openApiProperties, openApiType);
         // 이력 저장
         tradingService.saveOrderInfos(orderTradings);
     }
@@ -67,12 +63,12 @@ public class MashupService {
      * 매도 주문
      */
     @Transactional
-    public void startSellOrder() {
+    public void startSellOrder(OpenApiType openApiType) {
         oAuthService.setAccessToken(TokenType.AccessToken);
 
-        TradingService tradingService = orderTradingServiceFactory.getServiceImpl(DOMESTIC_STOCK_SELL_ORDER);
+        TradingService tradingService = orderTradingServiceFactory.getServiceImpl(openApiType);
         // 주문
-        List<OrderTrading> orderTradings = tradingService.order(openApiProperties, DOMESTIC_STOCK_SELL_ORDER, txIdSellOrder);
+        List<OrderTrading> orderTradings = tradingService.order(openApiProperties, openApiType);
         // 이력 저장
         tradingService.saveOrderInfos(orderTradings);
     }
@@ -82,12 +78,12 @@ public class MashupService {
      * 예약 매수 주문
      */
     @Transactional
-    public void startReservationBuyOrder() {
+    public void startReservationBuyOrder(OpenApiType openApiType) {
         oAuthService.setAccessToken(TokenType.AccessToken);
 
-        TradingService tradingService = orderTradingServiceFactory.getServiceImpl(DOMESTIC_STOCK_RESERVATION_BUY_ORDER);
+        TradingService tradingService = orderTradingServiceFactory.getServiceImpl(openApiType);
         // 주문
-        List<OrderTrading> orderTradings = tradingService.order(openApiProperties, DOMESTIC_STOCK_RESERVATION_BUY_ORDER, txIdBuyOrder);
+        List<OrderTrading> orderTradings = tradingService.order(openApiProperties, openApiType);
         // 이력 저장
         tradingService.saveOrderInfos(orderTradings);
     }
@@ -99,7 +95,7 @@ public class MashupService {
      * 2. 체결 결과 메시지 전송
      */
     @Transactional
-    public void startOrderConclusionResultProcess() {
+    public void startOrderConclusionResultProcess(OpenApiType openApiType) {
         oAuthService.setAccessToken(TokenType.AccessToken);
 
         // 체결 상태 확인
@@ -109,7 +105,7 @@ public class MashupService {
             myService.updateMyReservationOrderUseYn(orderConclusion, LocalDate.now());
 
             // 체결된 종목들에 대해 디스코드 메시지 전달
-            notificator.sendMessage(MessageContentDto.ConclusionResult.fromOne(ORDER_CONCLUSION_FIND, getAccountStatus(), orderConclusion));
+            notificator.sendMessage(MessageContentDto.ConclusionResult.fromOne(openApiType, getAccountStatus(), orderConclusion));
             RequestUtil.timeDelay();
         }
     }

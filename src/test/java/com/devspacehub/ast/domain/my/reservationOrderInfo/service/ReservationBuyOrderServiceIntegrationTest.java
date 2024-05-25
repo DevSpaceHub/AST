@@ -103,7 +103,7 @@ class ReservationBuyOrderServiceIntegrationTest {
         given(marketStatusService.getCurrentStockPrice(givenEntity.getItemCode())).willReturn(currentStockPriceResponseOutput);
 
         // when
-        reservationBuyOrderService.order(openApiProperties, openApiType, buyTxId);
+        reservationBuyOrderService.order(openApiProperties, openApiType);
 
         // then
         ReservationOrderInfo result = reservationOrderInfoRepository.findById(givenEntity.getSeq()).get();

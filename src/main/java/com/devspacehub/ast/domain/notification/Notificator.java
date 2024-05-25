@@ -76,7 +76,7 @@ public class Notificator {
             case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER, DOMESTIC_STOCK_RESERVATION_BUY_ORDER -> {
                 return ORDER_NOTI_SENDER_NAME;
             }
-            case ORDER_CONCLUSION_FIND -> {
+            case DOMESTIC_ORDER_CONCLUSION_FIND -> {
                 return CONCLUSION_NOTI_SENDER_NAME;
             }
             default -> throw new InvalidValueException(ResultCode.INVALID_OPENAPI_TYPE_ERROR);

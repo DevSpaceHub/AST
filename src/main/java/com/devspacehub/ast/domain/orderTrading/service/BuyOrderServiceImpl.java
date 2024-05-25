@@ -52,7 +52,7 @@ import static com.devspacehub.ast.common.constant.YesNoStatus.YES;
 import static com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto.*;
 
 /**
- * 주식 주문 서비스 구현체 - 매수
+ * 국내 주식 주문 서비스 구현체 - 매수
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -79,17 +79,16 @@ public class BuyOrderServiceImpl extends TradingService {
     private String splitBuyPercentsByComma;
     @Value("${trading.split-buy-count}")
     private int splitBuyCount;
-
-
+    @Value("${openapi.rest.header.transaction-id.domestic.buy-order}")
+    private String transactionId;
     /**
      * 국내주식 매수 주문
      * : itemCode 종목코드(6자리) / orderDivision 주문구분(지정가,00) / orderQuantity 주문수량 / orderPrice 주문단가
      * @param openApiProperties
      * @param openApiType
-     * @param transactionId
      */
     @Override
-    public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType, String transactionId) {
+    public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType) {
         // 1. 거래량 조회 (상위 10위)
         DomStockTradingVolumeRankingExternalResDto items;
         if (ProfileType.isProdActive()) {
@@ -105,7 +104,7 @@ public class BuyOrderServiceImpl extends TradingService {
         // 3. 매수
         List<OrderTrading> orderTradings = new ArrayList<>();
         for (StockItemDto item : stockItems) {
-            DomesticStockOrderExternalResDto result = callOrderApi(openApiProperties, item, DOMESTIC_STOCK_BUY_ORDER, transactionId);
+            DomesticStockOrderExternalResDto result = callOrderApi(openApiProperties, item, openApiType, transactionId);
             OrderTrading orderTrading = OrderTrading.from(item, result, transactionId);
             orderTradings.add(orderTrading);
 

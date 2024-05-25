@@ -27,6 +27,7 @@ import com.devspacehub.ast.domain.orderTrading.service.TradingService;
 import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,9 +60,17 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
     private final MarketStatusService marketStatusService;
     private final MyService myService;
     private final Notificator notificator;
+    @Value("${openapi.rest.header.transaction-id.domestic.buy-order}")
+    private String transactionId;
 
+    /**
+     * 유효한 예약 매수 종목 데이터를 예약 매수 주문한다.
+     * @param openApiProperties
+     * @param openApiType
+     * @return
+     */
     @Override
-    public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType, String transactionId) {
+    public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType) {
         // 1. 예약 종목들 조회
         List<ReservationOrderInfo> reservationOrderInfos = reservationOrderInfoRepository
                 .findValidAll(LocalDate.now());

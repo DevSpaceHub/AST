@@ -23,7 +23,7 @@ public abstract class TradingService {
     /**
      * 주식 주문 (매수/매도).
      */
-    public abstract List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType, String transactionId);
+    public abstract List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType);
 
     /**
      * 주문 API 요청 위해 Header, Body 세팅 후 OpenApiRequest 클래스 내 메서드 호출.

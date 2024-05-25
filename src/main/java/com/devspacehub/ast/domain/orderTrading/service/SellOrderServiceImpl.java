@@ -58,13 +58,15 @@ public class SellOrderServiceImpl extends TradingService {
 
     @Value("${trading.profit-sell-ratio}")
     private Float profitSellRatio;
+    @Value("${openapi.rest.header.transaction-id.domestic.sell-order}")
+    private String transactionId;
 
     /**
      * 매도 주문
      * - 국내주식주문 API 호출
      */
     @Override
-    public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType, String transactionId) {
+    public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType) {
         // 1. 주식 잔고 조회
         StockBalanceExternalResDto myStockBalance = myService.getMyStockBalance();
 
