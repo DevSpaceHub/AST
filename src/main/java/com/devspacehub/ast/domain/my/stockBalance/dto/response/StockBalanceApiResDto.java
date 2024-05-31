@@ -1,7 +1,7 @@
 /*
  © 2023 devspacehub, Inc. All rights reserved.
 
- name : StockBalanceExternalResDto
+ name : StockBalanceApiResDto
  creation : 2023.12.19
  author : Yoonji Moon
  */
@@ -28,7 +28,7 @@ import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCES
 @NoArgsConstructor
 @Getter
 @Builder
-public class StockBalanceExternalResDto extends WebClientCommonResDto {
+public class StockBalanceApiResDto extends WebClientCommonResDto {
     @JsonProperty("rt_cd")
     private String resultCode;
     @JsonProperty("msg_cd")

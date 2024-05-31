@@ -13,7 +13,7 @@ import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
-import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceApiResDto;
 import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.notification.Notificator;
 import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
@@ -68,7 +68,7 @@ public class SellOrderServiceImpl extends TradingService {
     @Override
     public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType) {
         // 1. 주식 잔고 조회
-        StockBalanceExternalResDto myStockBalance = myService.getMyStockBalance();
+        StockBalanceApiResDto myStockBalance = myService.getMyStockBalance();
 
 
         // 2. 주식 선택 후 매도 주문 (손절매도 & 수익매도)
@@ -105,10 +105,10 @@ public class SellOrderServiceImpl extends TradingService {
      * - 현재가 시세 조회 API 호출 -> 매도 금액 결정
      */
     public List<StockItemDto> pickStockItems(WebClientCommonResDto resDto, String transactionId) {
-        StockBalanceExternalResDto stockBalanceResponse = (StockBalanceExternalResDto) resDto;
+        StockBalanceApiResDto stockBalanceResponse = (StockBalanceApiResDto) resDto;
         List<StockItemDto> pickedStockItems = new ArrayList<>();
 
-        for (StockBalanceExternalResDto.MyStockBalance myStockBalance : stockBalanceResponse.getMyStockBalance()) {
+        for (StockBalanceApiResDto.MyStockBalance myStockBalance : stockBalanceResponse.getMyStockBalance()) {
             if (!isStockItemSellOrderable(myStockBalance, transactionId)) {
                 continue;
             }
@@ -123,7 +123,7 @@ public class SellOrderServiceImpl extends TradingService {
      * @param myStockBalance
      * @return
      */
-    protected boolean isStockItemSellOrderable(StockBalanceExternalResDto.MyStockBalance myStockBalance, String transactionId) {
+    protected boolean isStockItemSellOrderable(StockBalanceApiResDto.MyStockBalance myStockBalance, String transactionId) {
         // 이미 체결된 주식인지 체크 (KIS : 체결 + 2일동안 0으로 응답함)
         if (0 == Integer.parseInt(myStockBalance.getHoldingQuantity())) {
             return false;

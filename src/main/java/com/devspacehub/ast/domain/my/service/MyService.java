@@ -8,7 +8,7 @@
 
 package com.devspacehub.ast.domain.my.service;
 
-import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceApiResDto;
 import com.devspacehub.ast.domain.orderTrading.dto.OrderConclusionDto;
 
 import java.time.LocalDate;
@@ -33,7 +33,7 @@ public interface MyService {
      *
      * @return 나의 주식 잔고
      */
-    StockBalanceExternalResDto getMyStockBalance();
+    StockBalanceApiResDto getMyStockBalance();
 
     boolean isMyDepositLowerThanOrderPrice(int myDeposit, int orderPrice);
 

@@ -1,7 +1,7 @@
 /*
  © 2023 devspacehub, Inc. All rights reserved.
 
- name : BuyPossibleCheckExternalReqDto
+ name : BuyPossibleCashApiReqDto
  creation : 2023.12.20
  author : Yoonji Moon
  */
@@ -22,7 +22,7 @@ import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
  * 매수 가능 조회 요청 DTO.
  */
 @Builder
-public class BuyPossibleCheckExternalReqDto {
+public class BuyPossibleCashApiReqDto {
 
     public static MultiValueMap<String, String> createParameter(String accntNumber, String accntProductCode, String itemCode, Integer orderPrice, String orderDivision) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();

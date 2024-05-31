@@ -8,7 +8,7 @@
 package com.devspacehub.ast.domain.marketStatus.dto;
 
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
-import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceApiResDto;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -54,7 +54,7 @@ public class StockItemDto {
      * @param myStockBalance
      * @return
      */
-    public static StockItemDto of(StockBalanceExternalResDto.MyStockBalance myStockBalance) {
+    public static StockItemDto of(StockBalanceApiResDto.MyStockBalance myStockBalance) {
         return StockItemDto.builder()
                 .itemCode(myStockBalance.getItemCode())
                 .itemNameKor(myStockBalance.getStockName())

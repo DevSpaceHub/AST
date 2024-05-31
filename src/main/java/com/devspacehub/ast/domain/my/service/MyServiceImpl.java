@@ -14,10 +14,10 @@ import com.devspacehub.ast.domain.my.orderConclusion.dto.OrderConclusionFindExte
 import com.devspacehub.ast.domain.my.orderConclusion.dto.OrderConclusionFindExternalResDto;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfoRepository;
-import com.devspacehub.ast.domain.my.stockBalance.dto.request.StockBalanceExternalReqDto;
-import com.devspacehub.ast.domain.my.stockBalance.dto.response.BuyPossibleCheckExternalResDto;
-import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
-import com.devspacehub.ast.domain.my.stockBalance.dto.request.BuyPossibleCheckExternalReqDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.request.StockBalanceApiReqDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.BuyPossibleCashApiResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceApiResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.request.BuyPossibleCashApiReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.OrderConclusionDto;
 import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
 import com.devspacehub.ast.util.OpenApiRequest;
@@ -67,11 +67,11 @@ public class MyServiceImpl implements MyService {
     @Override
     public int getBuyOrderPossibleCash(String stockCode, Integer orderPrice, String orderDivision) {
         // 헤더 & 파라미터 값 생성
-        Consumer<HttpHeaders> httpHeaders = BuyPossibleCheckExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdBuyPossibleCashFind);
-        MultiValueMap<String, String> queryParams = BuyPossibleCheckExternalReqDto.createParameter(
+        Consumer<HttpHeaders> httpHeaders = BuyPossibleCashApiReqDto.setHeaders(openApiProperties.getOauth(), txIdBuyPossibleCashFind);
+        MultiValueMap<String, String> queryParams = BuyPossibleCashApiReqDto.createParameter(
                 openApiProperties.getAccntNumber(), openApiProperties.getAccntProductCode(), stockCode, orderPrice, orderDivision);
 
-        BuyPossibleCheckExternalResDto responseDto = (BuyPossibleCheckExternalResDto) openApiRequest.httpGetRequest(DOMESTIC_BUY_ORDER_POSSIBLE_CASH, httpHeaders, queryParams);
+        BuyPossibleCashApiResDto responseDto = (BuyPossibleCashApiResDto) openApiRequest.httpGetRequest(DOMESTIC_BUY_ORDER_POSSIBLE_CASH, httpHeaders, queryParams);
 
         if (responseDto.isFailed()) {
             throw new OpenApiFailedResponseException();
@@ -89,18 +89,18 @@ public class MyServiceImpl implements MyService {
      * @return StockBalanceExternalResDto
      */
     @Override
-    public StockBalanceExternalResDto getMyStockBalance() {
-        Consumer<HttpHeaders> headers = StockBalanceExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdStockBalanceFind);
-        MultiValueMap<String, String> queryParams = StockBalanceExternalReqDto.createParameter(openApiProperties.getAccntNumber(), openApiProperties.getAccntProductCode());
+    public StockBalanceApiResDto getMyStockBalance() {
+        Consumer<HttpHeaders> headers = StockBalanceApiReqDto.setHeaders(openApiProperties.getOauth(), txIdStockBalanceFind);
+        MultiValueMap<String, String> queryParams = StockBalanceApiReqDto.createParameter(openApiProperties.getAccntNumber(), openApiProperties.getAccntProductCode());
 
-        StockBalanceExternalResDto responseDto = (StockBalanceExternalResDto) openApiRequest.httpGetRequest(OpenApiType.DOMESTIC_STOCK_BALANCE, headers, queryParams);
+        StockBalanceApiResDto responseDto = (StockBalanceApiResDto) openApiRequest.httpGetRequest(OpenApiType.DOMESTIC_STOCK_BALANCE, headers, queryParams);
 
         if (responseDto.isFailed()) {
             throw new OpenApiFailedResponseException();
         }
 
         log.info("[매도 주문] 주식잔고조회 : {}", responseDto.getMessage());
-        for(StockBalanceExternalResDto.MyStockBalance myStockBalance : responseDto.getMyStockBalance()) {
+        for(StockBalanceApiResDto.MyStockBalance myStockBalance : responseDto.getMyStockBalance()) {
             log.info("[매도 주문] 1. 주식 종목 : {}({})", myStockBalance.getItemCode(), myStockBalance.getStockName());
             log.info("[매도 주문] 2. 보유 수량 : {}", myStockBalance.getHoldingQuantity());
             log.info("[매도 주문] 3. 현재가 : {}", myStockBalance.getCurrentPrice());

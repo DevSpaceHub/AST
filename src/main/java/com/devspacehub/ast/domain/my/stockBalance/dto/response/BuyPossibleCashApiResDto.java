@@ -1,7 +1,7 @@
 /*
  © 2023 devspacehub, Inc. All rights reserved.
 
- name : BuyPossibleCheckExternalResDto
+ name : BuyPossibleCashApiResDto
  creation : 2023.12.20
  author : Yoonji Moon
  */
@@ -23,7 +23,7 @@ import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCES
  */
 @NoArgsConstructor
 @Getter
-public class BuyPossibleCheckExternalResDto extends WebClientCommonResDto {
+public class BuyPossibleCashApiResDto extends WebClientCommonResDto {
     @JsonProperty("rt_cd")
     private String resultCode;
     @JsonProperty("msg_cd")

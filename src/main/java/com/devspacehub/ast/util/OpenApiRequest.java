@@ -15,8 +15,8 @@ import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
 import com.devspacehub.ast.domain.my.orderConclusion.dto.OrderConclusionFindExternalResDto;
-import com.devspacehub.ast.domain.my.stockBalance.dto.response.BuyPossibleCheckExternalResDto;
-import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.BuyPossibleCashApiResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceApiResDto;
 import com.devspacehub.ast.domain.oauth.dto.AccessTokenIssueExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
@@ -158,10 +158,10 @@ public class OpenApiRequest {
                 return DomesticStockOrderExternalResDto.class;
             }
             case DOMESTIC_BUY_ORDER_POSSIBLE_CASH -> {
-                return BuyPossibleCheckExternalResDto.class;
+                return BuyPossibleCashApiResDto.class;
             }
             case DOMESTIC_STOCK_BALANCE -> {
-                return StockBalanceExternalResDto.class;
+                return StockBalanceApiResDto.class;
             }
             case DOMESTIC_TRADING_VOLUME_RANKING -> {
                 return DomStockTradingVolumeRankingExternalResDto.class;
