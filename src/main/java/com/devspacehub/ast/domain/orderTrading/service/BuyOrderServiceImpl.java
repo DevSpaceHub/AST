@@ -42,6 +42,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -294,10 +295,11 @@ public class BuyOrderServiceImpl extends TradingService {
      */
     @Transactional
     @Override
-    public void saveOrderInfos(List<OrderTrading> orderTradingInfos) {
+    public List<OrderTrading> saveOrderInfos(List<OrderTrading> orderTradingInfos) {
         if (!orderTradingInfos.isEmpty()) {
-            orderTradingRepository.saveAll(orderTradingInfos);
+            return orderTradingRepository.saveAll(orderTradingInfos);
         }
+        return Collections.emptyList();
     }
 
     @Override

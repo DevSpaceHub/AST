@@ -9,6 +9,7 @@
 package com.devspacehub.ast.domain.my.reservationOrderInfo.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
+import com.devspacehub.ast.common.constant.CommonConstants;
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.constant.YesNoStatus;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
@@ -24,6 +25,7 @@ import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReq
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import com.devspacehub.ast.domain.orderTrading.service.CurrentStockPriceInfoBuilder;
 import com.devspacehub.ast.util.OpenApiRequest;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -148,17 +151,34 @@ class ReservationBuyOrderServiceIntegrationTest {
     @Test
     void saveOrderInfos() {
         // given
-        OrderTrading givenData = new OrderTrading(1L, "", "", buyTxId,
-                "000", ORDER_DIVISION, BigDecimal.valueOf(9100), 1, "", OPENAPI_SUCCESS_RESULT_CODE,
-                null, null);
-        List<OrderTrading> given = List.of(givenData);
+        List<OrderTrading> given = List.of(OrderTrading.builder()
+                .transactionId(buyTxId)
+                .itemCode("000000")
+                .itemNameKor("TESTKOR")
+                .orderResultCode(CommonConstants.OPENAPI_SUCCESS_RESULT_CODE)
+                .orderQuantity(1)
+                .orderPrice(BigDecimal.valueOf(9100))
+                .orderTime("090001")
+                .orderNumber("APBK00000001")
+                .orderDivision(ORDER_DIVISION)
+                .orderMessage("주문 전송 완료 되었습니다.")
+                .build());
+        LocalDateTime now = LocalDateTime.now();
         // when
-        reservationBuyOrderService.saveOrderInfos(given);
+        List<OrderTrading> results = reservationBuyOrderService.saveOrderInfos(given);
         orderTradingRepository.flush();
 
         // then
-        OrderTrading result = orderTradingRepository.findById(1L).get();
-        assertThat(result.getSeq()).isEqualTo(givenData.getSeq());
-        assertThat(result.getOrderNumber()).isEqualTo(givenData.getOrderNumber());
+        OrderTrading actual = orderTradingRepository.findById(results.get(0).getSeq()).orElseThrow(EntityNotFoundException::new);
+        assertThat(actual.getOrderPrice()).isEqualByComparingTo(BigDecimal.valueOf(9100));
+        assertThat(actual.getOrderNumber()).isEqualTo("APBK00000001");
+        assertThat(actual.getRegistrationId()).isEqualTo(CommonConstants.REGISTER_ID);
+        assertThat(actual.getRegistrationDateTime()).isBetween(now.minusSeconds(30), now.plusSeconds(30));
+        assertThat(actual.getItemCode()).isEqualTo("000000");
+        assertThat(actual.getItemNameKor()).isEqualTo("TESTKOR");
+        assertThat(actual.getOrderResultCode()).isEqualTo(CommonConstants.OPENAPI_SUCCESS_RESULT_CODE);
+        assertThat(actual.getOrderQuantity()).isEqualTo(1);
+        assertThat(actual.getTransactionId()).isEqualTo(buyTxId);
+        assertThat(actual.getOrderMessage()).isEqualTo("주문 전송 완료 되었습니다.");
     }
 }
