@@ -19,8 +19,8 @@ class BigDecimalUtilTest {
         BigDecimal onePercentResult = BigDecimalUtil.percentageToDecimal(onePercent);
         BigDecimal tenPercentResult = BigDecimalUtil.percentageToDecimal(tenPercent);
         // then
-        assertThat(onePercentResult).isEqualTo(new BigDecimal("0.01"));
-        assertThat(tenPercentResult).isEqualTo(new BigDecimal("0.1"));
+        assertThat(onePercentResult).isEqualByComparingTo(new BigDecimal("0.01"));
+        assertThat(tenPercentResult).isEqualByComparingTo(new BigDecimal("0.1"));
     }
 
     @DisplayName("a가 b보다 크거나 동일하면 False 반환하고 작으면 True 반환한다.")

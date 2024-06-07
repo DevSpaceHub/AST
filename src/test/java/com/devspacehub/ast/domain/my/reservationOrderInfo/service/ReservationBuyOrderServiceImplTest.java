@@ -17,6 +17,7 @@ import com.devspacehub.ast.domain.my.service.MyService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,6 +28,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,7 +44,7 @@ class ReservationBuyOrderServiceImplTest {
     @Test
     void pickStockItems_orderPriceEqualOrGreaterThanLowerLimitPrice() {
         // given
-        BigDecimal giveOrderPrice = BigDecimal.valueOf(9000);
+        BigDecimal giveOrderPrice = BigDecimal.valueOf(9100);
         BigDecimal givenLowerLimitPrice = BigDecimal.valueOf(9000);
 
         ReservationOrderInfo givenOrderedReservationOrderInfo = ReservationOrderInfo.builder()
@@ -60,10 +62,10 @@ class ReservationBuyOrderServiceImplTest {
                 .stockLowerLimitPrice(givenLowerLimitPrice)
                 .build();
         given(marketStatusService.getCurrentStockPrice(givenOrderedReservationOrderInfo.getItemCode())).willReturn(givenCurrentStockPriceInfo);
+        given(myService.getBuyOrderPossibleCash(anyString(), ArgumentMatchers.any(BigDecimal.class), anyString())).willReturn(BigDecimal.valueOf(10000));
 
         // when
         List<StockItemDto.ReservationStockItem> result = reservationBuyOrderService.pickStockItems(List.of(givenOrderedReservationOrderInfo));
-
         // then
         assertThat(result).hasSize(1)
                 .extracting("itemCode", "orderPrice")
