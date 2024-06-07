@@ -35,6 +35,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Consumer;
@@ -75,7 +76,7 @@ class ReservationBuyOrderServiceIntegrationTest {
         // 예약 매수 종목 저장
         ReservationOrderInfo givenEntity = ReservationOrderInfo.builder()
                 .seq(0L)
-                .orderPrice(9100)
+                .orderPrice(new BigDecimal(9100))
                 .orderQuantity(1)
                 .itemCode("000000")
                 .koreanItemName("테스트 종목")
@@ -98,14 +99,14 @@ class ReservationBuyOrderServiceIntegrationTest {
         response.setOutput(respOutput);
         given(openApiRequest.httpPostRequest(any(OpenApiType.class), any(Consumer.class), any(DomesticStockOrderExternalReqDto.class))).willReturn(response);
 
-        String givenLowerLimitPrice = "9000";
+        BigDecimal givenLowerLimitPrice = BigDecimal.valueOf(9000);
         CurrentStockPriceExternalResDto.CurrentStockPriceInfo currentStockPriceResponseOutput = CurrentStockPriceInfoBuilder.buildWithLowerLimitPrice(givenLowerLimitPrice);
         CurrentStockPriceExternalResDto currentStockPriceResponse = new CurrentStockPriceExternalResDto();
         currentStockPriceResponse.setCurrentStockPriceInfo(currentStockPriceResponseOutput);
         currentStockPriceResponse.setResultCode(OPENAPI_SUCCESS_RESULT_CODE);
 
         given(reservationOrderInfoRepository.findValidAll(any(LocalDate.class))).willReturn(List.of(givenEntity));
-        given(myService.getBuyOrderPossibleCash(givenEntity.getItemCode(), givenEntity.getOrderPrice(), ORDER_DIVISION)).willReturn(10000);
+        given(myService.getBuyOrderPossibleCash(givenEntity.getItemCode(), givenEntity.getOrderPrice(), ORDER_DIVISION)).willReturn(BigDecimal.valueOf(10000));
         given(marketStatusService.getCurrentStockPrice(givenEntity.getItemCode())).willReturn(currentStockPriceResponseOutput);
 
         doNothing().when(notificator).sendMessage(any(MessageContentDto.class));
@@ -148,7 +149,7 @@ class ReservationBuyOrderServiceIntegrationTest {
     void saveOrderInfos() {
         // given
         OrderTrading givenData = new OrderTrading(1L, "", "", buyTxId,
-                "000", ORDER_DIVISION, 9100, 1, "", OPENAPI_SUCCESS_RESULT_CODE,
+                "000", ORDER_DIVISION, BigDecimal.valueOf(9100), 1, "", OPENAPI_SUCCESS_RESULT_CODE,
                 null, null);
         List<OrderTrading> given = List.of(givenData);
         // when

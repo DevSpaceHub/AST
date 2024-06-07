@@ -13,6 +13,7 @@ import com.devspacehub.ast.domain.orderTrading.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -34,7 +35,7 @@ public class ReservationOrderInfo extends BaseEntity {
     @Column(name = "korean_item_name")
     private String koreanItemName;
     @Column(name = "order_price")
-    private int orderPrice;
+    private BigDecimal orderPrice;
 
     @Column(name = "order_quantity")
     private int orderQuantity;
@@ -60,7 +61,7 @@ public class ReservationOrderInfo extends BaseEntity {
     @Column(name = "update_id")
     private String updateId;
     @Builder
-    private ReservationOrderInfo(Long seq, String itemCode, String koreanItemName, int orderPrice, int orderQuantity, LocalDate orderStartDate,
+    private ReservationOrderInfo(Long seq, String itemCode, String koreanItemName, BigDecimal orderPrice, int orderQuantity, LocalDate orderStartDate,
                                  LocalDate orderEndDate, int priority, char useYn, int conclusionQuantity, String orderNumber) {
         this.seq = seq;
         this.itemCode = itemCode;
@@ -76,19 +77,10 @@ public class ReservationOrderInfo extends BaseEntity {
     }
 
     /**
-     * 예약 매수 주문 금액이 하한가보다 크거나 같은지 확인한다.
-     * @param lowerLimitPrice
-     * @return
-     */
-    public boolean isOrderPriceLowerThan(int lowerLimitPrice) {
-        return orderPrice < lowerLimitPrice;
-    }
-
-    /**
      * 주문 금액을 조정한다.
      * @param orderPrice
      */
-    public void updateOrderPrice(int orderPrice) {
+    public void updateOrderPrice(BigDecimal orderPrice) {
         this.orderPrice = orderPrice;
     }
 

@@ -17,6 +17,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.math.BigDecimal;
+
 import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,7 +42,7 @@ class SellOrderIntegrationTest {
                 .itemCode(alreadyOrderedItemCode)
                 .itemNameKor("한화생명")
                 .orderQuantity(2)
-                .orderPrice(4385)
+                .orderPrice(BigDecimal.valueOf(4385))
                 .orderNumber("0000151228")
                 .orderMessage("주문 전송 완료 되었습니다.")
                 .orderMessageCode("APBK0013")
@@ -66,7 +68,7 @@ class SellOrderIntegrationTest {
                 .itemCode(alreadyOrderedItemCode)
                 .itemNameKor("한화생명")
                 .orderQuantity(2)
-                .orderPrice(4385)
+                .orderPrice(BigDecimal.valueOf(4385))
                 .orderNumber("0000151228")
                 .orderMessage("주문 전송 완료 되었습니다.")
                 .orderMessageCode("APBK0013")

@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
@@ -108,7 +109,7 @@ public class CurrentStockPriceExternalResDto extends WebClientCommonResDto {
         private String stckMxpr;
 
         @JsonProperty("stck_llam")
-        private String stockLowerLimitPrice;
+        private BigDecimal stockLowerLimitPrice;
 
         @JsonProperty("stck_sdpr")
         private String stckSdpr;

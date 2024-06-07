@@ -14,6 +14,8 @@ import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalRes
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class OrderTradingTest {
@@ -25,7 +27,7 @@ class OrderTradingTest {
         StockItemDto.ReservationStockItem reservationStockItemDto = StockItemDto.ReservationStockItem.builder()
                 .itemCode("000000")
                 .itemNameKor("테스트주식")
-                .orderPrice(10000)
+                .orderPrice(BigDecimal.valueOf(10000))
                 .orderQuantity(10)
                 .orderDivision(CommonConstants.ORDER_DIVISION)
                 .build();

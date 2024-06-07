@@ -12,6 +12,8 @@ import com.devspacehub.ast.common.constant.OpenApiType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -30,11 +32,11 @@ class MessageContentDtoTest {
                 .itemCode("005930")
                 .openApiType(OpenApiType.ORDER_CONCLUSION_FIND)
                 .orderQuantity(10)
-                .orderPrice(80000)
+                .orderPrice(BigDecimal.valueOf(80000))
                 .orderNumber("0123456")
                 .orderTime("090130")
                 .concludedQuantity(10)
-                .concludedPrice(80000)
+                .concludedPrice(BigDecimal.valueOf(80000))
                 .build();
         // when
         String message = orderResult.createMessage(orderResult);
@@ -62,7 +64,7 @@ class MessageContentDtoTest {
                 .itemCode("005930")
                 .openApiType(OpenApiType.DOMESTIC_STOCK_BUY_ORDER)
                 .orderQuantity(10)
-                .orderPrice(80000)
+                .orderPrice(BigDecimal.valueOf(80000))
                 .orderNumber("0123456")
                 .orderTime("090130")
                 .build();

@@ -13,6 +13,7 @@ import com.devspacehub.ast.domain.my.orderConclusion.dto.OrderConclusionFindExte
 import lombok.Builder;
 import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,15 +26,15 @@ public class OrderConclusionDto {
     private String itemNameKor;
     private String orderNumber;
     private int concludedQuantity;
-    private int concludedPrice;
+    private BigDecimal concludedPrice;
     private OpenApiType orderType;   // 주문 타입 (매수, 예약매수)
     private int orderQuantity;
-    private int orderPrice;
+    private BigDecimal orderPrice;
     private String orderTime;
 
     @Builder
-    private OrderConclusionDto(String itemCode, String itemNameKor, String orderNumber, int concludedQuantity, int concludedPrice,
-                               OpenApiType orderType, int orderQuantity, int orderPrice, String orderTime) {
+    private OrderConclusionDto(String itemCode, String itemNameKor, String orderNumber, int concludedQuantity, BigDecimal concludedPrice,
+                               OpenApiType orderType, int orderQuantity, BigDecimal orderPrice, String orderTime) {
         this.itemCode = itemCode;
         this.itemNameKor = itemNameKor;
         this.orderNumber = orderNumber;
@@ -56,11 +57,11 @@ public class OrderConclusionDto {
                             .itemCode(output1.getItemCode())
                             .itemNameKor(output1.getItemNameKor())
                             .orderNumber(output1.getOrderNumber())
-                            .concludedPrice(Integer.parseInt(output1.getTotalConcludedPrice()))
+                            .concludedPrice(new BigDecimal(output1.getTotalConcludedPrice()))
                             .concludedQuantity(Integer.parseInt(output1.getTotalConcludedQuantity()))
                             .orderType(OpenApiType.ORDER_CONCLUSION_FIND)
                             .orderQuantity(Integer.parseInt(output1.getOrderQuantity()))
-                            .orderPrice(Integer.parseInt(output1.getOrderPrice()))
+                            .orderPrice(new BigDecimal(output1.getOrderPrice()))
                             .orderTime(output1.getOrderTime())
                     .build());
         }
