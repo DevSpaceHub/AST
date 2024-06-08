@@ -11,6 +11,8 @@ package com.devspacehub.ast.domain.orderTrading.dto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -19,16 +21,37 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SplitBuyPercentsTest {
 
     @Test
-    @DisplayName("현재가에 대해 분할 매수 퍼센트에 따른 구매 단가를 계산한다.")
-    void calculateBuyPriceBySplitBuyPercents() {
+    @DisplayName("국내 - 현재가에 대해 분할 매수 퍼센트에 따른 구매 단가를 계산한다.")
+    void calculateBuyPriceBySplitBuyPercents_domestic() {
         // given
         String percentsStr = "2,5,8";
-        final int currentPrice = 99900;
+        final BigDecimal currentPrice = new BigDecimal(99900);
         SplitBuyPercents splitBuyPercents = SplitBuyPercents.of(percentsStr);
 
-        // when & then
-        assertThat(splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, 0)).isEqualTo((currentPrice - (int)(currentPrice * 0.02f)));
-        assertThat(splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, 1)).isEqualTo(currentPrice - (int)(currentPrice * 0.05f));
-        assertThat(splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, 2)).isEqualTo(currentPrice - (int)(currentPrice * 0.08f));
+        // when
+        BigDecimal result1 = splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, 0);
+        BigDecimal result2 = splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, 1);
+        BigDecimal result3 = splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, 2);
+        // then
+        assertThat(result1).isEqualByComparingTo(new BigDecimal("97902"));
+        assertThat(result2).isEqualByComparingTo(new BigDecimal("94905"));
+        assertThat(result3).isEqualByComparingTo(new BigDecimal("91908"));
+    }
+    @Test
+    @DisplayName("해외 - 현재가에 대해 분할 매수 퍼센트에 따른 구매 단가를 계산한다.")
+    void calculateBuyPriceBySplitBuyPercents_overseas() {
+        // given
+        String percentsStr = "10,12,14";
+        final BigDecimal currentPrice = new BigDecimal("25.25");
+        SplitBuyPercents splitBuyPercents = SplitBuyPercents.of(percentsStr);
+
+        // when
+        BigDecimal result0 = splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, 0);
+        BigDecimal result1 = splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, 1);
+        BigDecimal result2 = splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, 2);
+        // then
+        assertThat(result0).isEqualByComparingTo(new BigDecimal("22.725"));
+        assertThat(result1).isEqualByComparingTo(new BigDecimal("22.22"));
+        assertThat(result2).isEqualByComparingTo(new BigDecimal("21.715"));
     }
 }

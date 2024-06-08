@@ -9,18 +9,23 @@
 package com.devspacehub.ast.domain.my.reservationOrderInfo.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
+import com.devspacehub.ast.common.constant.CommonConstants;
 import com.devspacehub.ast.common.constant.OpenApiType;
+import com.devspacehub.ast.common.constant.YesNoStatus;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfoRepository;
 import com.devspacehub.ast.domain.my.service.MyServiceImpl;
+import com.devspacehub.ast.domain.notification.Notificator;
+import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import com.devspacehub.ast.domain.orderTrading.service.CurrentStockPriceInfoBuilder;
 import com.devspacehub.ast.util.OpenApiRequest;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +37,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -41,6 +48,7 @@ import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 
 @Transactional
 @SpringBootTest
@@ -52,6 +60,8 @@ class ReservationBuyOrderServiceIntegrationTest {
     private MarketStatusService marketStatusService;
     @MockBean
     private MyServiceImpl myService;
+    @MockBean
+    private Notificator notificator;
     @SpyBean
     private ReservationOrderInfoRepository reservationOrderInfoRepository;
     @Autowired
@@ -69,11 +79,11 @@ class ReservationBuyOrderServiceIntegrationTest {
         // 예약 매수 종목 저장
         ReservationOrderInfo givenEntity = ReservationOrderInfo.builder()
                 .seq(0L)
-                .orderPrice(9100)
+                .orderPrice(new BigDecimal(9100))
                 .orderQuantity(1)
                 .itemCode("000000")
                 .koreanItemName("테스트 종목")
-                .useYn('Y')
+                .useYn(YesNoStatus.YES.getCharCode())
                 .orderStartDate(LocalDate.now().minusDays(1))
                 .orderEndDate(LocalDate.now().plusDays(1))
                 .priority(1)
@@ -92,16 +102,17 @@ class ReservationBuyOrderServiceIntegrationTest {
         response.setOutput(respOutput);
         given(openApiRequest.httpPostRequest(any(OpenApiType.class), any(Consumer.class), any(DomesticStockOrderExternalReqDto.class))).willReturn(response);
 
-        String givenLowerLimitPrice = "9000";
+        BigDecimal givenLowerLimitPrice = BigDecimal.valueOf(9000);
         CurrentStockPriceExternalResDto.CurrentStockPriceInfo currentStockPriceResponseOutput = CurrentStockPriceInfoBuilder.buildWithLowerLimitPrice(givenLowerLimitPrice);
         CurrentStockPriceExternalResDto currentStockPriceResponse = new CurrentStockPriceExternalResDto();
         currentStockPriceResponse.setCurrentStockPriceInfo(currentStockPriceResponseOutput);
         currentStockPriceResponse.setResultCode(OPENAPI_SUCCESS_RESULT_CODE);
 
         given(reservationOrderInfoRepository.findValidAll(any(LocalDate.class))).willReturn(List.of(givenEntity));
-        given(myService.getBuyOrderPossibleCash(givenEntity.getItemCode(), givenEntity.getOrderPrice(), ORDER_DIVISION)).willReturn(10000);
+        given(myService.getBuyOrderPossibleCash(givenEntity.getItemCode(), givenEntity.getOrderPrice(), ORDER_DIVISION)).willReturn(BigDecimal.valueOf(10000));
         given(marketStatusService.getCurrentStockPrice(givenEntity.getItemCode())).willReturn(currentStockPriceResponseOutput);
 
+        doNothing().when(notificator).sendMessage(any(MessageContentDto.class));
         // when
         reservationBuyOrderService.order(openApiProperties, openApiType);
 
@@ -140,17 +151,34 @@ class ReservationBuyOrderServiceIntegrationTest {
     @Test
     void saveOrderInfos() {
         // given
-        OrderTrading givenData = new OrderTrading(1L, "", "", buyTxId,
-                "000", ORDER_DIVISION, 9100, 1, "", OPENAPI_SUCCESS_RESULT_CODE,
-                null, null);
-        List<OrderTrading> given = List.of(givenData);
+        List<OrderTrading> given = List.of(OrderTrading.builder()
+                .transactionId(buyTxId)
+                .itemCode("000000")
+                .itemNameKor("TESTKOR")
+                .orderResultCode(CommonConstants.OPENAPI_SUCCESS_RESULT_CODE)
+                .orderQuantity(1)
+                .orderPrice(BigDecimal.valueOf(9100))
+                .orderTime("090001")
+                .orderNumber("APBK00000001")
+                .orderDivision(ORDER_DIVISION)
+                .orderMessage("주문 전송 완료 되었습니다.")
+                .build());
+        LocalDateTime now = LocalDateTime.now();
         // when
-        reservationBuyOrderService.saveOrderInfos(given);
+        List<OrderTrading> results = reservationBuyOrderService.saveOrderInfos(given);
         orderTradingRepository.flush();
 
         // then
-        OrderTrading result = orderTradingRepository.findById(1L).get();
-        assertThat(result.getSeq()).isEqualTo(givenData.getSeq());
-        assertThat(result.getOrderNumber()).isEqualTo(givenData.getOrderNumber());
+        OrderTrading actual = orderTradingRepository.findById(results.get(0).getSeq()).orElseThrow(EntityNotFoundException::new);
+        assertThat(actual.getOrderPrice()).isEqualByComparingTo(BigDecimal.valueOf(9100));
+        assertThat(actual.getOrderNumber()).isEqualTo("APBK00000001");
+        assertThat(actual.getRegistrationId()).isEqualTo(CommonConstants.REGISTER_ID);
+        assertThat(actual.getRegistrationDateTime()).isBetween(now.minusSeconds(30), now.plusSeconds(30));
+        assertThat(actual.getItemCode()).isEqualTo("000000");
+        assertThat(actual.getItemNameKor()).isEqualTo("TESTKOR");
+        assertThat(actual.getOrderResultCode()).isEqualTo(CommonConstants.OPENAPI_SUCCESS_RESULT_CODE);
+        assertThat(actual.getOrderQuantity()).isEqualTo(1);
+        assertThat(actual.getTransactionId()).isEqualTo(buyTxId);
+        assertThat(actual.getOrderMessage()).isEqualTo("주문 전송 완료 되었습니다.");
     }
 }

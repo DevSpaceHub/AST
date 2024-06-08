@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import java.math.BigDecimal;
 import java.util.function.Consumer;
 
 import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
@@ -24,12 +25,12 @@ import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
 @Builder
 public class BuyPossibleCashApiReqDto {
 
-    public static MultiValueMap<String, String> createParameter(String accntNumber, String accntProductCode, String itemCode, Integer orderPrice, String orderDivision) {
+    public static MultiValueMap<String, String> createParameter(String accntNumber, String accntProductCode, String itemCode, BigDecimal orderPrice, String orderDivision) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
         queryParams.add("CANO", accntNumber);
         queryParams.add("ACNT_PRDT_CD", accntProductCode);
         queryParams.add("PDNO", itemCode);
-        queryParams.add("ORD_UNPR", String.valueOf(orderPrice));
+        queryParams.add("ORD_UNPR", orderPrice.toString());
         queryParams.add("ORD_DVSN", orderDivision);
         queryParams.add("CMA_EVLU_AMT_ICLD_YN", NO.getCode());  // CMA 평가 금액 포함 여부
         queryParams.add("OVRS_ICLD_YN", NO.getCode());    // 해외 포함 여부

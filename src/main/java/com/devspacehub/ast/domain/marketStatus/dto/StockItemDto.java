@@ -12,6 +12,8 @@ import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceApiRe
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
+
 import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION;
 
 /**
@@ -30,7 +32,7 @@ public class StockItemDto {
 
     private Integer orderQuantity;
 
-    private Integer orderPrice;
+    private BigDecimal orderPrice;
 
     /**
      * 매수 종목 DTO 생성
@@ -39,7 +41,7 @@ public class StockItemDto {
      * @param orderPrice
      * @return
      */
-    public static StockItemDto from(DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo, int orderQuantity, int orderPrice) {
+    public static StockItemDto from(DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo, int orderQuantity, BigDecimal orderPrice) {
         return StockItemDto.builder()
                 .itemCode(stockInfo.getItemCode())
                 .itemNameKor(stockInfo.getHtsStockNameKor())
@@ -59,7 +61,7 @@ public class StockItemDto {
                 .itemCode(myStockBalance.getItemCode())
                 .itemNameKor(myStockBalance.getStockName())
                 .orderQuantity(Integer.parseInt(myStockBalance.getHoldingQuantity()))     // 전량 매도
-                .orderPrice(Integer.parseInt(myStockBalance.getCurrentPrice()))
+                .orderPrice(new BigDecimal(myStockBalance.getCurrentPrice()))
                 .orderDivision(ORDER_DIVISION)
                 .build();
     }

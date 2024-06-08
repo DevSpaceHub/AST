@@ -13,6 +13,8 @@ import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalRes
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 /**
  * 주문 거래 정보 Entity.
  */
@@ -43,7 +45,7 @@ public class OrderTrading extends BaseEntity {
     private String orderDivision;
 
     @Column(name = "order_price")
-    private Integer orderPrice;
+    private BigDecimal orderPrice;
 
     @Column(name = "order_quantity")
     private Integer orderQuantity;
@@ -60,6 +62,13 @@ public class OrderTrading extends BaseEntity {
     @Column(name = "order_message")
     private String orderMessage;
 
+    /**
+     * 팩토리 메서드
+     * @param item 주식 정보 DTO
+     * @param result 국내 주식 주문 응답 DTO
+     * @param txId 트랜잭션 ID
+     * @return 주문 거래 정보 Entity
+     */
     public static OrderTrading from(StockItemDto item, DomesticStockOrderExternalResDto result, String txId) {
         return OrderTrading.builder()
                 .itemCode(item.getItemCode())

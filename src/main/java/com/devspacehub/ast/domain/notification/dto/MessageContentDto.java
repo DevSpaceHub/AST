@@ -16,6 +16,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
+
 /**
  * 디스코드 메시지 내용 DTO 추상 클래스.
  */
@@ -30,7 +32,7 @@ public abstract class MessageContentDto {
     private String itemCode;
     private OpenApiType openApiType;
     private int orderQuantity;
-    private int orderPrice;
+    private BigDecimal orderPrice;
     private String orderNumber;
     private String orderTime;
 
@@ -87,7 +89,7 @@ public abstract class MessageContentDto {
     @SuperBuilder
     public static class ConclusionResult extends MessageContentDto {
         private int concludedQuantity;
-        private int concludedPrice;
+        private BigDecimal concludedPrice;
 
         public static ConclusionResult fromOne(OpenApiType orderApiType, String accountStatus, OrderConclusionDto orderConclusion) {
             return ConclusionResult.builder()

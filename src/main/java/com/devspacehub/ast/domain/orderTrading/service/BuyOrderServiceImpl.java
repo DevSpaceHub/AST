@@ -13,6 +13,7 @@ import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.constant.ProfileType;
 import com.devspacehub.ast.common.constant.StockPriceUnit;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
+import com.devspacehub.ast.common.utils.BigDecimalUtil;
 import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.itemInfo.ItemInfoRepository;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto.CurrentStockPriceInfo;
@@ -27,7 +28,6 @@ import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 import com.devspacehub.ast.domain.orderTrading.dto.SplitBuyPercents;
-import com.devspacehub.ast.util.NumberUtil;
 import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,10 +37,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -74,11 +76,11 @@ public class BuyOrderServiceImpl extends TradingService {
     @Value("${trading.limit-accumulation-volume}")
     private Integer limitAccumulationVolume;
     @Value("${trading.cash-buy-order-amount-percent}")
-    private int cashBuyOrderAmountPercent;
+    private BigDecimal cashBuyOrderAmountPercent;
     @Value("${trading.split-buy-percents-by-comma}")
     private String splitBuyPercentsByComma;
     @Value("${trading.split-buy-count}")
-    private int splitBuyCount;
+    private BigDecimal splitBuyCount;
     @Value("${openapi.rest.header.transaction-id.domestic.buy-order}")
     private String transactionId;
     /**
@@ -131,13 +133,17 @@ public class BuyOrderServiceImpl extends TradingService {
 
     /**
      * 예수금의 00 퍼센트와 주문가를 이용여 알고리즘을 이용해 매수 수량 구한다.
+     * 1. 예수금에서 cashBuyOrderAmountPercent 만큼의 비율에 해당하는 금액만 고려한다.
+     * 2. 1번 결과를 분할 매수할 수량으로 나눈다.
+     * 3. 2번 결과를 주문가로 나누어 최종 주문 수량을 구한다.
      * @param myCash 예수금
      * @param calculatedOrderPrice 주문가
      * @return 소수점 버려진 int 타입의 매수 수량
      */
-    public int calculateOrderQuantity(int myCash, int calculatedOrderPrice) {
-        Float orderQuantity = ((myCash * NumberUtil.percentageToDecimal(cashBuyOrderAmountPercent)) / splitBuyCount) / calculatedOrderPrice;
-        return orderQuantity.intValue();
+    public int calculateOrderQuantity(BigDecimal myCash, BigDecimal calculatedOrderPrice) {
+        BigDecimal xPercentOfMyCash = myCash.multiply(BigDecimalUtil.percentageToDecimal(cashBuyOrderAmountPercent));
+        BigDecimal resultDividedBySplitBuyCount = BigDecimalUtil.divideWithDecimalPlaces(xPercentOfMyCash, splitBuyCount, 4);
+        return BigDecimalUtil.divideWithDecimalPlaces(resultDividedBySplitBuyCount, calculatedOrderPrice, 0).intValue();
     }
 
     /**
@@ -174,8 +180,8 @@ public class BuyOrderServiceImpl extends TradingService {
 
         List<StockItemDto> pickedStockItems = new ArrayList<>();
 
-        int count = 0;
-        while (count++ < 10) {
+        int count = -1;
+        while (++count < 10) {
             StockInfo stockInfo = stockItems.getStockInfos().get(count);
             // 2. 매수 가능 여부 체크
             if (!isStockItemBuyOrderable(stockInfo, transactionId)) {
@@ -184,7 +190,7 @@ public class BuyOrderServiceImpl extends TradingService {
 
             // 3. 현재가 시세 조회
             CurrentStockPriceInfo currentStockPriceInfo = marketStatusService.getCurrentStockPrice(stockInfo.getItemCode());
-            int currentPrice = Integer.parseInt(currentStockPriceInfo.getCurrentStockPrice());
+            BigDecimal currentPrice = new BigDecimal(currentStockPriceInfo.getCurrentStockPrice());
 
             log.info("[매수 주문] 종목: {}({})", stockInfo.getItemCode(), stockInfo.getHtsStockNameKor());
             log.info("[매수 주문] 현재가: {}", currentPrice);
@@ -201,15 +207,19 @@ public class BuyOrderServiceImpl extends TradingService {
                 continue;
             }
             // 5. 매수 가능 금액 조회
-            int myDeposit = myService.getBuyOrderPossibleCash(stockInfo.getItemCode(), currentPrice, ORDER_DIVISION);
+            BigDecimal myDeposit = myService.getBuyOrderPossibleCash(stockInfo.getItemCode(), currentPrice, ORDER_DIVISION);
 
             // 6. 매수 금액 + 매수 수량 결정 (분할 매수 Case)
             SplitBuyPercents splitBuyPercents = SplitBuyPercents.of(splitBuyPercentsByComma);
 
             for (int idx = 0; idx < splitBuyPercents.getPercents().size(); idx++) {
-                int orderPriceByPriceUnit = StockPriceUnit.orderPriceCuttingByPriceUnit(
-                        splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, idx),
-                        StockPriceUnit.getPriceUnitBy(currentPrice));
+                int priceUnit = StockPriceUnit.getDomesticPriceUnitBy(currentPrice);
+                BigDecimal orderPriceByPriceUnit = StockPriceUnit.intTypeOrderPriceCuttingByPriceUnit(
+                        splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, idx), new BigDecimal(priceUnit));
+                // 하한가 비교
+                if (BigDecimalUtil.isLessThan(orderPriceByPriceUnit, currentStockPriceInfo.getStockLowerLimitPrice())) {
+                    continue;
+                }
                 int orderQuantity = calculateOrderQuantity(myDeposit, orderPriceByPriceUnit);
 
                 if (isZero(orderQuantity)) {
@@ -284,10 +294,11 @@ public class BuyOrderServiceImpl extends TradingService {
      */
     @Transactional
     @Override
-    public void saveOrderInfos(List<OrderTrading> orderTradingInfos) {
+    public List<OrderTrading> saveOrderInfos(List<OrderTrading> orderTradingInfos) {
         if (!orderTradingInfos.isEmpty()) {
-            orderTradingRepository.saveAll(orderTradingInfos);
+            return orderTradingRepository.saveAll(orderTradingInfos);
         }
+        return Collections.emptyList();
     }
 
     @Override

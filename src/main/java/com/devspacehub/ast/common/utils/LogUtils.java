@@ -11,6 +11,8 @@ package com.devspacehub.ast.common.utils;
 import com.devspacehub.ast.common.constant.OpenApiType;
 import lombok.extern.slf4j.Slf4j;
 
+import java.math.BigDecimal;
+
 /**
  * 공통 메세지에 대한 로그 Util 클래스
  */
@@ -31,7 +33,7 @@ public class LogUtils {
      * @param stockNameKor
      * @param myDeposit
      */
-    public static void insufficientAmountError(OpenApiType openApiType, String stockNameKor, int myDeposit) {
+    public static void insufficientAmountError(OpenApiType openApiType, String stockNameKor, BigDecimal myDeposit) {
         log.error("[{}] 금액 부족. (종목명: {}, 예수금: {})", openApiType.getDiscription(), stockNameKor, myDeposit);
     }
 

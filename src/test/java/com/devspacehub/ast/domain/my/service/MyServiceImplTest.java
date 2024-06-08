@@ -70,17 +70,4 @@ class MyServiceImplTest {
         assertThat(result).hasSize(1);
         assertThat(givenOpenApiResponseDto.getOutput1().get(0).getItemCode()).isEqualTo(result.get(0).getItemCode());
     }
-
-
-    @DisplayName("나의 예수금이 주문 금액보다 낮은지 확인한다.")
-    @Test
-    void isMyDepositLowerThanOrderPrice() {
-        // given
-        int givenMyDeposit = 1000;
-        int givenOrderPrice = 1000;
-        // when
-        boolean result = myServiceImpl.isMyDepositLowerThanOrderPrice(givenMyDeposit, givenOrderPrice);
-        // then
-        assertThat(result).isFalse();
-    }
 }
