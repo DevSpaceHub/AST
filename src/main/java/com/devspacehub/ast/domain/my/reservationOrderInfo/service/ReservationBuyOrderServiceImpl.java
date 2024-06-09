@@ -59,6 +59,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
     private final Notificator notificator;
 
     @Override
+    @Transactional
     public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType, String transactionId) {
         // 1. 예약 종목들 조회
         List<ReservationOrderInfo> reservationOrderInfos = reservationOrderInfoRepository
@@ -88,7 +89,6 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
      * @param result
      * @param reservationItemSeq
      */
-    @Transactional
     protected void updateLatestOrderNumber(DomesticStockOrderExternalResDto result, Long reservationItemSeq) {
         if (result.isFailed()) {
             return;

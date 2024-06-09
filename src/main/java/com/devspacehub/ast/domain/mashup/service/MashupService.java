@@ -66,7 +66,6 @@ public class MashupService {
     /**
      * 매도 주문
      */
-    @Transactional
     public void startSellOrder() {
         oAuthService.setAccessToken(TokenType.AccessToken);
 
@@ -81,7 +80,6 @@ public class MashupService {
     /**
      * 예약 매수 주문
      */
-    @Transactional
     public void startReservationBuyOrder() {
         oAuthService.setAccessToken(TokenType.AccessToken);
 

@@ -302,6 +302,11 @@ public class BuyOrderServiceImpl extends TradingService {
         return Collections.emptyList();
     }
 
+    /**
+     * 매수 주문 후 로그 출력 및 메세지 전송 요청
+     * @param result 주문 OpenApi 응답 Dto
+     * @param orderTrading 주문 정보
+     */
     @Override
     public void orderApiResultProcess(DomesticStockOrderExternalResDto result, OrderTrading orderTrading) {
         if (result.isSuccess()) {
