@@ -1,5 +1,13 @@
+/*
+ © 2024 devspacehub, Inc. All rights reserved.
+
+ name : BigDecimalUtilTest
+ creation : 2024.6.7
+ author : Yoonji Moon
+ */
 package com.devspacehub.ast.common.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -7,6 +15,10 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * BigDecimalUtil 클래스 단위 테스트
+ */
+@Slf4j
 class BigDecimalUtilTest {
 
     @Test
@@ -46,16 +58,15 @@ class BigDecimalUtilTest {
         // when
         BigDecimal floatToBigDecimalByNew = new BigDecimal(givenFloat);
         BigDecimal floatToBigDecimalByValueOf = BigDecimal.valueOf(givenFloat);
-
         BigDecimal floatToStringToBigDecimal = new BigDecimal(String.valueOf(givenFloat));
         // then
         assertThat(floatToBigDecimalByNew).isNotEqualTo(floatToStringToBigDecimal);
         assertThat(floatToBigDecimalByValueOf).isNotEqualTo(floatToStringToBigDecimal);
         assertThat(floatToStringToBigDecimal.floatValue()).isEqualTo(givenFloat);
 
-        System.out.println("new 생성자를 이용해 Float을 바로 BigDecimal로 : " + floatToBigDecimalByNew);
-        System.out.println("valueOf() 을 이용해 Float을 바로 BigDecimal로 : " + floatToBigDecimalByNew);
-        System.out.println("Float을 String으로 변환 후 BigDecimal로 : " + floatToStringToBigDecimal);
+        log.info("new 생성자를 이용해 Float을 바로 BigDecimal로 : {}", floatToBigDecimalByNew);
+        log.info("valueOf() 을 이용해 Float을 바로 BigDecimal로 : {}", floatToBigDecimalByValueOf);
+        log.info("Float을 String으로 변환 후 BigDecimal로 : {}", floatToStringToBigDecimal);
     }
 
     @DisplayName("BigDecimal을 int, Float 타입으로 형변환할 수 있다.")

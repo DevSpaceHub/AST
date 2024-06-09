@@ -1,3 +1,10 @@
+/*
+ © 2024 devspacehub, Inc. All rights reserved.
+
+ name : OrderTradingRepositoryTest
+ creation : 2024.6.7
+ author : Yoonji Moon
+ */
 package com.devspacehub.ast.domain.orderTrading;
 
 import com.devspacehub.ast.common.config.QuerydslConfig;
@@ -17,6 +24,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * OrderTradingRepository 단위 테스트 코드
+ */
 @DataJpaTest
 @Import(QuerydslConfig.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
