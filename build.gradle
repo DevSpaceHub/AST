@@ -74,6 +74,8 @@ dependencies {
 	// test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly("com.h2database:h2")
+	testAnnotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.projectlombok:lombok'
 
 	// db
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
