@@ -95,7 +95,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
         }
         Optional<ReservationOrderInfo> optionalReservationOrderInfo = reservationOrderInfoRepository.findById(reservationItemSeq);
         if (optionalReservationOrderInfo.isEmpty()) {
-            LogUtils.notFoundDataError(String.format("예약 매수 seq ({})에 해당하는 데이터", reservationItemSeq));
+            LogUtils.notFoundDataError(String.format("예약 매수 seq (%d)에 해당하는 데이터", reservationItemSeq));
             return;
         }
 
