@@ -68,6 +68,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
      * @return
      */
     @Override
+    @Transactional
     public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType) {
         // 1. 예약 종목들 조회
         List<ReservationOrderInfo> reservationOrderInfos = reservationOrderInfoRepository
@@ -97,14 +98,13 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
      * @param result
      * @param reservationItemSeq
      */
-    @Transactional
     public void updateLatestOrderNumber(DomesticStockOrderExternalResDto result, Long reservationItemSeq) {
         if (result.isFailed()) {
             return;
         }
         Optional<ReservationOrderInfo> optionalReservationOrderInfo = reservationOrderInfoRepository.findById(reservationItemSeq);
         if (optionalReservationOrderInfo.isEmpty()) {
-            LogUtils.notFoundDataError(String.format("예약 매수 seq ({})에 해당하는 데이터", reservationItemSeq));
+            LogUtils.notFoundDataError(String.format("예약 매수 seq (%d)에 해당하는 데이터", reservationItemSeq));
             return;
         }
 
