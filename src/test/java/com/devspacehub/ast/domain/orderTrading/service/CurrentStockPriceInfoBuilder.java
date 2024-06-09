@@ -11,6 +11,8 @@ package com.devspacehub.ast.domain.orderTrading.service;
 import com.devspacehub.ast.common.constant.YesNoStatus;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 
+import java.math.BigDecimal;
+
 /**
  * 테스트 코드 실행을 위한 CurrentStockPriceInfo 빌더 클래스.
  */
@@ -29,7 +31,7 @@ public class CurrentStockPriceInfoBuilder {
                 .build();
     }
 
-    public static CurrentStockPriceExternalResDto.CurrentStockPriceInfo buildWithLowerLimitPrice(String lowerLimitPrice) {
+    public static CurrentStockPriceExternalResDto.CurrentStockPriceInfo buildWithLowerLimitPrice(BigDecimal lowerLimitPrice) {
         return CurrentStockPriceExternalResDto.CurrentStockPriceInfo.builder()
                 .stockLowerLimitPrice(lowerLimitPrice)
                 .build();

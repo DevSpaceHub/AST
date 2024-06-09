@@ -13,6 +13,7 @@ import com.devspacehub.ast.domain.my.orderConclusion.dto.OrderConclusionFindExte
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,11 +55,11 @@ class OrderConclusionDtoTest {
                         "orderQuantity", "orderPrice")
                 .containsExactly(
                         tuple(givenOrderType, firstGivenOutput1.getItemCode(), firstGivenOutput1.getItemNameKor(), firstGivenOutput1.getOrderNumber(),
-                                Integer.parseInt(firstGivenOutput1.getTotalConcludedPrice()), Integer.parseInt(firstGivenOutput1.getTotalConcludedQuantity()),
-                                Integer.parseInt(firstGivenOutput1.getOrderQuantity()), Integer.parseInt(firstGivenOutput1.getOrderPrice())),
+                                new BigDecimal(firstGivenOutput1.getTotalConcludedPrice()), Integer.parseInt(firstGivenOutput1.getTotalConcludedQuantity()),
+                                Integer.parseInt(firstGivenOutput1.getOrderQuantity()), new BigDecimal(firstGivenOutput1.getOrderPrice())),
                         tuple(givenOrderType, secondGivenOutput1.getItemCode(), secondGivenOutput1.getItemNameKor(), secondGivenOutput1.getOrderNumber(),
-                                Integer.parseInt(secondGivenOutput1.getTotalConcludedPrice()), Integer.parseInt(secondGivenOutput1.getTotalConcludedQuantity()),
-                                Integer.parseInt(secondGivenOutput1.getOrderQuantity()), Integer.parseInt(secondGivenOutput1.getOrderPrice())
+                                new BigDecimal(secondGivenOutput1.getTotalConcludedPrice()), Integer.parseInt(secondGivenOutput1.getTotalConcludedQuantity()),
+                                Integer.parseInt(secondGivenOutput1.getOrderQuantity()), new BigDecimal(secondGivenOutput1.getOrderPrice())
                         ));
     }
 

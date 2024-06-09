@@ -23,6 +23,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -60,11 +61,11 @@ class BuyOrderServiceImplTest {
     @DisplayName("매수 수량 = ((예수금 * 분할 매수 주문 위한 퍼센트) / 분할매수 갯수) / 구매단가")
     void calculateOrderQuantity() {
         // given
-        ReflectionTestUtils.setField(buyOrderService, "cashBuyOrderAmountPercent", 10);
-        ReflectionTestUtils.setField(buyOrderService, "splitBuyCount", 3);
+        ReflectionTestUtils.setField(buyOrderService, "cashBuyOrderAmountPercent",  new BigDecimal(10));
+        ReflectionTestUtils.setField(buyOrderService, "splitBuyCount", new BigDecimal(3));
 
-        final int myDeposit = 55555;
-        final int calculatedOrderPrice = 980;
+        final BigDecimal myDeposit = BigDecimal.valueOf(55555);
+        final BigDecimal calculatedOrderPrice = BigDecimal.valueOf(980);
         // when
         int result = buyOrderService.calculateOrderQuantity(myDeposit, calculatedOrderPrice);
 

@@ -79,6 +79,7 @@ class ReservationOrderInfoRepositoryTest {
                 .orderEndDate(givenEnd)
                 .useYn(givenUseYnIsY)
                 .build());
+        reservationOrderInfoRepository.flush();
 
         // when
         List<ReservationOrderInfo> result = reservationOrderInfoRepository.findValidAll(givenNow);

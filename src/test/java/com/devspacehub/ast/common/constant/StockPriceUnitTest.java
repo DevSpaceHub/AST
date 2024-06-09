@@ -12,6 +12,8 @@ import com.devspacehub.ast.exception.error.InvalidValueException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+
 import static com.devspacehub.ast.common.constant.ResultCode.INVALID_CURRENT_PRICE;
 import static com.devspacehub.ast.common.constant.StockPriceUnit.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,29 +27,29 @@ class StockPriceUnitTest {
     @Test
     @DisplayName("현재가 범위에 따라 호가 단위가 달라진다.")
     void getPriceUnitBy_success() {
-        final int underTwoThousand = 1999;
-        final int underFiveThousand = 4999;
-        final int underTwentyThousand = 19999;
-        final int underFiftyThousand = 49999;
-        final int underTwoHundredThousand = 199999;
-        final int underFiveHundredThousand = 499999;
-        final int overFiveHundredThousand = 500000;
+        final BigDecimal underTwoThousand = new BigDecimal(1999);
+        final BigDecimal underFiveThousand = new BigDecimal(4999);
+        final BigDecimal underTwentyThousand = new BigDecimal(19999);
+        final BigDecimal underFiftyThousand = new BigDecimal(49999);
+        final BigDecimal underTwoHundredThousand = new BigDecimal(199999);
+        final BigDecimal underFiveHundredThousand = new BigDecimal(499999);
+        final BigDecimal overFiveHundredThousand = new BigDecimal(500000);
 
-        assertThat(StockPriceUnit.getPriceUnitBy(underTwoThousand)).isEqualTo(1);
-        assertThat(StockPriceUnit.getPriceUnitBy(underFiveThousand)).isEqualTo(5);
-        assertThat(StockPriceUnit.getPriceUnitBy(underTwentyThousand)).isEqualTo(10);
-        assertThat(StockPriceUnit.getPriceUnitBy(underFiftyThousand)).isEqualTo(50);
-        assertThat(StockPriceUnit.getPriceUnitBy(underTwoHundredThousand)).isEqualTo(100);
-        assertThat(StockPriceUnit.getPriceUnitBy(underFiveHundredThousand)).isEqualTo(500);
-        assertThat(StockPriceUnit.getPriceUnitBy(overFiveHundredThousand)).isEqualTo(1000);
+        assertThat(StockPriceUnit.getDomesticPriceUnitBy(underTwoThousand)).isEqualTo(1);
+        assertThat(StockPriceUnit.getDomesticPriceUnitBy(underFiveThousand)).isEqualTo(5);
+        assertThat(StockPriceUnit.getDomesticPriceUnitBy(underTwentyThousand)).isEqualTo(10);
+        assertThat(StockPriceUnit.getDomesticPriceUnitBy(underFiftyThousand)).isEqualTo(50);
+        assertThat(StockPriceUnit.getDomesticPriceUnitBy(underTwoHundredThousand)).isEqualTo(100);
+        assertThat(StockPriceUnit.getDomesticPriceUnitBy(underFiveHundredThousand)).isEqualTo(500);
+        assertThat(StockPriceUnit.getDomesticPriceUnitBy(overFiveHundredThousand)).isEqualTo(1000);
     }
 
     @Test
     @DisplayName("현재가는 0 미만일 수 없다.")
     void getPriceUnitBy_fail() {
-        final int underZero = -1;
+        final BigDecimal underZero = BigDecimal.valueOf(-1);
 
-        assertThatThrownBy(() -> StockPriceUnit.getPriceUnitBy(underZero))
+        assertThatThrownBy(() -> StockPriceUnit.getDomesticPriceUnitBy(underZero))
                 .isInstanceOf(InvalidValueException.class)
                 .hasMessage(INVALID_CURRENT_PRICE.name() + " : " + INVALID_CURRENT_PRICE.getMessage());
 
@@ -56,32 +58,42 @@ class StockPriceUnitTest {
     @Test
     @DisplayName("전달한 호가 단위에 맞춰서 현재가의 자릿수를 세팅한다.")
     void orderPriceCuttingByPriceUnit_twoArguments() {
+        // given
+        final BigDecimal currentPriceUnder2000 = BigDecimal.valueOf(1999);
+        final BigDecimal currentPriceUnder5000 = BigDecimal.valueOf(4999);
+        final BigDecimal currentPriceUnder20000 = BigDecimal.valueOf(19999);
+        final BigDecimal currentPriceUnder50000 = BigDecimal.valueOf(49999);
+        final BigDecimal currentPriceUnder200000 = BigDecimal.valueOf(199999);
+        final BigDecimal currentPriceUnder500000 = BigDecimal.valueOf(499999);
+        final BigDecimal currentPriceOver500000 = BigDecimal.valueOf(500000);
 
-        final int currentPriceUnder2000 = 1999;
-        final int currentPriceUnder5000 = 4999;
-        final int currentPriceUnder20000 = 19999;
-        final int currentPriceUnder50000 = 49999;
-        final int currentPriceUnder200000 = 199999;
-        final int currentPriceUnder500000 = 499999;
-        final int currentPriceOver500000 = 500000;
+        // when
+        BigDecimal result1 = intTypeOrderPriceCuttingByPriceUnit(currentPriceUnder2000, BigDecimal.valueOf(1));
+        BigDecimal result2 = intTypeOrderPriceCuttingByPriceUnit(currentPriceUnder5000, BigDecimal.valueOf(5));
+        BigDecimal result3 = intTypeOrderPriceCuttingByPriceUnit(currentPriceUnder20000, BigDecimal.valueOf(10));
+        BigDecimal result4 = intTypeOrderPriceCuttingByPriceUnit(currentPriceUnder50000, BigDecimal.valueOf(50));
+        BigDecimal result5 = intTypeOrderPriceCuttingByPriceUnit(currentPriceUnder200000, BigDecimal.valueOf(100));
+        BigDecimal result6 = intTypeOrderPriceCuttingByPriceUnit(currentPriceUnder500000, BigDecimal.valueOf(500));
+        BigDecimal result7 = intTypeOrderPriceCuttingByPriceUnit(currentPriceOver500000, BigDecimal.valueOf(1000));
+        // then
+        assertThat(result1).isEqualByComparingTo(BigDecimal.valueOf(1999));
+        assertThat(result2).isEqualByComparingTo(BigDecimal.valueOf(4995));
+        assertThat(result3).isEqualByComparingTo(BigDecimal.valueOf(19990));
+        assertThat(result4).isEqualByComparingTo(BigDecimal.valueOf(49950));
+        assertThat(result5).isEqualByComparingTo(BigDecimal.valueOf(199900));
+        assertThat(result6).isEqualByComparingTo(BigDecimal.valueOf(499500));
+        assertThat(result7).isEqualByComparingTo(BigDecimal.valueOf(500000));
 
-        assertThat(StockPriceUnit.orderPriceCuttingByPriceUnit(currentPriceUnder2000, ONE.getCode())).isEqualTo(1999);
-        assertThat(StockPriceUnit.orderPriceCuttingByPriceUnit(currentPriceUnder5000, FIVE.getCode())).isEqualTo(4995);
-        assertThat(StockPriceUnit.orderPriceCuttingByPriceUnit(currentPriceUnder20000, TEN.getCode())).isEqualTo(19990);
-        assertThat(StockPriceUnit.orderPriceCuttingByPriceUnit(currentPriceUnder50000, FIFTY.getCode())).isEqualTo(49950);
-        assertThat(StockPriceUnit.orderPriceCuttingByPriceUnit(currentPriceUnder200000, HUNDRED.getCode())).isEqualTo(199900);
-        assertThat(StockPriceUnit.orderPriceCuttingByPriceUnit(currentPriceUnder500000, FIVE_HUNDRED.getCode())).isEqualTo(499500);
-        assertThat(StockPriceUnit.orderPriceCuttingByPriceUnit(currentPriceOver500000, THOUSAND.getCode())).isEqualTo(500000);
     }
 
     @DisplayName("전달한 주문가를 주문가에 맞는 호가 단위에 따라 조정한다.")
     @Test
     void orderPriceCuttingByPriceUnit_oneArguments() {
         // given
-        int given = 40110;
+        BigDecimal given = BigDecimal.valueOf(40110);
         // when
-        int result = StockPriceUnit.orderPriceCuttingByPriceUnit(given);
+        BigDecimal result = StockPriceUnit.intTypeOrderPriceCuttingByPriceUnit(given);
         // then
-        assertThat(result).isEqualTo(40100);
+        assertThat(result).isEqualByComparingTo(BigDecimal.valueOf(40100));
     }
 }
