@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -65,7 +66,7 @@ public class MyServiceImpl implements MyService {
      * 매수 가능 금액 조회
      */
     @Override
-    public int getBuyOrderPossibleCash(String stockCode, Integer orderPrice, String orderDivision) {
+    public BigDecimal getBuyOrderPossibleCash(String stockCode, BigDecimal orderPrice, String orderDivision) {
         // 헤더 & 파라미터 값 생성
         Consumer<HttpHeaders> httpHeaders = BuyPossibleCheckExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdBuyPossibleCashFind);
         MultiValueMap<String, String> queryParams = BuyPossibleCheckExternalReqDto.createParameter(
@@ -80,7 +81,7 @@ public class MyServiceImpl implements MyService {
         log.info("[매수가능금액 조회] 주문 가능 현금 : {}", responseDto.getOutput().getOrderPossibleCash());
         log.info("[매수가능금액 조회] 최대 구매 가능 금액 : {}", responseDto.getOutput().getMaxBuyAmount());
         log.info("[매수가능금액 조회] 최대 구매 가능 수량 : {}", responseDto.getOutput().getMaxBuyQuantity());
-        return Integer.parseInt(responseDto.getOutput().getOrderPossibleCash());
+        return new BigDecimal(responseDto.getOutput().getOrderPossibleCash());
     }
 
 
@@ -108,11 +109,6 @@ public class MyServiceImpl implements MyService {
         }
 
         return responseDto;
-    }
-
-    @Override
-    public boolean isMyDepositLowerThanOrderPrice(int myDeposit, int orderPrice) {
-        return myDeposit < orderPrice;
     }
 
     @Override

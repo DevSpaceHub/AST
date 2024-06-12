@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,7 +42,7 @@ class MyServiceImplIntegrationTest {
         // given
         String givenOrderNumber = "11111";
         String givenItemCode = "000000";
-        int givenPrice = 1000;
+        BigDecimal givenPrice = BigDecimal.valueOf(1000);
         int givenQuantity = 1;
         LocalDate givenDate = LocalDate.of(2024, 4, 27);
         reservationOrderInfoRepository.save(ReservationOrderInfo.builder()

@@ -11,31 +11,18 @@ package com.devspacehub.ast.domain.my.reservationOrderInfo;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ReservationOrderInfoTest {
-    @DisplayName("주문가가 인자로 전달받는 하한가보다 크거나 동일하면 False 반환한다.")
-    @Test
-    void isOrderPriceGreaterOrEqualThan() {
-        // given
-        int givenOrderPrice = 3900;
-        ReservationOrderInfo reservationOrderInfo = ReservationOrderInfo.builder()
-                .orderPrice(givenOrderPrice)
-                .build();
-        // when
-        boolean result1 = reservationOrderInfo.isOrderPriceLowerThan(3900);
-        boolean result2 = reservationOrderInfo.isOrderPriceLowerThan(3800);
-        // then
-        assertThat(result1).isFalse();
-        assertThat(result2).isFalse();
-    }
 
     @DisplayName("주문가를 업데이트한다.")
     @Test
     void updateToAdjustedPrice() {
         // given
-        int givenBeforeUpdate = 3900;
-        int givenAfterUpdate = 4000;
+        BigDecimal givenBeforeUpdate = new BigDecimal(3900);
+        BigDecimal givenAfterUpdate = new BigDecimal(4000);
         ReservationOrderInfo reservationOrderInfo = ReservationOrderInfo.builder()
                 .orderPrice(givenBeforeUpdate)
                 .build();

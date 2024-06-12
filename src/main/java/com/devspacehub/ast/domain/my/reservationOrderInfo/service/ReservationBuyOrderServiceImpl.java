@@ -11,6 +11,7 @@ package com.devspacehub.ast.domain.my.reservationOrderInfo.service;
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.constant.StockPriceUnit;
+import com.devspacehub.ast.common.utils.BigDecimalUtil;
 import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
@@ -31,11 +32,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -60,6 +59,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
     private final Notificator notificator;
 
     @Override
+    @Transactional
     public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType, String transactionId) {
         // 1. 예약 종목들 조회
         List<ReservationOrderInfo> reservationOrderInfos = reservationOrderInfoRepository
@@ -89,14 +89,13 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
      * @param result
      * @param reservationItemSeq
      */
-    @Transactional
     protected void updateLatestOrderNumber(DomesticStockOrderExternalResDto result, Long reservationItemSeq) {
         if (result.isFailed()) {
             return;
         }
         Optional<ReservationOrderInfo> optionalReservationOrderInfo = reservationOrderInfoRepository.findById(reservationItemSeq);
         if (optionalReservationOrderInfo.isEmpty()) {
-            LogUtils.notFoundDataError(String.format("예약 매수 seq ({})에 해당하는 데이터", reservationItemSeq));
+            LogUtils.notFoundDataError(String.format("예약 매수 seq (%d)에 해당하는 데이터", reservationItemSeq));
             return;
         }
 
@@ -123,18 +122,17 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
             ReservationOrderInfo currReservationOrderInfo = itemCodeReservationOrderInfoMap.get(seq);
 
             // 호가 단위 조정
-            int adjustedOrderPrice = StockPriceUnit.orderPriceCuttingByPriceUnit(currReservationOrderInfo.getOrderPrice());
+            BigDecimal adjustedOrderPrice = StockPriceUnit.intTypeOrderPriceCuttingByPriceUnit(currReservationOrderInfo.getOrderPrice());
             currReservationOrderInfo.updateOrderPrice(adjustedOrderPrice);
-
-            // 예수금 체크
-            int myDeposit = myService.getBuyOrderPossibleCash(currReservationOrderInfo.getItemCode(), adjustedOrderPrice, ORDER_DIVISION);
-            if (myService.isMyDepositLowerThanOrderPrice(myDeposit, adjustedOrderPrice * currReservationOrderInfo.getOrderQuantity())) {
-                LogUtils.insufficientAmountError(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, currReservationOrderInfo.getKoreanItemName(), myDeposit);
+            // 하한가 비교
+            if (BigDecimalUtil.isLessThan(currReservationOrderInfo.getOrderPrice(), itemCodeResponseMap.get(seq).getStockLowerLimitPrice())) {
                 continue;
             }
-            // 하한가 비교
-            int responseLowerLimitPrice = Integer.parseInt(itemCodeResponseMap.get(seq).getStockLowerLimitPrice());
-            if (currReservationOrderInfo.isOrderPriceLowerThan(responseLowerLimitPrice)) {
+            // 예수금 체크
+            BigDecimal myDeposit = myService.getBuyOrderPossibleCash(currReservationOrderInfo.getItemCode(), adjustedOrderPrice, ORDER_DIVISION);
+            BigDecimal purchaseAmount = BigDecimalUtil.multiplyBigDecimalWithNumber(adjustedOrderPrice, currReservationOrderInfo.getOrderQuantity());
+            if (BigDecimalUtil.isLessThan(myDeposit, purchaseAmount)) {
+                LogUtils.insufficientAmountError(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, currReservationOrderInfo.getKoreanItemName(), myDeposit);
                 continue;
             }
 
@@ -155,10 +153,11 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
 
     @Override
     @Transactional
-    public void saveOrderInfos(List<OrderTrading> orderTradingInfos) {
+    public List<OrderTrading> saveOrderInfos(List<OrderTrading> orderTradingInfos) {
         if (!orderTradingInfos.isEmpty()) {
-            orderTradingRepository.saveAll(orderTradingInfos);
+            return orderTradingRepository.saveAll(orderTradingInfos);
         }
+        return Collections.emptyList();
     }
 
     @Override

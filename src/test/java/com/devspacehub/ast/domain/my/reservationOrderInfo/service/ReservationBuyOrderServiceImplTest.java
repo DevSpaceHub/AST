@@ -17,15 +17,18 @@ import com.devspacehub.ast.domain.my.service.MyService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,12 +40,12 @@ class ReservationBuyOrderServiceImplTest {
     @InjectMocks
     private ReservationBuyOrderServiceImpl reservationBuyOrderService;
 
-    @DisplayName("예약 매수 종목에 대해 희망 주문 가격이 하한가와 같거나 큰 종목만 담는다.")
+    @DisplayName("예약 매수 종목에 대해 희망 주문 가격이 하한가보다 큰 종목만 담는다.")
     @Test
     void pickStockItems_orderPriceEqualOrGreaterThanLowerLimitPrice() {
         // given
-        int giveOrderPrice = 9000;
-        String givenLowerLimitPrice = "9000";
+        BigDecimal giveOrderPrice = BigDecimal.valueOf(9100);
+        BigDecimal givenLowerLimitPrice = BigDecimal.valueOf(9000);
 
         ReservationOrderInfo givenOrderedReservationOrderInfo = ReservationOrderInfo.builder()
                 .itemCode("000000")
@@ -59,10 +62,10 @@ class ReservationBuyOrderServiceImplTest {
                 .stockLowerLimitPrice(givenLowerLimitPrice)
                 .build();
         given(marketStatusService.getCurrentStockPrice(givenOrderedReservationOrderInfo.getItemCode())).willReturn(givenCurrentStockPriceInfo);
+        given(myService.getBuyOrderPossibleCash(anyString(), ArgumentMatchers.any(BigDecimal.class), anyString())).willReturn(BigDecimal.valueOf(10000));
 
         // when
         List<StockItemDto.ReservationStockItem> result = reservationBuyOrderService.pickStockItems(List.of(givenOrderedReservationOrderInfo));
-
         // then
         assertThat(result).hasSize(1)
                 .extracting("itemCode", "orderPrice")
@@ -73,8 +76,8 @@ class ReservationBuyOrderServiceImplTest {
     @Test
     void pickStockItems_orderPriceLowerThanLowerLimitPrice() {
         // given
-        int giveOrderPrice = 8900;
-        String givenLowerLimitPrice = "9100";
+        BigDecimal giveOrderPrice = BigDecimal.valueOf(8900);
+        BigDecimal givenLowerLimitPrice = BigDecimal.valueOf(9100);
         ReservationOrderInfo givenReservationOrderInfo = ReservationOrderInfo.builder()
                 .seq(0L)
                 .itemCode("000001")

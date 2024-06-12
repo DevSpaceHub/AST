@@ -13,6 +13,8 @@ import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalRes
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 /**
  * 주문 거래 정보 Entity.
  */
@@ -43,7 +45,7 @@ public class OrderTrading extends BaseEntity {
     private String orderDivision;
 
     @Column(name = "order_price")
-    private Integer orderPrice;
+    private BigDecimal orderPrice;
 
     @Column(name = "order_quantity")
     private Integer orderQuantity;

@@ -8,12 +8,13 @@
 
 package com.devspacehub.ast.domain.orderTrading.dto;
 
-import com.devspacehub.ast.util.NumberUtil;
+import com.devspacehub.ast.common.utils.BigDecimalUtil;
 import io.micrometer.common.util.StringUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,18 +38,19 @@ public class SplitBuyPercents {
             // TODO 분할 매수/전량 매수 모두 고려하는 상황 : 추후 필요 시 검토
         }
         List<Float> percents = Arrays.stream(splitBuyPercentsByComma.split(COMMA_FOR_SPLIT))
-                    .map(percent -> NumberUtil.percentageToDecimal(Integer.parseInt(percent))).collect(Collectors.toList());
+                    .map(percent -> BigDecimalUtil.percentageToDecimal(new BigDecimal(percent)).floatValue()).collect(Collectors.toList());
         return new SplitBuyPercents(percents);
     }
 
     /**
      * 분할 매수 퍼센트로 나눈 구매 단가 구하기.
-     * @param currentPrice
-     * @param percentsIdx
-     * @return
+     * 주의. Float 값을 바로 BigDecimal로 변환하면 안된다.
+     * @param currentPrice 현재가
+     * @param percentsIdx 분할 퍼센트 리스트의 인덱스
+     * @return 분할 수량으로 계산된 구매 단가
      */
-    public int calculateOrderPriceBySplitBuyPercents(int currentPrice, int percentsIdx) {
-        Float result = currentPrice - (currentPrice * percents.get(percentsIdx));
-        return result.intValue();
+    public BigDecimal calculateOrderPriceBySplitBuyPercents(BigDecimal currentPrice, int percentsIdx) {
+        BigDecimal splitBuyPercent = new BigDecimal(percents.get(percentsIdx).toString());
+        return currentPrice.subtract((currentPrice.multiply(splitBuyPercent)));
     }
 }

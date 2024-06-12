@@ -8,9 +8,12 @@
 
 package com.devspacehub.ast.common.constant;
 
+import com.devspacehub.ast.common.utils.BigDecimalUtil;
 import com.devspacehub.ast.exception.error.InvalidValueException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+
+import java.math.BigDecimal;
 
 /**
  * 호가 단위 Enum.
@@ -33,26 +36,27 @@ public enum StockPriceUnit {
     /**
      * 주식 가격에 따른 호가 단위 구하기
      */
-    public static int getPriceUnitBy(int stockPrice) {
-        if (stockPrice < 0) {
+    public static int getDomesticPriceUnitBy(BigDecimal stockPrice) {
+        int intStockPrice = stockPrice.intValue();
+        if (intStockPrice < 0) {
             throw new InvalidValueException(ResultCode.INVALID_CURRENT_PRICE);
         }
-        if (stockPrice < 2000) {
+        if (intStockPrice < 2000) {
             return ONE.getCode();
         }
-        if (stockPrice < 5000) {
+        if (intStockPrice < 5000) {
             return FIVE.getCode();
         }
-        if (stockPrice < 20000) {
+        if (intStockPrice < 20000) {
             return TEN.getCode();
         }
-        if (stockPrice < 50000) {
+        if (intStockPrice < 50000) {
             return FIFTY.getCode();
         }
-        if (stockPrice < 200000) {
+        if (intStockPrice < 200000) {
             return HUNDRED.getCode();
         }
-        if (stockPrice < 500000) {
+        if (intStockPrice < 500000) {
             return FIVE_HUNDRED.getCode();
         }
         else {
@@ -63,23 +67,23 @@ public enum StockPriceUnit {
     /**
      * 주문 가격을 인자로 받아서 호가단위에 따라 주문가 조정하여 반환한다.
      * @param orderPrice 주문가
-     * @return int 타입. 호가 단위에 의해 조정된 주문가
+     * @return 호가 단위에 의해 조정된 주문가
      */
-    public static int orderPriceCuttingByPriceUnit(int orderPrice) {
-        int priceUnit = getPriceUnitBy(orderPrice);
-        Float decimal = orderPrice / (float) priceUnit;
-        return decimal.intValue() * priceUnit;
+    public static BigDecimal intTypeOrderPriceCuttingByPriceUnit(BigDecimal orderPrice) {
+        BigDecimal priceUnit = BigDecimal.valueOf(getDomesticPriceUnitBy(orderPrice));
+        BigDecimal decimal = BigDecimalUtil.divideWithDecimalPlaces(orderPrice, priceUnit, 0);
+        return decimal.multiply(priceUnit);
     }
 
     /**
      * 주문 가격과 호가 단위를 인자로 받아서 호가단위에 따라 주문가 조정하여 반환한다.
+     * 호가 단위로 나누면서 소수점을 절삭해야하므로 나눌 때 scale 값을 0으로 전달한다.
      * @param orderPrice 주문가
      * @param priceUnit 호가 단위
      * @return int 타입. 호가 단위에 의해 조정된 주문가
      */
-    public static int orderPriceCuttingByPriceUnit(int orderPrice, int priceUnit) {
-        Float decimal = orderPrice / (float) priceUnit;
-        return decimal.intValue() * priceUnit;
+    public static BigDecimal intTypeOrderPriceCuttingByPriceUnit(BigDecimal orderPrice, BigDecimal priceUnit) {
+        return BigDecimalUtil.divideWithDecimalPlaces(orderPrice, priceUnit, 0).multiply(priceUnit);
     }
 
 }

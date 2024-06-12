@@ -33,6 +33,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -148,10 +149,11 @@ public class SellOrderServiceImpl extends TradingService {
 
     @Transactional
     @Override
-    public void saveOrderInfos(List<OrderTrading> orderTradingInfos) {
+    public List<OrderTrading> saveOrderInfos(List<OrderTrading> orderTradingInfos) {
         if (!orderTradingInfos.isEmpty()) {
-            orderTradingRepository.saveAll(orderTradingInfos);
+            return orderTradingRepository.saveAll(orderTradingInfos);
         }
+        return Collections.emptyList();
     }
 
     /**
@@ -171,6 +173,11 @@ public class SellOrderServiceImpl extends TradingService {
         );
     }
 
+    /**
+     * 매도 주문 후 로그 출력 및 메세지 전송 요청
+     * @param result 주문 OpenApi 응답 Dto
+     * @param orderTrading 주문 정보
+     */
     @Override
     public void orderApiResultProcess(DomesticStockOrderExternalResDto result, OrderTrading orderTrading) {
         if (result.isSuccess()) {
