@@ -22,6 +22,9 @@
 - DB : MySQL 8.0
 - Application : Spring Boot 3.2, JPA, Querydsl, WebClient, Java 17, Gradle
 
+### ERD
+<img src="https://github.com/DevSpaceHub/portfolio/blob/e00606b95bdbfdfe1e8a2b28f971c07c0caea799/ERD%20%EC%B6%94%EC%B6%9C.png" width="1300" height="1200"/>
+
 ### 버전 관리
 | version (relaese date) | added features |
 |---|---|
