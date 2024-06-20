@@ -40,6 +40,7 @@ class MashupConclusionControllerTest {
     void conclusionResultProcess() throws Exception {
         mockMvc.perform(
                 put("/ast/conclusions/process")
+                        .param("openApiType", OpenApiType.DOMESTIC_ORDER_CONCLUSION_FIND.getCode())
                 ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").exists())
                 .andExpect(jsonPath("$.time").exists())
