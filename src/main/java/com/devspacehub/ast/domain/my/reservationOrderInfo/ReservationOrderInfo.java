@@ -12,6 +12,7 @@ import com.devspacehub.ast.common.constant.CommonConstants;
 import com.devspacehub.ast.domain.orderTrading.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
 /**
  * 예약 매수 Entity.
  */
+@SuperBuilder
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "reservation_order_info")
@@ -60,21 +62,6 @@ public class ReservationOrderInfo extends BaseEntity {
     private LocalDateTime updateDatetime;
     @Column(name = "update_id")
     private String updateId;
-    @Builder
-    private ReservationOrderInfo(Long seq, String itemCode, String koreanItemName, BigDecimal orderPrice, int orderQuantity, LocalDate orderStartDate,
-                                 LocalDate orderEndDate, int priority, char useYn, int conclusionQuantity, String orderNumber) {
-        this.seq = seq;
-        this.itemCode = itemCode;
-        this.koreanItemName = koreanItemName;
-        this.orderPrice = orderPrice;
-        this.orderQuantity = orderQuantity;
-        this.orderStartDate = orderStartDate;
-        this.orderEndDate = orderEndDate;
-        this.priority = priority;
-        this.useYn = useYn;
-        this.conclusionQuantity = conclusionQuantity;
-        this.orderNumber = orderNumber;
-    }
 
     /**
      * 주문 금액을 조정한다.
