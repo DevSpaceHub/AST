@@ -8,12 +8,15 @@
 
 package com.devspacehub.ast.domain.my.reservationOrderInfo.service;
 
+import com.devspacehub.ast.common.constant.MarketType;
 import com.devspacehub.ast.common.constant.YesNoStatus;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
+import com.devspacehub.ast.domain.my.dto.MyServiceRequestDto;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
-import com.devspacehub.ast.domain.my.service.MyService;
+import com.devspacehub.ast.domain.my.service.MyServiceFactory;
+import com.devspacehub.ast.domain.my.service.MyServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +31,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,7 +39,9 @@ class ReservationBuyOrderServiceImplTest {
     @Mock
     private MarketStatusService marketStatusService;
     @Mock
-    private MyService myService;
+    private MyServiceImpl myService;
+    @Mock
+    private MyServiceFactory myServiceFactory;
     @InjectMocks
     private ReservationBuyOrderServiceImpl reservationBuyOrderService;
 
@@ -62,7 +67,8 @@ class ReservationBuyOrderServiceImplTest {
                 .stockLowerLimitPrice(givenLowerLimitPrice)
                 .build();
         given(marketStatusService.getCurrentStockPrice(givenOrderedReservationOrderInfo.getItemCode())).willReturn(givenCurrentStockPriceInfo);
-        given(myService.getBuyOrderPossibleCash(anyString(), ArgumentMatchers.any(BigDecimal.class), anyString())).willReturn(BigDecimal.valueOf(10000));
+        given(myServiceFactory.resolveService(MarketType.DOMESTIC)).willReturn(myService);
+        given(myService.getBuyOrderPossibleCash(any(MyServiceRequestDto.class))).willReturn(BigDecimal.valueOf(10000));
 
         // when
         List<StockItemDto.ReservationStockItem> result = reservationBuyOrderService.pickStockItems(List.of(givenOrderedReservationOrderInfo));

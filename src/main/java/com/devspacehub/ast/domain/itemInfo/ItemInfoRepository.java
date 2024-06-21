@@ -11,5 +11,4 @@ package com.devspacehub.ast.domain.itemInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ItemInfoRepository extends JpaRepository<ItemInfo, String> {
-    int countByItemCode(String marketSecurityShortenedItemCode);
 }

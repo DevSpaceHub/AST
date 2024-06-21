@@ -10,19 +10,22 @@ package com.devspacehub.ast.domain.my.reservationOrderInfo.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.CommonConstants;
+import com.devspacehub.ast.common.constant.MarketType;
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.constant.YesNoStatus;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
+import com.devspacehub.ast.domain.my.dto.MyServiceRequestDto;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfoRepository;
+import com.devspacehub.ast.domain.my.service.MyServiceFactory;
 import com.devspacehub.ast.domain.my.service.MyServiceImpl;
 import com.devspacehub.ast.domain.notification.Notificator;
 import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
-import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
+import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import com.devspacehub.ast.domain.orderTrading.service.CurrentStockPriceInfoBuilder;
 import com.devspacehub.ast.util.OpenApiRequest;
 import jakarta.persistence.EntityNotFoundException;
@@ -49,7 +52,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
-
+// TODO 통합 테스트인데 mocking...
 @Transactional
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
@@ -60,6 +63,8 @@ class ReservationBuyOrderServiceIntegrationTest {
     private MarketStatusService marketStatusService;
     @MockBean
     private MyServiceImpl myService;
+    @MockBean
+    private MyServiceFactory myServiceFactory;
     @MockBean
     private Notificator notificator;
     @SpyBean
@@ -95,9 +100,9 @@ class ReservationBuyOrderServiceIntegrationTest {
 
         // 주문
         OpenApiType openApiType = OpenApiType.DOMESTIC_STOCK_RESERVATION_BUY_ORDER;
-        DomesticStockOrderExternalResDto response = new DomesticStockOrderExternalResDto();
+        StockOrderApiResDto response = new StockOrderApiResDto();
         response.setResultCode(OPENAPI_SUCCESS_RESULT_CODE);
-        DomesticStockOrderExternalResDto.Output respOutput = new DomesticStockOrderExternalResDto.Output();
+        StockOrderApiResDto.Output respOutput = new StockOrderApiResDto.Output();
         respOutput.setOrderNumber("0000000000");
         response.setOutput(respOutput);
         given(openApiRequest.httpPostRequest(any(OpenApiType.class), any(Consumer.class), any(DomesticStockOrderExternalReqDto.class))).willReturn(response);
@@ -109,7 +114,8 @@ class ReservationBuyOrderServiceIntegrationTest {
         currentStockPriceResponse.setResultCode(OPENAPI_SUCCESS_RESULT_CODE);
 
         given(reservationOrderInfoRepository.findValidAll(any(LocalDate.class))).willReturn(List.of(givenEntity));
-        given(myService.getBuyOrderPossibleCash(givenEntity.getItemCode(), givenEntity.getOrderPrice(), ORDER_DIVISION)).willReturn(BigDecimal.valueOf(10000));
+        given(myServiceFactory.resolveService(MarketType.DOMESTIC)).willReturn(myService);
+        given(myService.getBuyOrderPossibleCash(any(MyServiceRequestDto.Domestic.class))).willReturn(BigDecimal.valueOf(10000));
         given(marketStatusService.getCurrentStockPrice(givenEntity.getItemCode())).willReturn(currentStockPriceResponseOutput);
 
         doNothing().when(notificator).sendMessage(any(MessageContentDto.class));
@@ -122,7 +128,6 @@ class ReservationBuyOrderServiceIntegrationTest {
     }
 
     // TODO 테스트코드 메서드 자체가 Transactional 적용이 되어 있어 Dirty Checking 위한 올바른 테스트가 아니다.
-    @Deprecated
     @DisplayName("매수 예약 주문한 종목 주문 성공 시 최신 주문번호로 업데이트한다.")
     @Test
     void updateLatestOrderNumber() {
@@ -134,8 +139,8 @@ class ReservationBuyOrderServiceIntegrationTest {
                 .build();
         ReservationOrderInfo save = reservationOrderInfoRepository.save(given);
 
-        DomesticStockOrderExternalResDto givenApiResult = new DomesticStockOrderExternalResDto();
-        DomesticStockOrderExternalResDto.Output givenOutput = new DomesticStockOrderExternalResDto.Output();
+        StockOrderApiResDto givenApiResult = new StockOrderApiResDto();
+        StockOrderApiResDto.Output givenOutput = new StockOrderApiResDto.Output();
         givenApiResult.setResultCode(OPENAPI_SUCCESS_RESULT_CODE);
         givenOutput.setOrderNumber(givenNewOrderNumber);
         givenApiResult.setOutput(givenOutput);

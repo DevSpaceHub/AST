@@ -32,9 +32,9 @@ public class WebClientConfig {
     private String appSecret;
 
     /**
-     * Web client web client.
+     * Web client 의 기본 공통 정보를 세팅한다.
      *
-     * @return the web client
+     * @return baseUrl, appKey, appsecret이 모두 세팅된 WebClient
      */
     @Bean
     public WebClient webClient() {

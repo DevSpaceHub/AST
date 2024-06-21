@@ -9,21 +9,25 @@
 package com.devspacehub.ast.domain.my.reservationOrderInfo.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
+import com.devspacehub.ast.common.constant.MarketType;
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.constant.StockPriceUnit;
 import com.devspacehub.ast.common.utils.BigDecimalUtil;
+import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
+import com.devspacehub.ast.domain.my.dto.MyServiceRequestDto;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfoRepository;
 import com.devspacehub.ast.domain.my.service.MyService;
+import com.devspacehub.ast.domain.my.service.MyServiceFactory;
 import com.devspacehub.ast.domain.notification.Notificator;
 import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
-import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
+import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
 import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -56,7 +61,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
     private final ReservationOrderInfoRepository reservationOrderInfoRepository;
     private final OrderTradingRepository orderTradingRepository;
     private final MarketStatusService marketStatusService;
-    private final MyService myService;
+    private final MyServiceFactory myServiceFactory;
     private final Notificator notificator;
     @Value("${openapi.rest.header.transaction-id.domestic.buy-order}")
     private String transactionId;
@@ -82,7 +87,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
         // 2. 매수 종목 선택 및 주문
         List<OrderTrading> orderTradings = new ArrayList<>();
         for (StockItemDto.ReservationStockItem reservationItem : pickStockItems(reservationOrderInfos)) {
-            DomesticStockOrderExternalResDto result = callOrderApi(openApiProperties, reservationItem, DOMESTIC_STOCK_RESERVATION_BUY_ORDER, transactionId);
+            StockOrderApiResDto result = callOrderApi(openApiProperties, reservationItem, DOMESTIC_STOCK_RESERVATION_BUY_ORDER, transactionId);
             OrderTrading orderTrading = OrderTrading.from(reservationItem, result, transactionId);
             orderTradings.add(orderTrading);
 
@@ -98,7 +103,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
      * @param result
      * @param reservationItemSeq
      */
-    public void updateLatestOrderNumber(DomesticStockOrderExternalResDto result, Long reservationItemSeq) {
+    public void updateLatestOrderNumber(StockOrderApiResDto result, Long reservationItemSeq) {
         if (result.isFailed()) {
             return;
         }
@@ -133,14 +138,14 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
             ReservationOrderInfo currReservationOrderInfo = itemCodeReservationOrderInfoMap.get(seq);
 
             // 호가 단위 조정
-            BigDecimal adjustedOrderPrice = StockPriceUnit.intTypeOrderPriceCuttingByPriceUnit(currReservationOrderInfo.getOrderPrice());
+            BigDecimal adjustedOrderPrice = StockPriceUnit.intOrderPriceCuttingByPriceUnit(currReservationOrderInfo.getOrderPrice());
             currReservationOrderInfo.updateOrderPrice(adjustedOrderPrice);
             // 하한가 비교
             if (BigDecimalUtil.isLessThan(currReservationOrderInfo.getOrderPrice(), itemCodeResponseMap.get(seq).getStockLowerLimitPrice())) {
                 continue;
             }
             // 예수금 체크
-            BigDecimal myDeposit = myService.getBuyOrderPossibleCash(currReservationOrderInfo.getItemCode(), adjustedOrderPrice, ORDER_DIVISION);
+            BigDecimal myDeposit = myServiceImpl().getBuyOrderPossibleCash(MyServiceRequestDto.Domestic.from(currReservationOrderInfo.getItemCode(), adjustedOrderPrice, ORDER_DIVISION));
             BigDecimal purchaseAmount = BigDecimalUtil.multiplyBigDecimalWithNumber(adjustedOrderPrice, currReservationOrderInfo.getOrderQuantity());
             if (BigDecimalUtil.isLessThan(myDeposit, purchaseAmount)) {
                 LogUtils.insufficientAmountError(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, currReservationOrderInfo.getKoreanItemName(), myDeposit);
@@ -154,12 +159,16 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
         return pickedStockItems;
     }
 
+    private MyService myServiceImpl() {
+        return myServiceFactory.resolveService(MarketType.DOMESTIC);
+    }
+
     @Override
-    public DomesticStockOrderExternalResDto callOrderApi(OpenApiProperties openApiProperties, StockItemDto stockItem, OpenApiType openApiType, String transactionId) {
+    public <T extends StockItemDto> StockOrderApiResDto callOrderApi(OpenApiProperties openApiProperties, T stockItem, OpenApiType openApiType, String transactionId) {
         Consumer<HttpHeaders> httpHeaders = DomesticStockOrderExternalReqDto.setHeaders(openApiProperties.getOauth(), transactionId);
         DomesticStockOrderExternalReqDto bodyDto = DomesticStockOrderExternalReqDto.from(openApiProperties, stockItem);
 
-        return (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(openApiType, httpHeaders, bodyDto);
+        return (StockOrderApiResDto) openApiRequest.httpPostRequest(openApiType, httpHeaders, bodyDto);
     }
 
     @Override
@@ -172,7 +181,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
     }
 
     @Override
-    public void orderApiResultProcess(DomesticStockOrderExternalResDto result, OrderTrading orderTrading) {
+    public <T extends WebClientCommonResDto> void orderApiResultProcess(T result, OrderTrading orderTrading) {
         if (result.isSuccess()) {
             LogUtils.tradingOrderSuccess(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, orderTrading.getItemNameKor());
             notificator.sendMessage(MessageContentDto.OrderResult.fromOne(
