@@ -31,7 +31,7 @@ public class MashupOrderController {
      */
     @PostMapping("/buy")
     public ResponseEntity<ApiResult> buyOrder(@RequestParam("openApiType") OpenApiType openApiType) {
-        mashupService.startBuyOrder(openApiType);
+        mashupService.startOrder(openApiType);
         return ResponseEntity.ok(ApiResult.success());
     }
 
@@ -42,7 +42,7 @@ public class MashupOrderController {
      */
     @PostMapping("/sell")
     public ResponseEntity<ApiResult> sellOrder(@RequestParam("openApiType") OpenApiType openApiType) {
-        mashupService.startSellOrder(openApiType);
+        mashupService.startOrder(openApiType);
         return ResponseEntity.ok(ApiResult.success());
     }
 
@@ -54,10 +54,9 @@ public class MashupOrderController {
      */
     @PostMapping("/reserve/buy")
     public ResponseEntity<ApiResult> reservationBuyOrder(@RequestParam("openApiType") OpenApiType openApiType) {
-        mashupService.startReservationBuyOrder(openApiType);
+        mashupService.startOrder(openApiType);
         return ResponseEntity.ok(ApiResult.success());
     }
-
 
 
 }
