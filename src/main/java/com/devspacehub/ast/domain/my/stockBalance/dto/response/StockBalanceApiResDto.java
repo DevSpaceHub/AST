@@ -11,11 +11,9 @@ package com.devspacehub.ast.domain.my.stockBalance.dto.response;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,16 +25,9 @@ import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCES
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @Builder
 public class StockBalanceApiResDto extends WebClientCommonResDto {
-    @JsonProperty("rt_cd")
-    private String resultCode;
-    @JsonProperty("msg_cd")
-    private String messageCode;
-    @JsonProperty("msg1")
-    private String message;
-
-
     @JsonProperty("ctx_area_fk100")
     private String ctxAreaFk100;
 
@@ -75,7 +66,7 @@ public class StockBalanceApiResDto extends WebClientCommonResDto {
         private String thdtSllQty;
 
         @JsonProperty("hldg_qty")
-        private String holdingQuantity;         // 보유 수량
+        private int holdingQuantity;         // 보유 수량
 
         @JsonProperty("ord_psbl_qty")
         private String orderPossibleQuantity;   // 주문 가능 수량
@@ -87,7 +78,7 @@ public class StockBalanceApiResDto extends WebClientCommonResDto {
         private String purchaseAmount;  //  매입 금액
 
         @JsonProperty("prpr")
-        private String currentPrice;    // 현재가
+        private BigDecimal currentPrice;    // 현재가
 
         @JsonProperty("evlu_amt")
         private String evluAmt;
@@ -96,7 +87,7 @@ public class StockBalanceApiResDto extends WebClientCommonResDto {
         private String evluPflsAmt;
 
         @JsonProperty("evlu_pfls_rt")
-        private String evaluateProfitLossRate;   // 평가손익률
+        private Float evaluateProfitLossRate;   // 평가손익률
 
         @JsonProperty("evlu_erng_rt")
         private String evaluateEarningRate;      // 평가수익률. 제공 X
