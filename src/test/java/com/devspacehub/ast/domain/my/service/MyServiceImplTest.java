@@ -46,20 +46,19 @@ class MyServiceImplTest {
     @Test
     void getConcludedStock() {
         // given
-        OrderConclusionFindExternalResDto givenOpenApiResponseDto = OrderConclusionFindExternalResDto.builder()
-                .resultCode(OPENAPI_SUCCESS_RESULT_CODE)
-                .output1(List.of(OrderConclusionFindExternalResDto.Output1.builder()
-                        .itemCode("000000")
-                        .itemNameKor("TEST")
-                        .orderNumber("11111")
-                        .totalConcludedPrice("1000")
-                        .totalConcludedQuantity("1")
-                        .orderQuantity("1")
-                        .orderPrice("1000")
-                        .orderTime("090008")
-                        .build()))
-                .output2(new OrderConclusionFindExternalResDto.Output2())
-                .build();
+        OrderConclusionFindExternalResDto givenOpenApiResponseDto = new OrderConclusionFindExternalResDto();
+        givenOpenApiResponseDto.setResultCode(OPENAPI_SUCCESS_RESULT_CODE);
+        givenOpenApiResponseDto.setOutput1(List.of(OrderConclusionFindExternalResDto.Output1.builder()
+                .itemCode("000000")
+                .itemNameKor("TEST")
+                .orderNumber("11111")
+                .totalConcludedPrice("1000")
+                .totalConcludedQuantity("1")
+                .orderQuantity("1")
+                .orderPrice("1000")
+                .orderTime("090008")
+                .build()));
+        givenOpenApiResponseDto.setOutput2(new OrderConclusionFindExternalResDto.Output2());
         given(openApiProperties.getOauth()).willReturn("oauth");
         given(openApiRequest.httpGetRequest(any(OpenApiType.class), any(Consumer.class), any(MultiValueMap.class))).willReturn(givenOpenApiResponseDto);
 

@@ -1,7 +1,7 @@
 /*
  © 2023 devspacehub, Inc. All rights reserved.
 
- name : DomesticStockOrderExternalResDto
+ name : StockOrderExternalResDto
  creation : 2023.12.21
  author : Yoonji Moon
  */
@@ -20,19 +20,12 @@ import java.util.Objects;
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 
 /**
- * 국내 주식 주문(매수/매도) 응답 DTO.
+ * 해외/국내 주식 주문(매수/매도) 응답 DTO.
  */
 @NoArgsConstructor
 @Getter
 @Setter
-public class DomesticStockOrderExternalResDto extends WebClientCommonResDto {
-    @JsonProperty("rt_cd")
-    private String resultCode;
-    @JsonProperty("msg_cd")
-    private String messageCode;
-    @JsonProperty("msg1")
-    private String message;
-
+public class StockOrderApiResDto extends WebClientCommonResDto {
     @JsonProperty("output")
     private Output output;
 

@@ -16,4 +16,8 @@ public class CommonConstants {
     public static final String OPENAPI_SUCCESS_RESULT_CODE = "0";
     public static final String ORDER_DIVISION = "00";   // 지정가
     public static final String TRADING_VOLUME_RANKING_DATA_SAMPLE_JSON_PATH = "/www/ast/trading-volume/sampleTradingVolumeGetData.json";
+
+    public static final int DECIMAL_SCALE_FOUR = 4;
+    public static final int DECIMAL_SCALE_TWO = 2;
+
 }

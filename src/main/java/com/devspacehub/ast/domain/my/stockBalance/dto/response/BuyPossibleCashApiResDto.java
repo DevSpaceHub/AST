@@ -24,13 +24,6 @@ import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCES
 @NoArgsConstructor
 @Getter
 public class BuyPossibleCashApiResDto extends WebClientCommonResDto {
-    @JsonProperty("rt_cd")
-    private String resultCode;
-    @JsonProperty("msg_cd")
-    private String messageCode;
-    @JsonProperty("msg1")
-    private String message;
-
     @JsonProperty("output")
     private Output output;
 

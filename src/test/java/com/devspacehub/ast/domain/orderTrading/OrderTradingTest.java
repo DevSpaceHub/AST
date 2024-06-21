@@ -10,7 +10,7 @@ package com.devspacehub.ast.domain.orderTrading;
 
 import com.devspacehub.ast.common.constant.CommonConstants;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
-import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
+import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -31,8 +31,8 @@ class OrderTradingTest {
                 .orderQuantity(10)
                 .orderDivision(CommonConstants.ORDER_DIVISION)
                 .build();
-        DomesticStockOrderExternalResDto openApiResponseDto = new DomesticStockOrderExternalResDto();
-        DomesticStockOrderExternalResDto.Output output = new DomesticStockOrderExternalResDto.Output();
+        StockOrderApiResDto openApiResponseDto = new StockOrderApiResDto();
+        StockOrderApiResDto.Output output = new StockOrderApiResDto.Output();
         output.setOrderNumber("1234567890");
         output.setOrderTime("090010");
         openApiResponseDto.setOutput(output);

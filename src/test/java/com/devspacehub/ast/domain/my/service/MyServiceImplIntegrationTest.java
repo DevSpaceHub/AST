@@ -13,6 +13,7 @@ import com.devspacehub.ast.common.constant.YesNoStatus;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.QReservationOrderInfo;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfoRepository;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceApiResDto;
 import com.devspacehub.ast.domain.orderTrading.dto.OrderConclusionDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.DisplayName;
@@ -26,6 +27,9 @@ import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Service - Repository 통합 테스트를 수행한다.
+ */
 @Transactional
 @SpringBootTest
 class MyServiceImplIntegrationTest {

@@ -10,10 +10,11 @@ package com.devspacehub.ast.domain.orderTrading.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
+import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
-import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -33,7 +34,7 @@ public abstract class TradingService {
      * @param transactionId
      * @return
      */
-    public abstract DomesticStockOrderExternalResDto callOrderApi(OpenApiProperties openApiProperties, StockItemDto stockItem, OpenApiType openApiType, String transactionId);
+    public abstract <T extends StockItemDto> WebClientCommonResDto callOrderApi(OpenApiProperties openApiProperties, T stockItem, OpenApiType openApiType, String transactionId);
     /**
      * 주식 주문 정보 저장.
      */
@@ -41,21 +42,23 @@ public abstract class TradingService {
 
     /**
      * 금일 한번도 매수/매도 주문되지 않은 종목인지 체크.
-     * @param itemCode
-     * @param transactionId
+     * @param itemCode 주식 종목 코드
+     * @param transactionId API 별 트랜잭션 ID
+     * @param marketStart 장 시작 시각
+     * @param marketEnd 장 종료 시각
      * @return
      */
-    public boolean isNewOrder(String itemCode, String transactionId) {
+    public boolean isNewOrder(String itemCode, String transactionId, LocalDateTime marketStart, LocalDateTime marketEnd) {
         return true;
     }
 
     /**
-     * OpenAPI 매수/매도 주문 요청의 응답에 대한 결과 처리
-     * - 성공 -> 메세지 발송
+     * OpenAPI 매수/매도 주문 요청의 응답에 대한 결과 처리<br>
+     * - 성공 -> 메세지 발송<br>
      * - 실패 -> 에러 로그
-     * @param result
-     * @param orderTrading
+     * @param result 매수/매도 주문 응답 Dto
+     * @param orderTrading 종목 정보 Dto
      */
-    public abstract void orderApiResultProcess(DomesticStockOrderExternalResDto result, OrderTrading orderTrading);
+    public abstract <T extends WebClientCommonResDto> void orderApiResultProcess(T result, OrderTrading orderTrading);
 
 }

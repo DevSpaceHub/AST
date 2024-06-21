@@ -69,21 +69,31 @@ public enum StockPriceUnit {
      * @param orderPrice 주문가
      * @return 호가 단위에 의해 조정된 주문가
      */
-    public static BigDecimal intTypeOrderPriceCuttingByPriceUnit(BigDecimal orderPrice) {
+    public static BigDecimal intOrderPriceCuttingByPriceUnit(BigDecimal orderPrice) {
         BigDecimal priceUnit = BigDecimal.valueOf(getDomesticPriceUnitBy(orderPrice));
-        BigDecimal decimal = BigDecimalUtil.divideWithDecimalPlaces(orderPrice, priceUnit, 0);
+        BigDecimal decimal = BigDecimalUtil.divide(orderPrice, priceUnit, 0);
         return decimal.multiply(priceUnit);
     }
 
     /**
-     * 주문 가격과 호가 단위를 인자로 받아서 호가단위에 따라 주문가 조정하여 반환한다.
+     * 주문 가격과 호가 단위를 인자로 받아서 호가단위에 따라 주문가 조정하여 int 타입으로 반환한다.
      * 호가 단위로 나누면서 소수점을 절삭해야하므로 나눌 때 scale 값을 0으로 전달한다.
      * @param orderPrice 주문가
      * @param priceUnit 호가 단위
      * @return int 타입. 호가 단위에 의해 조정된 주문가
      */
-    public static BigDecimal intTypeOrderPriceCuttingByPriceUnit(BigDecimal orderPrice, BigDecimal priceUnit) {
-        return BigDecimalUtil.divideWithDecimalPlaces(orderPrice, priceUnit, 0).multiply(priceUnit);
+    public static BigDecimal intOrderPriceCuttingByPriceUnit(BigDecimal orderPrice, BigDecimal priceUnit) {
+        return BigDecimalUtil.divide(orderPrice, priceUnit, 0).multiply(priceUnit);
     }
 
+    /**
+     * 주문 가격과 호가 단위를 인자로 받아서 호가단위에 따라 주문가 조정하여 Float 타입으로 반환한다.
+     * 호가 단위로 나누면서 소수점을 절삭해야하므로 나눌 때 scale 값을 4로 전달한다.
+     * @param orderPrice 주문가
+     * @param scale 현재가에 의해 결정된 소수점 자릿수 (호가 단위)
+     * @return Float 타입. 호가 단위에 의해 조정된 주문가
+     */
+    public static BigDecimal floatOrderPriceCuttingByDecimalScale(BigDecimal orderPrice, int scale) {
+        return BigDecimalUtil.setScale(orderPrice, scale);
+    }
 }

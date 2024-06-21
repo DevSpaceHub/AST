@@ -7,8 +7,10 @@
  */
 package com.devspacehub.ast.domain.marketStatus.dto;
 
+import com.devspacehub.ast.common.constant.ExchangeCode;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceApiResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.overseas.OverseasStockBalanceApiResDto;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -27,48 +29,50 @@ public class StockItemDto {
 
     private String itemCode;
     private String itemNameKor;
-
     private String orderDivision;
-
     private Integer orderQuantity;
-
     private BigDecimal orderPrice;
 
-    /**
-     * 매수 종목 DTO 생성
-     * @param stockInfo
-     * @param orderQuantity
-     * @param orderPrice
-     * @return
-     */
-    public static StockItemDto from(DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo, int orderQuantity, BigDecimal orderPrice) {
-        return StockItemDto.builder()
-                .itemCode(stockInfo.getItemCode())
-                .itemNameKor(stockInfo.getHtsStockNameKor())
-                .orderQuantity(orderQuantity)
-                .orderPrice(orderPrice)
-                .orderDivision(ORDER_DIVISION)
-                .build();
+    @SuperBuilder
+    @Getter
+    public static class Domestic extends StockItemDto {
+        /**
+         * 매수 종목 DTO 생성
+         * @param stockInfo
+         * @param orderQuantity
+         * @param orderPrice
+         * @return
+         */
+        public static StockItemDto from(DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo, int orderQuantity, BigDecimal orderPrice) {
+            return StockItemDto.builder()
+                    .itemCode(stockInfo.getItemCode())
+                    .itemNameKor(stockInfo.getHtsStockNameKor())
+                    .orderQuantity(orderQuantity)
+                    .orderPrice(orderPrice)
+                    .orderDivision(ORDER_DIVISION)
+                    .build();
+        }
+
+        /**
+         * 매도 종목 DTO 생성
+         * @param myStockBalance
+         * @return
+         */
+        public static StockItemDto.Domestic of(StockBalanceApiResDto.MyStockBalance myStockBalance) {
+            return StockItemDto.Domestic.builder()
+                    .itemCode(myStockBalance.getItemCode())
+                    .itemNameKor(myStockBalance.getStockName())
+                    .orderQuantity(myStockBalance.getHoldingQuantity())     // 전량 매도
+                    .orderPrice(myStockBalance.getCurrentPrice())
+                    .orderDivision(ORDER_DIVISION)
+                    .build();
+        }
     }
 
-    /**
-     * 매도 종목 DTO 생성
-     * @param myStockBalance
-     * @return
-     */
-    public static StockItemDto of(StockBalanceApiResDto.MyStockBalance myStockBalance) {
-        return StockItemDto.builder()
-                .itemCode(myStockBalance.getItemCode())
-                .itemNameKor(myStockBalance.getStockName())
-                .orderQuantity(Integer.parseInt(myStockBalance.getHoldingQuantity()))     // 전량 매도
-                .orderPrice(new BigDecimal(myStockBalance.getCurrentPrice()))
-                .orderDivision(ORDER_DIVISION)
-                .build();
-    }
     @SuperBuilder
     @Getter
     public static class ReservationStockItem extends StockItemDto {
-        private  Long reservationSeq;
+        private Long reservationSeq;
 
         /**
          * 예약 매수 종목 DTO
@@ -83,6 +87,47 @@ public class StockItemDto {
                     .orderQuantity(reservationOrderInfo.getOrderQuantity())
                     .orderPrice(reservationOrderInfo.getOrderPrice())
                     .orderDivision(ORDER_DIVISION)
+                    .build();
+        }
+    }
+    @SuperBuilder
+    @Getter
+    public static class Overseas extends StockItemDto {
+        private ExchangeCode exchangeCode;
+
+        /**
+         * 해외 주식 매수 종목 DTO
+         * @param itemCode 종목 코드
+         * @param itemNameKor 종목 한글 이름
+         * @param orderQuantity 주문 수량
+         * @param orderPrice 주문 가
+         * @param exchangeCode 거래소 코드
+         * @return
+         */
+        public static Overseas from(String itemCode, String itemNameKor, int orderQuantity, BigDecimal orderPrice, ExchangeCode exchangeCode) {
+            return Overseas.builder()
+                    .exchangeCode(exchangeCode)
+                    .itemCode(itemCode)
+                    .itemNameKor(itemNameKor)
+                    .orderQuantity(orderQuantity)
+                    .orderPrice(orderPrice)
+                    .orderDivision(ORDER_DIVISION)
+                    .build();
+        }
+
+        /**
+         * 해외 주식 잔고 조회 응답 DTO 로부터 매도 주문 시 참조할 DTO 생성한다.
+         * @param myStockBalance
+         * @return 매도 주문 위한 주식 종목 정보 DTO
+         */
+        public static StockItemDto of(OverseasStockBalanceApiResDto.MyStockBalance myStockBalance) {
+            return Overseas.builder()
+                    .itemCode(myStockBalance.getItemCode())
+                    .itemNameKor(myStockBalance.getStockName())
+                    .orderQuantity(myStockBalance.getOrderPossibleQuantity())     // 전량 매도
+                    .orderPrice(myStockBalance.getCurrentPrice())
+                    .orderDivision(ORDER_DIVISION)
+                    .exchangeCode(ExchangeCode.fromCode(myStockBalance.getExchangeCode()))
                     .build();
         }
     }

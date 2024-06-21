@@ -10,8 +10,8 @@ package com.devspacehub.ast.domain.marketStatus.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
+import com.devspacehub.ast.common.constant.ProfileType;
 import com.devspacehub.ast.common.constant.ResultCode;
-import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.*;
 import com.devspacehub.ast.exception.error.DtoConversionException;
 import com.devspacehub.ast.exception.error.NotFoundDataException;
@@ -56,11 +56,24 @@ public class MarketStatusService {
     private String txIdCurrentStockPriceFind;
 
     /**
+     * 환경에 따라 다른 메서드를 호출하여 거래량 데이터를 반환한다.
+     * - 운영 : OpenApi 호출한다.
+     * - 테스트 : 서버 경로에 있는 json 데이터에서 읽는다.
+     * @return
+     */
+    public DomStockTradingVolumeRankingExternalResDto getTradingVolumeData() {
+        if (ProfileType.isProdActive()) {
+            return this.findTradingVolume();
+        }
+        return this.getTradingVolumeLocalData();
+    }
+
+    /**
      * 거래량 조회 (1-10위)
      *
      * @return the list
      */
-    public DomStockTradingVolumeRankingExternalResDto findTradingVolume() {
+    private DomStockTradingVolumeRankingExternalResDto findTradingVolume() {
         Consumer<HttpHeaders> httpHeaders = DomStockTradingVolumeRankingExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdTradingVolumeRankingFind);
 
         MultiValueMap<String, String> queryParams = DomStockTradingVolumeRankingExternalReqDto.createParameter();
@@ -68,7 +81,7 @@ public class MarketStatusService {
                 DOMESTIC_TRADING_VOLUME_RANKING, httpHeaders, queryParams);
 
         if (response.isFailed()) {
-            throw new OpenApiFailedResponseException();
+            throw new OpenApiFailedResponseException(DOMESTIC_TRADING_VOLUME_RANKING, response.getMessage());
         }
         return response;
     }
@@ -80,7 +93,7 @@ public class MarketStatusService {
      * @throws IOException the io exception
      */
     @Profile("!prod")
-    public DomStockTradingVolumeRankingExternalResDto getTradingVolumeLocalData() {
+    private DomStockTradingVolumeRankingExternalResDto getTradingVolumeLocalData() {
         FileInputStream inputStream;
         try {
                 File file = ResourceUtils.getFile(TRADING_VOLUME_RANKING_DATA_SAMPLE_JSON_PATH);
@@ -117,8 +130,7 @@ public class MarketStatusService {
         CurrentStockPriceExternalResDto result = (CurrentStockPriceExternalResDto) openApiRequest.httpGetRequest(CURRENT_STOCK_PRICE, httpHeaders, queryParams);
 
         if (result.isFailed()) {
-            LogUtils.openApiFailedResponseMessage(OpenApiType.CURRENT_STOCK_PRICE, result.getMsg1(), result.getMessageCode());
-            throw new OpenApiFailedResponseException();
+            throw new OpenApiFailedResponseException(OpenApiType.CURRENT_STOCK_PRICE, result.getMessage());
         }
         return result.getCurrentStockPriceInfo();
     }
