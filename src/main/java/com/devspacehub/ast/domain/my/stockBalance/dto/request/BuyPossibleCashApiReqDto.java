@@ -25,6 +25,15 @@ import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
 @Builder
 public class BuyPossibleCashApiReqDto {
 
+    /**
+     * 요청 파라미터 생성한다.
+     * @param accntNumber 계좌 번호의 앞 6자리
+     * @param accntProductCode 계좌 번호의 뒤 2자리
+     * @param itemCode 주식 종목 코드
+     * @param orderPrice 주문가
+     * @param orderDivision 주문 지정가
+     * @return MultiValuemap 타입의 요청 파라미터
+     */
     public static MultiValueMap<String, String> createParameter(String accntNumber, String accntProductCode, String itemCode, BigDecimal orderPrice, String orderDivision) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
         queryParams.add("CANO", accntNumber);
@@ -39,11 +48,11 @@ public class BuyPossibleCashApiReqDto {
     }
 
     /**
-     * Sets headers.
+     * 요청 헤더를 세팅한다.
      *
-     * @param oauth the oauth
-     * @param txId  the tx id
-     * @return the headers
+     * @param oauth OpenApi의 접근 토큰
+     * @param txId  매수 가능 조회 OpenApi의 트랜잭션 ID
+     * @return Consumer 타입의 세팅된 헤더
      */
     public static Consumer<HttpHeaders> setHeaders(String oauth, String txId) {
         HttpHeaders headers = new HttpHeaders();

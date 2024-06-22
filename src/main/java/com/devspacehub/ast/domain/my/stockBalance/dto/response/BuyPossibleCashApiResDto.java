@@ -69,6 +69,10 @@ public class BuyPossibleCashApiResDto extends WebClientCommonResDto {
         private String ordPsblFrcrAmtWcrc;  // 주문가능외화금액원화
     }
 
+    /**
+     * 응답이 성공 응답인지 체크한다.
+     * @return output 필드가 null이 아니고 resultCode가 0이면 True를 반환한다.
+     */
     @JsonIgnore
     @Override
     public boolean isSuccess() {

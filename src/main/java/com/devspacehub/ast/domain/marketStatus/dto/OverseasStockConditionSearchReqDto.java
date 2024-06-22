@@ -44,6 +44,12 @@ public class OverseasStockConditionSearchReqDto {
         this.maxPER = maxPER;
     }
 
+    /**
+     * OpenApi 요청의 헤더 세팅
+     * @param oauth OpenApi 접근 토큰
+     * @param transactionId 해외 주식 조건검색 Api 요청의 트랜잭션 ID
+     * @return Consuemr 타입의 세팅된 헤더
+     */
     public static Consumer<HttpHeaders> setHeaders(String oauth, String transactionId) {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
@@ -53,6 +59,10 @@ public class OverseasStockConditionSearchReqDto {
         return httpHeaders -> httpHeaders.addAll(headers);
     }
 
+    /**
+     * OpenApi 요청의 쿼리 파라미터 생성
+     * @return MultiValueMap 타입의 쿼리 파라미터
+     */
     public MultiValueMap<String, String> createParameter() {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
         queryParams.add("AUTH", "");

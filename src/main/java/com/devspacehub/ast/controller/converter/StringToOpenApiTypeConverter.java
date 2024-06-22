@@ -1,7 +1,7 @@
 /*
  © 2024 devspacehub, Inc. All rights reserved.
 
- name : StringToOpenApiType
+ name : StringToOpenApiTypeConverter
  creation : 2024.6.1
  author : Yoonji Moon
  */

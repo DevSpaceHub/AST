@@ -28,6 +28,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+/**
+ * 해외 주식 시장 조회 서비스 클래스 단위 테스트
+ */
 @ExtendWith(MockitoExtension.class)
 class OverseasMarketStatusServiceTest {
     @InjectMocks

@@ -56,6 +56,12 @@ public class MyServiceImpl extends MyService {
     @Value("${openapi.rest.header.transaction-id.domestic.order-conclusion-find}")
     private String txIdOrderConclusionFind;
 
+    /**
+     * 생성자
+     * @param reservationOrderInfoRepository 상위 생성자를 통해 주입되는 예약주문 정보 Repository
+     * @param openApiRequest OpenApi 요청 클래스
+     * @param openApiProperties OpenApi 요청 관련 프로퍼티
+     */
     public MyServiceImpl(ReservationOrderInfoRepository reservationOrderInfoRepository, OpenApiRequest openApiRequest,
                          OpenApiProperties openApiProperties) {
         super(reservationOrderInfoRepository);
@@ -111,6 +117,11 @@ public class MyServiceImpl extends MyService {
         return responseDto;
     }
 
+    /**
+     * 금일 거래가 체결된 종목을 조회한다.
+     * @param today 금일 일자
+     * @return 금일 일자로 조회되는 리스트 타입의 체결 종목 정보
+     */
     @Override
     public List<OrderConclusionDto> getConcludedStock(LocalDate today) {
         // 헤더 & 파라미터 값 생성
