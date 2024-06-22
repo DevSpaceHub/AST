@@ -155,7 +155,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
             currReservationOrderInfo.subtractConcludedQuantity(currReservationOrderInfo.getConclusionQuantity());
             pickedStockItems.add(StockItemDto.ReservationStockItem.of(currReservationOrderInfo));
         }
-        log.info("[예약매수 주문] 최종 선택된 주식 종목 갯수 : {}", pickedStockItems.size());
+        log.info("[{}] 최종 선택된 주식 종목 갯수 : {}", DOMESTIC_STOCK_RESERVATION_BUY_ORDER.getDiscription(), pickedStockItems.size());
         return pickedStockItems;
     }
 

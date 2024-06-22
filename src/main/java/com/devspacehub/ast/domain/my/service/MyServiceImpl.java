@@ -88,7 +88,7 @@ public class MyServiceImpl extends MyService {
         if (responseDto.isFailed()) {
             throw new OpenApiFailedResponseException(OpenApiType.DOMESTIC_BUY_ORDER_POSSIBLE_CASH, responseDto.getMessage());
         }
-        log.info("[매수가능금액 조회] 주문 가능 현금 : {}", responseDto.getOutput().getOrderPossibleCash());
+        log.info("[{}] 주문 가능 현금 : {}", OpenApiType.DOMESTIC_BUY_ORDER_POSSIBLE_CASH.getDiscription(), responseDto.getOutput().getOrderPossibleCash());
         return new BigDecimal(responseDto.getOutput().getOrderPossibleCash());
     }
 
@@ -109,7 +109,8 @@ public class MyServiceImpl extends MyService {
 
         log.info("[{}] {}", OpenApiType.DOMESTIC_STOCK_BALANCE.getDiscription(), responseDto.getMessage());
         for(StockBalanceApiResDto.MyStockBalance myStockBalance : responseDto.getMyStockBalance()) {
-            log.info("주식 종목 : {}({}) / 보유 수량 : {}주 / 현재가 : {} / 평가손익율 : {}",
+            log.info("[{}] 주식 종목 : {}({}) / 보유 수량 : {}주 / 현재가 : {} / 평가손익율 : {}",
+                    OpenApiType.DOMESTIC_STOCK_BALANCE.getDiscription(),
                     myStockBalance.getItemCode(), myStockBalance.getStockName(),
                     myStockBalance.getHoldingQuantity(), myStockBalance.getCurrentPrice(), myStockBalance.getEvaluateProfitLossRate());
         }

@@ -135,12 +135,13 @@ public class OverseasBuyOrderServiceImpl extends TradingService {
                     LogUtils.insufficientAmountError(OVERSEAS_STOCK_BUY_ORDER, stockSearchDto.getItemNameKor(), myDeposit);
                     continue;
                 }
-                log.info("[해외 매수] 주문 수량 : {}, 주문가: {} (분할 매수 퍼센트: {})", orderQuantity, finalOrderPrice, splitBuyPercents.getPercents().get(i));
+                log.info("[{}] 주문 수량 : {}, 주문가: {} (분할 매수 퍼센트: {})", OVERSEAS_STOCK_BUY_ORDER.getDiscription(),
+                        orderQuantity, finalOrderPrice, splitBuyPercents.getPercents().get(i));
                 buyPossibleStocks.add(StockItemDto.Overseas.from(stockSearchDto.getItemCode(), stockSearchDto.getItemNameKor(),
                         orderQuantity, finalOrderPrice, stockSearchDto.getExchangeCode()));
             }
         }
-        log.info("[해외 매수] 최종 매수 주문 예정 갯수 : {}", buyPossibleStocks.size());
+        log.info("[{}] 최종 매수 주문 예정 갯수 : {}", OVERSEAS_STOCK_BUY_ORDER.getDiscription(), buyPossibleStocks.size());
         return buyPossibleStocks;
     }
 

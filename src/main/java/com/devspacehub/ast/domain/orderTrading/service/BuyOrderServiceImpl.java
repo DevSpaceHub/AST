@@ -178,15 +178,17 @@ public class BuyOrderServiceImpl extends TradingService {
             CurrentStockPriceInfo currentStockPriceInfo = marketStatusService.getCurrentStockPrice(stockInfo.getItemCode());
             BigDecimal currentPrice = new BigDecimal(currentStockPriceInfo.getCurrentStockPrice());
 
-            log.info("[매수 주문] 종목: {}({})", stockInfo.getItemCode(), stockInfo.getHtsStockNameKor());
-            log.info("[매수 주문] 현재가: {}", currentPrice);
-            log.info("[매수 주문] HTS 시가 총액: {}", currentStockPriceInfo.getHtsMarketCapitalization());
-            log.info("[매수 주문] 누적 거래량: {}", currentStockPriceInfo.getAccumulationVolume());
-            log.info("[매수 주문] PER: {}", Objects.isNull(currentStockPriceInfo.getPer()) ? "Null" : currentStockPriceInfo.getPer());
-            log.info("[매수 주문] PBR: {}", Objects.isNull(currentStockPriceInfo.getPbr()) ? "Null" : currentStockPriceInfo.getPbr());
-            log.info("[매수 주문] 투자유의 여부: {}", currentStockPriceInfo.getInvtCarefulYn());
-            log.info("[매수 주문] 정리매매 여부: {}", currentStockPriceInfo.getDelistingYn());
-            log.info("[매수 주문] 단기과열 여부: {}", currentStockPriceInfo.getShortOverYn());
+            log.info(
+                    "=================================================[국내 매수 주문] " +
+                            "종목: {}({}) / 현재가: {} / HTS 시가 총액: {} / 누적 거래량: {} / PER: {} / PBR: {} / 투자유의 여부: {} / 정리매매 여부: {} / 단기과열 여부: {}",
+                    stockInfo.getItemCode(), stockInfo.getHtsStockNameKor(),
+                    currentPrice, currentStockPriceInfo.getHtsMarketCapitalization(),
+                    currentStockPriceInfo.getAccumulationVolume(),
+                    Objects.isNull(currentStockPriceInfo.getPer()) ? "Null" : currentStockPriceInfo.getPer(),
+                    Objects.isNull(currentStockPriceInfo.getPbr()) ? "Null" : currentStockPriceInfo.getPbr(),
+                    currentStockPriceInfo.getInvtCarefulYn(),
+                    currentStockPriceInfo.getDelistingYn(),
+                    currentStockPriceInfo.getShortOverYn());
 
             // 4. 지표 체크
             if (!checkAccordingWithIndicators(currentStockPriceInfo)) {
@@ -213,12 +215,12 @@ public class BuyOrderServiceImpl extends TradingService {
                     continue;
                 }
 
-                log.info("[국내 매수] 주문 수량 : {}, 주문가: {} (분할 매수 퍼센트: {})", orderQuantity, orderPriceByPriceUnit,
-                        splitBuyPercents.getPercents().get(idx));
+                log.info("[{}] 주문 수량 : {} / 주문가: {} / 분할 매수 퍼센트: {}", DOMESTIC_STOCK_BUY_ORDER.getDiscription(),
+                        orderQuantity, orderPriceByPriceUnit, splitBuyPercents.getPercents().get(idx));
                 pickedStockItems.add(StockItemDto.Domestic.from(stockInfo, orderQuantity, orderPriceByPriceUnit));
             }
         }
-        log.info("[국내 매수] 최종 매수 주문 예정 갯수 : {}", pickedStockItems.size());
+        log.info("[{}] 최종 매수 주문 예정 갯수 : {}", DOMESTIC_STOCK_BUY_ORDER.getDiscription(), pickedStockItems.size());
         return pickedStockItems;
     }
 

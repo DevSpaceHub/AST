@@ -73,7 +73,7 @@ public class OverseasMyServiceImpl extends MyService {
         if (responseDto.isFailed()) {
             throw new OpenApiFailedResponseException(OVERSEAS_BUY_ORDER_POSSIBLE_CASH, responseDto.getMessage());
         }
-        log.info("[해외 매수가능금액 조회] 주문 가능 현금 : {}", responseDto.getResultDetail().getOrderPossibleCash());
+        log.info("[{}] 주문 가능 현금 : {}", OVERSEAS_BUY_ORDER_POSSIBLE_CASH.getDiscription(), responseDto.getResultDetail().getOrderPossibleCash());
 
         return responseDto.getResultDetail().getOrderPossibleCash();
     }
@@ -93,9 +93,9 @@ public class OverseasMyServiceImpl extends MyService {
             throw new OpenApiFailedResponseException(OpenApiType.OVERSEAS_STOCK_BALANCE, responseDto.getMessage());
         }
 
-        log.info("[{} 결과] {}", OVERSEAS_STOCK_BALANCE.getDiscription(), responseDto.getMessage());
         for(OverseasStockBalanceApiResDto.MyStockBalance myStockBalance : responseDto.getMyStockBalance()) {
-            log.info("주식 종목 : {}({}) / 보유 수량 : {}주 / 현재가 : {} / 평가손익율 : {}",
+            log.info("[{}] 주식 종목 : {}({}) / 보유 수량 : {}주 / 현재가 : {} / 평가손익율 : {}",
+                    OVERSEAS_STOCK_BALANCE.getDiscription(),
                     myStockBalance.getItemCode(), myStockBalance.getStockName(),
                     myStockBalance.getOrderPossibleQuantity(),
                     myStockBalance.getCurrentPrice(),
