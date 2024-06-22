@@ -72,8 +72,7 @@ spring:
 
 openapi:
   rest:
-    domain: https://openapivts.koreainvestment.com:29443
-#    domain: https://openapi.koreainvestment.com:9443
+    domain: https://openapi.koreainvestment.com:9443
     header:
       transaction-id:
         domestic:
