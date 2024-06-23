@@ -27,9 +27,10 @@ public enum ResultCode {
     NOT_FOUND_ACCESS_TOKEN(5000, "접근 토큰 조회에 실패하였습니다."),
     NOT_FOUND_RANKING_VOLUME_DATA_JSON_FILE(5004, "거래량 순위 JSON 파일이 존재하지 않습니다."),
     INVALID_OPENAPI_TYPE_ERROR(5005, "해당하는 OpenApiType이 존재하지 않습니다."),
+    INVALID_MARKET_TYPE_ERROR(5005, "해당하는 MarketType이 존재하지 않습니다."),
     INVALID_EXCHANGE_CODE_ERROR(5005, "해당하는 ExchangeCode가 존재하지 않습니다."),
     INVALID_CURRENT_PRICE(5005, "유효하지 않은 현재가 입니다."),
-    NUMBER_IS_NULL(5005, "값이 Null 입니다."),
+    DATA_IS_NULL_ERROR(5005, "값이 Null 입니다."),
 
     // KIS server error
     OPENAPI_SERVER_RESPONSE_ERROR(5002, "OpenApi 서버에서 오류 응답을 반환하였습니다."),

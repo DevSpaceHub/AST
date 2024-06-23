@@ -85,7 +85,7 @@ public class BigDecimalUtil {
      */
     protected static <T extends Number> void nullCheck(T... num) {
         if (Arrays.stream(num).anyMatch(Objects::isNull)) {
-            throw new InvalidValueException(ResultCode.NUMBER_IS_NULL);
+            throw new InvalidValueException(ResultCode.DATA_IS_NULL_ERROR);
         }
     }
 
