@@ -32,7 +32,7 @@ public enum OpenApiType {
     OAUTH_APPROVAL_KEY_ISSUE("/oauth2/Approval", "CM002", "실시간 (웹소켓) 접속키 발급"),
 
     OVERSEAS_STOCK_BUY_ORDER("/uapi/overseas-stock/v1/trading/order", "OV001", "해외 주식(현금)-매수"),
-    OVERSEAS_STOCK_SELL_ORDER("/uapi/overseas-stock/v1/tradin경g/order", "OV002", "해외 주식(현금)-매도"),
+    OVERSEAS_STOCK_SELL_ORDER("/uapi/overseas-stock/v1/trading/order", "OV002", "해외 주식(현금)-매도"),
     OVERSEAS_STOCK_RESERVATION_BUY_ORDER("/uapi/overseas-stock/v1/trading/order", "OV003", "해외 주식(현금)-예약 매수"),
 
     OVERSEAS_BUY_ORDER_POSSIBLE_CASH("/uapi/overseas-stock/v1/trading/inquire-psamount", "OV004", "해외 매수 가능 금액 조회"),

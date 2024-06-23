@@ -66,7 +66,7 @@ public class OverseasSellOrderServiceImpl extends TradingService {
     private Float minimumProfitFigureRatio;
 
     private static final int MARKET_START_HOUR = 22;
-    private static final int MAKRET_END_HOUR = 7;
+    private static final int MAKRET_END_HOUR = 6;
 
     /**
      * 해외 매도 주문
