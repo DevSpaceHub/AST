@@ -9,11 +9,14 @@
 package com.devspacehub.ast.domain.notification.dto;
 
 import com.devspacehub.ast.common.constant.OpenApiType;
+import com.devspacehub.ast.common.constant.ProfileType;
+import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -23,7 +26,7 @@ class MessageContentDtoTest {
 
     @DisplayName("체결 결과 DTO를 이용해 디스코드 메시지 전송 DTO를 생성한다.")
     @Test
-    void createMessage_conclusion() {
+    void createMessageTest_conclusion() {
         // given
         MessageContentDto.ConclusionResult orderResult = MessageContentDto.ConclusionResult.builder()
                 .title("체결 완료")
@@ -55,7 +58,7 @@ class MessageContentDtoTest {
 
     @DisplayName("매수 주문 결과 DTO를 이용해 디스코드 메시지 전송 DTO를 생성한다.")
     @Test
-    void createMessage_orderResult() {
+    void createMessageTest_orderResult() {
         // given
         MessageContentDto.OrderResult orderResult = MessageContentDto.OrderResult.builder()
                 .title("주문 완료")
@@ -79,5 +82,29 @@ class MessageContentDtoTest {
                 주문번호 : 0123456
                 주문수량 : 10주
                 주문단가 : 80000""", message);
+    }
+    @DisplayName("OpenApiType, 운영 상태 값, 주문 결과를 전달하여 디스코드 메세지 > 주문 결과 Dto를 생성한다.")
+    @Test
+    void orderResultTest_fromOne() {
+        // given
+        System.setProperty("spring.profiles.active", "test");
+        OpenApiType givenOpenApiType = OpenApiType.OVERSEAS_STOCK_SELL_ORDER;
+        OrderTrading givenOrderTrading = OrderTrading.builder()
+                .itemCode("APPL")
+                .itemNameKor("애플")
+                .orderPrice(new BigDecimal("134.02"))
+                .orderNumber("111111")
+                .orderQuantity(1)
+                .orderTime("093030")
+                .build();
+        // when
+        MessageContentDto.OrderResult result = MessageContentDto.OrderResult.fromOne(
+                givenOpenApiType, ProfileType.getAccountStatus(), givenOrderTrading);
+        // then
+        assertThat(result.getTitle()).isEqualTo("주문 완료");
+        assertThat(result.getItemNameKor()).isEqualTo("애플");
+        assertThat(result.getOrderPrice()).isEqualTo(new BigDecimal("134.02"));
+        assertThat(result.getAccountStatusKor()).isEqualTo("모의");
+        assertThat(result.getOpenApiType()).isEqualTo(givenOpenApiType);
     }
 }
