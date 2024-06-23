@@ -24,7 +24,7 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public enum ExchangeCode {
     NASDAQ("NAS", "NASD"),
-    NEWYORK("NYSE", "NYSE")
+    NEWYORK("NYS", "NYSE")
     ;
 
     private final String shortCode;
