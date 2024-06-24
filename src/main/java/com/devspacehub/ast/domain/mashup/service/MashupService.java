@@ -25,7 +25,6 @@ import com.devspacehub.ast.util.RequestUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -65,7 +64,6 @@ public class MashupService {
      * 1. 예약 매수 종목인 경우 일부 데이터 업데이트 진행
      * 2. 체결 결과 메시지 전송
      */
-    @Transactional
     public void startOrderConclusionResultProcess(OpenApiType openApiType) {
         oAuthService.setAccessToken(TokenType.AccessToken);
         MyService myServiceImpl = myServiceImpl(openApiType);
@@ -85,7 +83,7 @@ public class MashupService {
     /**
      * OpenApi 타입에 따라 MyServiceFactory를 다르게 호출하여 구현체를 획득한다.
      * @param openApiType OpenApi 타입
-     * @return
+     * @return MyService 구현체
      */
     private MyService myServiceImpl(OpenApiType openApiType) {
         return openApiType.getCode().startsWith(RESULT_CODE_DOMESTIC_PREFIX) ? myServiceFactory.resolveService(MarketType.DOMESTIC) :
