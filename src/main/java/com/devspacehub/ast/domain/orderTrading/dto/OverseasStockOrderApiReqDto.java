@@ -13,6 +13,7 @@ import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
+import lombok.Getter;
 import org.springframework.http.HttpHeaders;
 
 import java.util.function.Consumer;
@@ -20,6 +21,7 @@ import java.util.function.Consumer;
 /**
  * 해외 주식 주문 OpenApi 요청 DTO.
  */
+@Getter
 @Builder
 public class OverseasStockOrderApiReqDto extends WebClientCommonReqDto {
 
@@ -56,7 +58,8 @@ public class OverseasStockOrderApiReqDto extends WebClientCommonReqDto {
     }
 
     /**
-     * @param openApiProperties
+     * 계좌번호, 주식종목 정보로 해외 주식 거래 요청 파라미터를 생성할 Dto 생성한다.
+     * @param openApiProperties OpenApi 프로퍼티 (계좌번호 포함)
      * @param stockItem 주식 종목 정보
      * @return 매수/매도 주문 API의 요청 Dto
      */

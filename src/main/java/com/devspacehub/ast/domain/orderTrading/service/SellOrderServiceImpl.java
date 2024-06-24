@@ -113,7 +113,7 @@ public class SellOrderServiceImpl extends TradingService {
 
         for (StockBalanceApiResDto.MyStockBalance myStockBalance : stockBalanceResponse.getMyStockBalance()) {
             if (isStockItemSellOrderable(myStockBalance, transactionId)) {
-                pickedStockItems.add(StockItemDto.Domestic.of(myStockBalance));
+                pickedStockItems.add(StockItemDto.Domestic.sellOf(myStockBalance));
             }
         }
         return pickedStockItems;

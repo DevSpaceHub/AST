@@ -217,7 +217,7 @@ public class BuyOrderServiceImpl extends TradingService {
 
                 log.info("[{}] 주문 수량 : {} / 주문가: {} / 분할 매수 퍼센트: {}", DOMESTIC_STOCK_BUY_ORDER.getDiscription(),
                         orderQuantity, orderPriceByPriceUnit, splitBuyPercents.getPercents().get(idx));
-                pickedStockItems.add(StockItemDto.Domestic.from(stockInfo, orderQuantity, orderPriceByPriceUnit));
+                pickedStockItems.add(StockItemDto.Domestic.buyFrom(stockInfo, orderQuantity, orderPriceByPriceUnit));
             }
         }
         log.info("[{}] 최종 매수 주문 예정 갯수 : {}", DOMESTIC_STOCK_BUY_ORDER.getDiscription(), pickedStockItems.size());

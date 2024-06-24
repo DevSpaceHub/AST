@@ -12,7 +12,6 @@ import com.devspacehub.ast.common.constant.CommonConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.PrePersist;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +20,6 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 /**
  * 데이터 생성 정보 Base Entity.
@@ -32,21 +30,12 @@ import java.util.Objects;
 @MappedSuperclass
 @SuperBuilder
 public class BaseEntity {
+    @Builder.Default
     @Column(name = "registration_datetime")
-    private LocalDateTime registrationDateTime;
+    private LocalDateTime registrationDateTime = LocalDateTime.now();
 
     @Builder.Default
     @Column(name = "registration_id", length = 100)
     private String registrationId = CommonConstants.REGISTER_ID;
 
-
-    /**
-     * 별도의 값 지정이 없을 경우 기본값으로 현재 시각을 세팅한다.
-     */
-    @PrePersist
-    public void prePersist() {
-        if (Objects.isNull(this.registrationDateTime)) {
-            this.registrationDateTime = LocalDateTime.now();
-        }
-    }
 }

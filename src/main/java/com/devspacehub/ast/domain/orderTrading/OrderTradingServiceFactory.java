@@ -36,7 +36,7 @@ public class OrderTradingServiceFactory {
             case DOMESTIC_STOCK_RESERVATION_BUY_ORDER -> reservationBuyOrderService;
             case OVERSEAS_STOCK_BUY_ORDER -> overseasBuyOrderService;
             case OVERSEAS_STOCK_SELL_ORDER -> overseasSellOrderService;
-            default -> throw new IllegalArgumentException("적절하지 않은 구매 타입입니다.");
+            default -> throw new IllegalArgumentException("적절하지 않은 OpenApiType 구매 타입 입니다.");
         };
     }
 }
