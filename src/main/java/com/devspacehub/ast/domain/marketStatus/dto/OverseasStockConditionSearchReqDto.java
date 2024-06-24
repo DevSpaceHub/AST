@@ -68,8 +68,13 @@ public class OverseasStockConditionSearchReqDto {
         queryParams.add("AUTH", "");
         queryParams.add("EXCD", exchangeCode.getShortCode());
         queryParams.add("CO_YN_PRICECUR", String.valueOf(YesNoStatus.YES.getNumber()));
+        queryParams.add("CO_ST_PRICECUR", "1");
+        queryParams.add("CO_EN_PRICECUR", "9999999999999");
+
+        queryParams.add("CO_YN_VOLUME", String.valueOf(YesNoStatus.YES.getNumber()));
         queryParams.add("CO_ST_VOLUME", this.minTradingVolume);
         queryParams.add("CO_EN_VOLUME", this.maxTradingVolume);
+
         queryParams.add("CO_YN_VALX", String.valueOf(YesNoStatus.YES.getNumber()));
         queryParams.add("CO_ST_VALX", this.minMarketCapital);
         queryParams.add("CO_EN_VALX", this.maxMarketCapital);
