@@ -31,7 +31,7 @@ public class BuyPossibleCashApiReqDto {
      * @param accntProductCode 계좌 번호의 뒤 2자리
      * @param itemCode 주식 종목 코드
      * @param orderPrice 주문가
-     * @param orderDivision 주문 지정가
+     * @param orderDivision 주문 구분 (지정가)
      * @return MultiValuemap 타입의 요청 파라미터
      */
     public static MultiValueMap<String, String> createParameter(String accntNumber, String accntProductCode, String itemCode, BigDecimal orderPrice, String orderDivision) {
