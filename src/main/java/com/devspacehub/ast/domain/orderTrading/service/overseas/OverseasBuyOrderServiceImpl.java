@@ -70,10 +70,10 @@ public class OverseasBuyOrderServiceImpl extends TradingService {
     protected BigDecimal cashBuyOrderAmountPercent;
 
     /**
-     * 해외 주식 주문한다.
+     * 해외 주식 매수 주문한다.
      * @param openApiProperties OpenApi 호출 시 필요한 필드
      * @param openApiType OpenApi 타입
-     * @return
+     * @return 주문 거래 정보 Entity 타입의 리스트
      */
     @Override
     public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType) {
@@ -95,7 +95,7 @@ public class OverseasBuyOrderServiceImpl extends TradingService {
      * @implSpec
      * NASDAQ, NEWYORK 거래소에 대해 기준 지표 값(거래량, 시가총액, PER)으로 해외주식 조건검색 API를 요청하여 상위 10개 순회한다.
      * 매수가능금액조회 API를 호출하여 주문할 수 있는 종목에 대해 주문가와 수량을 결정하여 반환한다.
-     * @return
+     * @return 거래소 별 상위 10개 중 지표에 부합하는 해외 종목 정보 (리스트)
      */
     private List<StockItemDto.Overseas> pickStockItems() {
         List<StockItemDto.Overseas> pickedStockItems = new ArrayList<>();
@@ -111,11 +111,11 @@ public class OverseasBuyOrderServiceImpl extends TradingService {
      * @return 조건에 부합한 매수 주문 가능한 종목
      */
     public List<StockItemDto.Overseas> getIndicatorPassedStocksOfTop10(OverseasStockConditionSearchResDto searchResDto) {
-        int idx = 0;
+        int idx = -1;
         int tradeItemIterCount = Math.min(searchResDto.getResultDetails().size(), 10);
 
         List<StockItemDto.Overseas> buyPossibleStocks = new ArrayList<>();
-        while (idx++ < tradeItemIterCount) {
+        while (++idx < tradeItemIterCount) {
             ResultDetail stockSearchDto = searchResDto.getResultDetails().get(idx);
             BigDecimal currentPrice = stockSearchDto.getCurrentPrice();
             // 매수 가능 금액
@@ -169,11 +169,11 @@ public class OverseasBuyOrderServiceImpl extends TradingService {
 
     /**
      * 해외 주식 주문을 위해 OpenAPI를 호출한다.
-     * @param openApiProperties
-     * @param stockItem
-     * @param openApiType
-     * @param transactionId
-     * @return
+     * @param openApiProperties OpenApi 호출 시 사용하는 프로퍼티
+     * @param stockItem 주식 정보 Dto
+     * @param openApiType OpenApi 호출 타입
+     * @param transactionId OpenApi 트랜잭션 ID
+     * @return 해외 주식 주문 Open Api 응답 데이터
      */
     @Override
     public <T extends StockItemDto> StockOrderApiResDto callOrderApi(OpenApiProperties openApiProperties, T stockItem, OpenApiType openApiType, String transactionId) {
@@ -185,7 +185,7 @@ public class OverseasBuyOrderServiceImpl extends TradingService {
 
     /**
      * 해외 주식 주문한 결과 및 정보를 저장한다.
-     * @param orderTradingInfos
+     * @param orderTradingInfos 다수의 주식 주문 결과 Entity
      */
     @Override
     public List<OrderTrading> saveOrderInfos(List<OrderTrading> orderTradingInfos) {
