@@ -8,6 +8,7 @@
 
 package com.devspacehub.ast.exception.error;
 
+import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.constant.ResultCode;
 
 /**
@@ -18,7 +19,10 @@ public class OpenApiFailedResponseException extends BusinessException {
     /**
      * Instantiates a new Dto translation exception.
      */
-    public OpenApiFailedResponseException() {
-        super(ResultCode.OPENAPI_SERVER_RESPONSE_ERROR);
+    public OpenApiFailedResponseException(String message) {
+        super(ResultCode.OPENAPI_SERVER_RESPONSE_ERROR, message);
+    }
+    public OpenApiFailedResponseException(OpenApiType openApiType, String exMessage) {
+        super(ResultCode.OPENAPI_SERVER_RESPONSE_ERROR, String.format("요청 실패하였습니다.(API : %s, Exception Message: %s)", openApiType.getDiscription(), exMessage));
     }
 }

@@ -59,7 +59,7 @@ public class OrderConclusionDto {
                             .orderNumber(output1.getOrderNumber())
                             .concludedPrice(new BigDecimal(output1.getTotalConcludedPrice()))
                             .concludedQuantity(Integer.parseInt(output1.getTotalConcludedQuantity()))
-                            .orderType(OpenApiType.ORDER_CONCLUSION_FIND)
+                            .orderType(OpenApiType.DOMESTIC_ORDER_CONCLUSION_FIND)
                             .orderQuantity(Integer.parseInt(output1.getOrderQuantity()))
                             .orderPrice(new BigDecimal(output1.getOrderPrice()))
                             .orderTime(output1.getOrderTime())

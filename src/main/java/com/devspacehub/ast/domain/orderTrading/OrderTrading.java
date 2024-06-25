@@ -9,18 +9,18 @@
 package com.devspacehub.ast.domain.orderTrading;
 
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
-import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
+import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
 /**
  * 주문 거래 정보 Entity.
  */
-@Builder
 @Getter
-@AllArgsConstructor
+@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "orders")
 @Entity
@@ -69,7 +69,7 @@ public class OrderTrading extends BaseEntity {
      * @param txId 트랜잭션 ID
      * @return 주문 거래 정보 Entity
      */
-    public static OrderTrading from(StockItemDto item, DomesticStockOrderExternalResDto result, String txId) {
+    public static OrderTrading from(StockItemDto item, StockOrderApiResDto result, String txId) {
         return OrderTrading.builder()
                 .itemCode(item.getItemCode())
                 .itemNameKor(item.getItemNameKor())

@@ -21,7 +21,7 @@ import com.devspacehub.ast.common.constant.ResultCode;
 /**
  * The type Dto translation exception.
  */
-public class DtoConversionException extends BusinessException {
+public class DtoConversionException extends InternalServerErrorException {
 
     /**
      * Instantiates a new Dto translation exception.

@@ -11,14 +11,16 @@ package com.devspacehub.ast.util;
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.dto.WebClientCommonReqDto;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
-import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
+import com.devspacehub.ast.domain.marketStatus.dto.OverseasStockConditionSearchResDto;
 import com.devspacehub.ast.domain.my.orderConclusion.dto.OrderConclusionFindExternalResDto;
-import com.devspacehub.ast.domain.my.stockBalance.dto.response.BuyPossibleCheckExternalResDto;
-import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceExternalResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.BuyPossibleCashApiResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceApiResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.overseas.OverseasBuyPossibleCashApiResDto;
+import com.devspacehub.ast.domain.my.stockBalance.dto.response.overseas.OverseasStockBalanceApiResDto;
 import com.devspacehub.ast.domain.oauth.dto.AccessTokenIssueExternalReqDto;
-import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
+import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,12 +47,11 @@ public class OpenApiRequest {
 
     /**
      * 접근 토큰 발급 OpenApi Api 호출 (Post)
-     *
-     * @param uri        the uri
-     * @param requestDto the request dto
-     * @return the string
+     * @param openApiType
+     * @param requestDto
+     * @return 신규 발급된 접근 토큰
      */
-    public String httpOAuthRequest(String uri, AccessTokenIssueExternalReqDto requestDto) {
+    public String httpOAuthRequest(OpenApiType openApiType, AccessTokenIssueExternalReqDto requestDto) {
         RequestUtil.timeDelay();
 
         String response;
@@ -59,7 +60,7 @@ public class OpenApiRequest {
                     .baseUrl(openApiDomain)
                     .build()
                     .post()
-                    .uri(uri)
+                    .uri(openApiType.getUri())
                     .bodyValue(requestDto)
                     .retrieve()
                     .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
@@ -68,8 +69,7 @@ public class OpenApiRequest {
                     .bodyToMono(String.class)
                     .block();
         } catch (Exception ex) {
-            LogUtils.openApiRequestFailed(uri, ex.getMessage());
-            throw new OpenApiFailedResponseException();
+            throw new OpenApiFailedResponseException(openApiType, ex.getMessage());
         }
         checkResponseIsNull(OpenApiType.OAUTH_ACCESS_TOKEN_ISSUE, response);
         return response;
@@ -104,8 +104,7 @@ public class OpenApiRequest {
                 .bodyToMono(implResDtoClass)
                 .block();
         } catch (Exception ex) {
-            LogUtils.openApiRequestFailed(openApiType.getUri(), ex.getMessage());
-            throw new OpenApiFailedResponseException();
+            throw new OpenApiFailedResponseException(openApiType, ex.getMessage());
         }
         checkResponseIsNull(openApiType, response);
         return response;
@@ -140,8 +139,7 @@ public class OpenApiRequest {
                     .bodyToMono(implResDtoClass)
                     .block();
         } catch (Exception ex) {
-            LogUtils.openApiRequestFailed(openApiType.getUri(), ex.getMessage());
-            throw new OpenApiFailedResponseException();
+            throw new OpenApiFailedResponseException(openApiType, ex.getMessage());
         }
         checkResponseIsNull(openApiType, response);
         return response;
@@ -149,27 +147,37 @@ public class OpenApiRequest {
 
     /**
      * 형변환을 위해 WebClientCommonResDto를 상속하는 구현 클래스 타입 반환한다.
-     * @param openApiType
-     * @return
+     * @param openApiType OpenApi 요청하고자 하는 타입
+     * @return OpenApiType에 맞는 응답 Dto Class
      */
-    private Class<? extends WebClientCommonResDto> implyReturnType(OpenApiType openApiType) {
+    public Class<? extends WebClientCommonResDto> implyReturnType(OpenApiType openApiType) {
         switch (openApiType) {
-            case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER, DOMESTIC_STOCK_RESERVATION_BUY_ORDER -> {
-                return DomesticStockOrderExternalResDto.class;
+            case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER, DOMESTIC_STOCK_RESERVATION_BUY_ORDER,
+                    OVERSEAS_STOCK_BUY_ORDER, OVERSEAS_STOCK_SELL_ORDER -> {
+                return StockOrderApiResDto.class;
             }
-            case BUY_ORDER_POSSIBLE_CASH -> {
-                return BuyPossibleCheckExternalResDto.class;
+            case DOMESTIC_BUY_ORDER_POSSIBLE_CASH -> {
+                return BuyPossibleCashApiResDto.class;
             }
-            case STOCK_BALANCE -> {
-                return StockBalanceExternalResDto.class;
+            case OVERSEAS_BUY_ORDER_POSSIBLE_CASH -> {
+                return OverseasBuyPossibleCashApiResDto.class;
             }
-            case DOMSTOCK_TRADING_VOLUME_RANKING -> {
+            case DOMESTIC_STOCK_BALANCE -> {
+                return StockBalanceApiResDto.class;
+            }
+            case OVERSEAS_STOCK_BALANCE -> {
+                return OverseasStockBalanceApiResDto.class;
+            }
+            case DOMESTIC_TRADING_VOLUME_RANKING -> {
                 return DomStockTradingVolumeRankingExternalResDto.class;
+            }
+            case OVERSEAS_STOCK_CONDITION_SEARCH -> {
+                return OverseasStockConditionSearchResDto.class;
             }
             case CURRENT_STOCK_PRICE -> {
                 return CurrentStockPriceExternalResDto.class;
             }
-            case ORDER_CONCLUSION_FIND -> {
+            case DOMESTIC_ORDER_CONCLUSION_FIND -> {
                 return OrderConclusionFindExternalResDto.class;
             }
             default -> throw new IllegalArgumentException("적절한 응답 DTO가 없습니다.");
@@ -181,8 +189,7 @@ public class OpenApiRequest {
      */
     private void checkResponseIsNull(OpenApiType openApiType, Object response) {
         if (Objects.isNull(response)) {
-            log.error("[{}] OpenApi 응답값이 Null입니다.", openApiType.getDiscription());
-            throw new OpenApiFailedResponseException();
+            throw new OpenApiFailedResponseException(String.format("[%s] OpenApi 응답값이 Null입니다.", openApiType.getDiscription()));
         }
     }
 

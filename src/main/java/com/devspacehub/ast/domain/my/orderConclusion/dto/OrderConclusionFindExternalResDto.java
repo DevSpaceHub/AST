@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.Objects;
@@ -23,7 +24,7 @@ import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCES
 /**
  * 주식 일별 주문 체결 조회 응답 DTO.
  */
-@Builder
+@Setter
 public class OrderConclusionFindExternalResDto extends WebClientCommonResDto {
 
     @JsonProperty("ctx_area_fk100")
@@ -37,15 +38,6 @@ public class OrderConclusionFindExternalResDto extends WebClientCommonResDto {
 
     @JsonProperty("output2")
     private Output2 output2;
-
-    @JsonProperty("rt_cd")
-    private String resultCode;
-
-    @JsonProperty("msg_cd")
-    private String msgCd;
-
-    @JsonProperty("msg1")
-    private String msg1;
 
     @Builder
     @Getter
@@ -166,7 +158,7 @@ public class OrderConclusionFindExternalResDto extends WebClientCommonResDto {
         @JsonProperty("pchs_avg_pric")
         private String pchsAvgPric;
     }
-    // TODO 성공이나 체결된게 없을 때는 output1, output2가 empty로 오는 것으로 아는데, 맞는지 확인 필요.
+
     @JsonIgnore
     @Override
     public boolean isSuccess() {

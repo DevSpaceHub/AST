@@ -2,63 +2,67 @@ my:
   comprehensive-accountnumber: ${COMPREHENSIVE_ACCOUNTNUMBER}
   accountnumber-product-code: ${ACCOUNTNUMBER_PRODUCT_CODE}
 trading:
-  stop-loss-sell-ratio: ${STOP_LOSS_SELL_RATIO}
-  profit-sell-ratio: ${PROFIT_SELL_RATIO}
-  limit-price-earnings-ratio: ${PER}
-  limit-price-to-book-ratio: ${PBR}
-  limit-hts-market-capital: ${HTS_MARKET_CAPITAL}
-  limit-accumulation-volume: ${ACCUMULATION_VOLUME}
-  cash-buy-order-amount-percent: ${CASH_BUY_ORDER_AMOUNT_PERCENT}
-  # 분할매수는 콤마로 연결된 분할 매수 퍼센트
-  split-buy-count: ${SPLIT_BUY_COUNT}
-  split-buy-percents-by-comma: ${SPLIT_BUY_PERCENTS_BY_COMMA}
+  domestic:
+    indicator:
+      stop-loss-sell-ratio: ${STOP_LOSS_SELL_RATIO}
+      profit-sell-ratio: ${PROFIT_SELL_RATIO}
+      maximum-price-earnings-ratio: ${MAX_PER}
+      maximum-price-to-book-ratio: ${MAX_PBR}
+      minimum-market-capital: ${MIN_MARKET_CAPITAL}
+      minimum-accumulation-trading-volume: ${MIN_ACCUMULATION_TRADING_VOLUME}
+    cash-buy-order-amount-percent: ${CASH_BUY_ORDER_AMOUNT_PERCENT}
+    # 분할매수는 콤마로 연결된 분할 매수 퍼센트
+    split-buy-count: ${SPLIT_BUY_COUNT}
+    split-buy-percents-by-comma: ${SPLIT_BUY_PERCENTS_BY_COMMA}
+  overseas:
+    indicator:
+      minimum-loss-figure-ratio: ${OVERSEAS_MINIMUM_LOSS_FIGURE_RATIO}
+      minimum-profit-figure-ratio: ${OVERSEAS_MINIMUM_PROFIT_FIGURE_RATIO}
+      minimum-trading-volume: ${OVERSEAS_MIN_TRADING_VOLUME}
+      minimum-price-earnings-ratio: ${OVERSEAS_MIN_PER}
+      maximum-price-earnings-ratio: ${OVERSEAS_MAX_PER}
+      minimum-market-capital: ${OVERSEAS_MIN_MARKET_CAPITAL}
+    cash-buy-order-amount-percent: ${OVERSEAS_CASH_BUY_ORDER_AMOUNT_PERCENT}
+    # 분할매수는 콤마로 연결된 분할 매수 퍼센트
+    split-buy-count: ${OVERSEAS_SPLIT_BUY_COUNT}
+    split-buy-percents-by-comma: ${OVERSEAS_SPLIT_BUY_PERCENTS_BY_COMMA}
+
+openapi:
+  rest:
+    domain: https://openapivts.koreainvestment.com:29443
+    header:
+      transaction-id:
+        domestic:
+          buy-order: VTTC0802U
+          sell-order: VTTC0801U
+          buy-order-possible-cash-find: VTTC8908R
+          stock-balance-find: VTTC8434R
+          trading-volume-ranking-find: FHPST01710000
+          current-stock-price-find: FHKST01010100
+          order-conclusion-find: VTTC8001R
+        overseas:
+          buy-order: VTTT1002U
+          sell-order: VTTT1001U
+          buy-order-possible-cash-find: VTTS3007R
+          stock-balance-find: VTTS3012R
+          stock-condition-search: HHDFS76410000
+    appkey: ${APP_KEY}
+    appsecret: ${APP_SECRET}
+
+  websocket:
+    domain: ws://ops.koreainvestment.com:31000
+
 ---
 spring:
   config:
     activate:
       on-profile: local
 
-openapi:
-  rest:
-    domain: https://openapivts.koreainvestment.com:29443
-    header:
-      transaction-id:
-        buy-order: VTTC0802U
-        sell-order: VTTC0801U
-        buy-possible-cash-find: VTTC8908R
-        stock-balance-find: VTTC8434R
-        trading-volume-ranking-find: FHPST01710000
-        current-stock-price-find: FHKST01010100
-        order-conclusion-find: VTTC8001R
-    appkey: ${APP_KEY}
-    appsecret: ${APP_SECRET}
-
-  websocket:
-    domain: ws://ops.koreainvestment.com:31000
-
 ---
 spring:
   config:
     activate:
       on-profile: beta
-
-openapi:
-  rest:
-    domain: https://openapivts.koreainvestment.com:29443
-    header:
-      transaction-id:
-        buy-order: VTTC0802U
-        sell-order: VTTC0801U
-        buy-possible-cash-find: VTTC8908R
-        stock-balance-find: VTTC8434R
-        trading-volume-ranking-find: FHPST01710000
-        current-stock-price-find: FHKST01010100
-        order-conclusion-find: VTTC8001R
-    appkey: ${APP_KEY}
-    appsecret: ${APP_SECRET}
-
-  websocket:
-    domain: ws://ops.koreainvestment.com:31000
 
 ---
 spring:
@@ -71,13 +75,21 @@ openapi:
     domain: https://openapi.koreainvestment.com:9443
     header:
       transaction-id:
-        buy-order: TTTC0802U
-        sell-order: TTTC0801U
-        buy-possible-cash-find: TTTC8908R
-        stock-balance-find: TTTC8434R
-        trading-volume-ranking-find: FHPST01710000
-        current-stock-price-find: FHKST01010100
-        order-conclusion-find: TTTC8001R
+        domestic:
+          buy-order: TTTC0802U
+          sell-order: TTTC0801U
+          buy-order-possible-cash-find: TTTC8908R
+          stock-balance-find: TTTC8434R
+          trading-volume-ranking-find: FHPST01710000
+          current-stock-price-find: FHKST01010100
+          order-conclusion-find: TTTC8001R
+        overseas:
+          buy-order: TTTT1002U
+          sell-order: TTTT1006U
+          stock-balance-find: TTTS3012R
+          stock-condition-search: HHDFS76410000
+          buy-order-possible-cash-find: TTTS3007R
+
     appkey: ${APP_KEY}
     appSecret: ${APP_SECRET}
   websocket:

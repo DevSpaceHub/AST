@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static com.devspacehub.ast.common.constant.ResultCode.INVALID_CURRENT_PRICE;
 import static com.devspacehub.ast.common.constant.StockPriceUnit.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -51,7 +50,7 @@ class StockPriceUnitTest {
 
         assertThatThrownBy(() -> StockPriceUnit.getDomesticPriceUnitBy(underZero))
                 .isInstanceOf(InvalidValueException.class)
-                .hasMessage(INVALID_CURRENT_PRICE.name() + " : " + INVALID_CURRENT_PRICE.getMessage());
+                .hasMessage("Code: INVALID_CURRENT_PRICE (유효하지 않은 현재가 입니다.)");
 
     }
 
@@ -68,13 +67,13 @@ class StockPriceUnitTest {
         final BigDecimal currentPriceOver500000 = BigDecimal.valueOf(500000);
 
         // when
-        BigDecimal result1 = intTypeOrderPriceCuttingByPriceUnit(currentPriceUnder2000, BigDecimal.valueOf(1));
-        BigDecimal result2 = intTypeOrderPriceCuttingByPriceUnit(currentPriceUnder5000, BigDecimal.valueOf(5));
-        BigDecimal result3 = intTypeOrderPriceCuttingByPriceUnit(currentPriceUnder20000, BigDecimal.valueOf(10));
-        BigDecimal result4 = intTypeOrderPriceCuttingByPriceUnit(currentPriceUnder50000, BigDecimal.valueOf(50));
-        BigDecimal result5 = intTypeOrderPriceCuttingByPriceUnit(currentPriceUnder200000, BigDecimal.valueOf(100));
-        BigDecimal result6 = intTypeOrderPriceCuttingByPriceUnit(currentPriceUnder500000, BigDecimal.valueOf(500));
-        BigDecimal result7 = intTypeOrderPriceCuttingByPriceUnit(currentPriceOver500000, BigDecimal.valueOf(1000));
+        BigDecimal result1 = intOrderPriceCuttingByPriceUnit(currentPriceUnder2000, BigDecimal.valueOf(1));
+        BigDecimal result2 = intOrderPriceCuttingByPriceUnit(currentPriceUnder5000, BigDecimal.valueOf(5));
+        BigDecimal result3 = intOrderPriceCuttingByPriceUnit(currentPriceUnder20000, BigDecimal.valueOf(10));
+        BigDecimal result4 = intOrderPriceCuttingByPriceUnit(currentPriceUnder50000, BigDecimal.valueOf(50));
+        BigDecimal result5 = intOrderPriceCuttingByPriceUnit(currentPriceUnder200000, BigDecimal.valueOf(100));
+        BigDecimal result6 = intOrderPriceCuttingByPriceUnit(currentPriceUnder500000, BigDecimal.valueOf(500));
+        BigDecimal result7 = intOrderPriceCuttingByPriceUnit(currentPriceOver500000, BigDecimal.valueOf(1000));
         // then
         assertThat(result1).isEqualByComparingTo(BigDecimal.valueOf(1999));
         assertThat(result2).isEqualByComparingTo(BigDecimal.valueOf(4995));
@@ -86,14 +85,25 @@ class StockPriceUnitTest {
 
     }
 
-    @DisplayName("전달한 주문가를 주문가에 맞는 호가 단위에 따라 조정한다.")
+    @DisplayName("전달한 주문가를 주문가에 맞는 호가 단위에 따라 조정하여 int 타입으로 반환한다.")
     @Test
     void orderPriceCuttingByPriceUnit_oneArguments() {
         // given
         BigDecimal given = BigDecimal.valueOf(40110);
         // when
-        BigDecimal result = StockPriceUnit.intTypeOrderPriceCuttingByPriceUnit(given);
+        BigDecimal result = StockPriceUnit.intOrderPriceCuttingByPriceUnit(given);
         // then
         assertThat(result).isEqualByComparingTo(BigDecimal.valueOf(40100));
+    }
+
+    @DisplayName("전달한 주문가를 주문가에 맞는 호가 단위에 따라 조정하여 float 타입으로 반환한다.")
+    @Test
+    void floatOrderPriceCuttingByPriceUnit() {
+        // given
+        BigDecimal given = new BigDecimal("0.09992");
+        // when
+        BigDecimal result = StockPriceUnit.floatOrderPriceCuttingByDecimalScale(given, 2);
+        // then
+        assertThat(result).isEqualTo(new BigDecimal("0.09"));
     }
 }

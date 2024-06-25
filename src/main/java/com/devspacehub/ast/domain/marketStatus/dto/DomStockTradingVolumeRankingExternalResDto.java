@@ -25,14 +25,6 @@ import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCES
 public class DomStockTradingVolumeRankingExternalResDto extends WebClientCommonResDto {
     @JsonProperty("output")
     private List<StockInfo> stockInfos;
-    @JsonProperty("rt_cd")
-    private String resultCode;
-
-    @JsonProperty("msg_cd")
-    private String messageCode;
-
-    @JsonProperty("msg1")
-    private String msg1;
 
     @JsonIgnore
     @Override

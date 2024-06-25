@@ -15,10 +15,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum YesNoStatus {
 
-    YES("Y", 'Y'),
-    NO("N", 'N'),
+    YES("Y", 'Y', 1),
+    NO("N", 'N', 0),
     ;
 
     private final String code;
     private final char charCode;
+    private final int number;
 }

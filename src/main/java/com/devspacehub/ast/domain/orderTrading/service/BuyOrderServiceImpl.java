@@ -9,24 +9,25 @@
 package com.devspacehub.ast.domain.orderTrading.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
+import com.devspacehub.ast.common.constant.MarketType;
 import com.devspacehub.ast.common.constant.OpenApiType;
-import com.devspacehub.ast.common.constant.ProfileType;
 import com.devspacehub.ast.common.constant.StockPriceUnit;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.common.utils.BigDecimalUtil;
 import com.devspacehub.ast.common.utils.LogUtils;
-import com.devspacehub.ast.domain.itemInfo.ItemInfoRepository;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto.CurrentStockPriceInfo;
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
+import com.devspacehub.ast.domain.my.dto.MyServiceRequestDto;
 import com.devspacehub.ast.domain.my.service.MyService;
+import com.devspacehub.ast.domain.my.service.MyServiceFactory;
 import com.devspacehub.ast.domain.notification.Notificator;
 import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
-import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalResDto;
+import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import com.devspacehub.ast.domain.orderTrading.dto.SplitBuyPercents;
 import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
@@ -54,7 +55,7 @@ import static com.devspacehub.ast.common.constant.YesNoStatus.YES;
 import static com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto.*;
 
 /**
- * 주식 주문 서비스 구현체 - 매수
+ * 국내 주식 주문 서비스 구현체 - 매수
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -62,52 +63,42 @@ import static com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeR
 public class BuyOrderServiceImpl extends TradingService {
     private final OpenApiRequest openApiRequest;
     private final OrderTradingRepository orderTradingRepository;
-    private final MyService myService;
+    private final MyServiceFactory myServiceFactory;
     private final MarketStatusService marketStatusService;
-    private final ItemInfoRepository itemInfoRepository;
     private final Notificator notificator;
 
-    @Value("${trading.limit-price-to-book-ratio}")
-    private float limitPBR;
-    @Value("${trading.limit-price-earnings-ratio}")
-    private float limitPER;
-    @Value("${trading.limit-hts-market-capital}")
-    private Long limitHtsMarketCapital;
-    @Value("${trading.limit-accumulation-volume}")
-    private Integer limitAccumulationVolume;
-    @Value("${trading.cash-buy-order-amount-percent}")
+    @Value("${trading.domestic.indicator.maximum-price-to-book-ratio}")
+    private float maxPBR;
+    @Value("${trading.domestic.indicator.maximum-price-earnings-ratio}")
+    private float maxPER;
+    @Value("${trading.domestic.indicator.minimum-market-capital}")
+    private Long minMarketCapital;
+    @Value("${trading.domestic.indicator.minimum-accumulation-trading-volume}")
+    private Integer minAccumulationTradingVolume;
+    @Value("${trading.domestic.cash-buy-order-amount-percent}")
     private BigDecimal cashBuyOrderAmountPercent;
-    @Value("${trading.split-buy-percents-by-comma}")
+    @Value("${trading.domestic.split-buy-percents-by-comma}")
     private String splitBuyPercentsByComma;
-    @Value("${trading.split-buy-count}")
+    @Value("${trading.domestic.split-buy-count}")
     private BigDecimal splitBuyCount;
-
-
+    @Value("${openapi.rest.header.transaction-id.domestic.buy-order}")
+    private String transactionId;
+    private static final int MARKET_START_HOUR = 9;
+    private static final int MARKET_END_HOUR = 16;
     /**
      * 국내주식 매수 주문
      * : itemCode 종목코드(6자리) / orderDivision 주문구분(지정가,00) / orderQuantity 주문수량 / orderPrice 주문단가
      * @param openApiProperties
      * @param openApiType
-     * @param transactionId
      */
     @Override
-    public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType, String transactionId) {
-        // 1. 거래량 조회 (상위 10위)
-        DomStockTradingVolumeRankingExternalResDto items;
-        if (ProfileType.isProdActive()) {
-            items = marketStatusService.findTradingVolume();
-        } else {
-            items = marketStatusService.getTradingVolumeLocalData();
-        }
+    public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType) {
+        DomStockTradingVolumeRankingExternalResDto items = marketStatusService.getTradingVolumeData();
 
-        // 2. 종목 선택 (거래량 순위 API) 및 매입수량 결정 (현재가 시세 조회 API)
-        List<StockItemDto> stockItems = pickStockItems(items, transactionId);
-        log.info("[매수 주문] 최종 매수 주문 예정 갯수 : {}", stockItems.size());
-
-        // 3. 매수
+        // 매수 가능한 종목들에 대해 매수 주문
         List<OrderTrading> orderTradings = new ArrayList<>();
-        for (StockItemDto item : stockItems) {
-            DomesticStockOrderExternalResDto result = callOrderApi(openApiProperties, item, DOMESTIC_STOCK_BUY_ORDER, transactionId);
+        for (StockItemDto item : pickStockItems(items, transactionId)) {
+            StockOrderApiResDto result = callOrderApi(openApiProperties, item, openApiType, transactionId);
             OrderTrading orderTrading = OrderTrading.from(item, result, transactionId);
             orderTradings.add(orderTrading);
 
@@ -117,19 +108,14 @@ public class BuyOrderServiceImpl extends TradingService {
     }
 
     /**
-     * 주문 API 호출
-     * @param openApiProperties
-     * @param stockItem
-     * @param openApiType
-     * @param transactionId
-     * @return
+     * 주문 API 호출한다.
      */
     @Override
-    public DomesticStockOrderExternalResDto callOrderApi(OpenApiProperties openApiProperties, StockItemDto stockItem, OpenApiType openApiType, String transactionId) {
+    public <T extends StockItemDto> StockOrderApiResDto callOrderApi(OpenApiProperties openApiProperties, T stockItem, OpenApiType openApiType, String transactionId) {
         Consumer<HttpHeaders> httpHeaders = DomesticStockOrderExternalReqDto.setHeaders(openApiProperties.getOauth(), transactionId);
         DomesticStockOrderExternalReqDto bodyDto = DomesticStockOrderExternalReqDto.from(openApiProperties, stockItem);
 
-        return (DomesticStockOrderExternalResDto) openApiRequest.httpPostRequest(openApiType, httpHeaders, bodyDto);
+        return (StockOrderApiResDto) openApiRequest.httpPostRequest(openApiType, httpHeaders, bodyDto);
     }
 
     /**
@@ -143,10 +129,9 @@ public class BuyOrderServiceImpl extends TradingService {
      */
     public int calculateOrderQuantity(BigDecimal myCash, BigDecimal calculatedOrderPrice) {
         BigDecimal xPercentOfMyCash = myCash.multiply(BigDecimalUtil.percentageToDecimal(cashBuyOrderAmountPercent));
-        BigDecimal resultDividedBySplitBuyCount = BigDecimalUtil.divideWithDecimalPlaces(xPercentOfMyCash, splitBuyCount, 4);
-        return BigDecimalUtil.divideWithDecimalPlaces(resultDividedBySplitBuyCount, calculatedOrderPrice, 0).intValue();
+        BigDecimal resultDividedBySplitBuyCount = BigDecimalUtil.divide(xPercentOfMyCash, splitBuyCount, 4);
+        return BigDecimalUtil.divide(resultDividedBySplitBuyCount, calculatedOrderPrice, 0).intValue();
     }
-
     /**
      * 계산된 수량 값이 0인지 체크한다.
      * @param orderQuantity 주문 수량
@@ -185,7 +170,7 @@ public class BuyOrderServiceImpl extends TradingService {
         while (++count < 10) {
             StockInfo stockInfo = stockItems.getStockInfos().get(count);
             // 2. 매수 가능 여부 체크
-            if (!isStockItemBuyOrderable(stockInfo, transactionId)) {
+            if (!isStockItemBuyOrderable(stockInfo, transactionId, MARKET_START_HOUR, MARKET_END_HOUR)) {
                 continue;
             }
 
@@ -193,29 +178,31 @@ public class BuyOrderServiceImpl extends TradingService {
             CurrentStockPriceInfo currentStockPriceInfo = marketStatusService.getCurrentStockPrice(stockInfo.getItemCode());
             BigDecimal currentPrice = new BigDecimal(currentStockPriceInfo.getCurrentStockPrice());
 
-            log.info("[매수 주문] 종목: {}({})", stockInfo.getItemCode(), stockInfo.getHtsStockNameKor());
-            log.info("[매수 주문] 현재가: {}", currentPrice);
-            log.info("[매수 주문] HTS 시가 총액: {}", currentStockPriceInfo.getHtsMarketCapitalization());
-            log.info("[매수 주문] 누적 거래량: {}", currentStockPriceInfo.getAccumulationVolume());
-            log.info("[매수 주문] PER: {}", Objects.isNull(currentStockPriceInfo.getPer()) ? "Null" : currentStockPriceInfo.getPer());
-            log.info("[매수 주문] PBR: {}", Objects.isNull(currentStockPriceInfo.getPbr()) ? "Null" : currentStockPriceInfo.getPbr());
-            log.info("[매수 주문] 투자유의 여부: {}", currentStockPriceInfo.getInvtCarefulYn());
-            log.info("[매수 주문] 정리매매 여부: {}", currentStockPriceInfo.getDelistingYn());
-            log.info("[매수 주문] 단기과열 여부: {}", currentStockPriceInfo.getShortOverYn());
+            log.info(
+                    "=================================================[국내 매수 주문] " +
+                            "종목: {}({}) / 현재가: {} / HTS 시가 총액: {} / 누적 거래량: {} / PER: {} / PBR: {} / 투자유의 여부: {} / 정리매매 여부: {} / 단기과열 여부: {}",
+                    stockInfo.getItemCode(), stockInfo.getHtsStockNameKor(),
+                    currentPrice, currentStockPriceInfo.getHtsMarketCapitalization(),
+                    currentStockPriceInfo.getAccumulationVolume(),
+                    Objects.isNull(currentStockPriceInfo.getPer()) ? "Null" : currentStockPriceInfo.getPer(),
+                    Objects.isNull(currentStockPriceInfo.getPbr()) ? "Null" : currentStockPriceInfo.getPbr(),
+                    currentStockPriceInfo.getInvtCarefulYn(),
+                    currentStockPriceInfo.getDelistingYn(),
+                    currentStockPriceInfo.getShortOverYn());
 
             // 4. 지표 체크
             if (!checkAccordingWithIndicators(currentStockPriceInfo)) {
                 continue;
             }
             // 5. 매수 가능 금액 조회
-            BigDecimal myDeposit = myService.getBuyOrderPossibleCash(stockInfo.getItemCode(), currentPrice, ORDER_DIVISION);
+            BigDecimal myDeposit = myServiceImpl().getBuyOrderPossibleCash(MyServiceRequestDto.Domestic.from(stockInfo.getItemCode(), currentPrice, ORDER_DIVISION));
 
             // 6. 매수 금액 + 매수 수량 결정 (분할 매수 Case)
             SplitBuyPercents splitBuyPercents = SplitBuyPercents.of(splitBuyPercentsByComma);
 
             for (int idx = 0; idx < splitBuyPercents.getPercents().size(); idx++) {
                 int priceUnit = StockPriceUnit.getDomesticPriceUnitBy(currentPrice);
-                BigDecimal orderPriceByPriceUnit = StockPriceUnit.intTypeOrderPriceCuttingByPriceUnit(
+                BigDecimal orderPriceByPriceUnit = StockPriceUnit.intOrderPriceCuttingByPriceUnit(
                         splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, idx), new BigDecimal(priceUnit));
                 // 하한가 비교
                 if (BigDecimalUtil.isLessThan(orderPriceByPriceUnit, currentStockPriceInfo.getStockLowerLimitPrice())) {
@@ -228,11 +215,12 @@ public class BuyOrderServiceImpl extends TradingService {
                     continue;
                 }
 
-                log.info("[매수 주문] 주문 수량 : {}, 주문가: {} (분할 매수 퍼센트: {})", orderQuantity, orderPriceByPriceUnit,
-                        splitBuyPercents.getPercents().get(idx));
-                pickedStockItems.add(StockItemDto.from(stockInfo, orderQuantity, orderPriceByPriceUnit));
+                log.info("[{}] 주문 수량 : {} / 주문가: {} / 분할 매수 퍼센트: {}", DOMESTIC_STOCK_BUY_ORDER.getDiscription(),
+                        orderQuantity, orderPriceByPriceUnit, splitBuyPercents.getPercents().get(idx));
+                pickedStockItems.add(StockItemDto.Domestic.buyFrom(stockInfo, orderQuantity, orderPriceByPriceUnit));
             }
         }
+        log.info("[{}] 최종 매수 주문 예정 갯수 : {}", DOMESTIC_STOCK_BUY_ORDER.getDiscription(), pickedStockItems.size());
         return pickedStockItems;
     }
 
@@ -242,25 +230,25 @@ public class BuyOrderServiceImpl extends TradingService {
      * @param transactionId 트랜잭션 Id
      * @return 유효한 종목이고 신규 주문이면 True 반환한다. 반대는 False.
      */
-    protected boolean isStockItemBuyOrderable(StockInfo stockInfo, String transactionId) {
-        if (itemInfoRepository.countByItemCode(stockInfo.getItemCode()) < 1) {
-            return false;
-        }
-        return isNewOrder(stockInfo.getItemCode(), transactionId);
+    protected boolean isStockItemBuyOrderable(StockInfo stockInfo, String transactionId, int marketStartHour, int marketEndHour) {
+        return isNewOrder(stockInfo.getItemCode(), transactionId,
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(marketStartHour,0,0)),
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(marketEndHour, 0, 0))
+        );
     }
 
     /**
      * 종목에 대해 새 주문인지 체크
      * @param itemCode     String 타입의 종목 코드
      * @param transactionId 트랜잭션 Id
+     * @param marketStart 장 시작 시각
+     * @param marketEnd 장 종료 시각
      * @return 금일 기준 신규 주문이면 True 반환. 이미 주문 이력 있으면 False 반환.
      */
     @Override
-    public boolean isNewOrder(String itemCode, String transactionId){
+    public boolean isNewOrder(String itemCode, String transactionId, LocalDateTime marketStart, LocalDateTime marketEnd){
         return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
-                itemCode, OPENAPI_SUCCESS_RESULT_CODE, transactionId,
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(0,0,0)),
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59)));
+                itemCode, OPENAPI_SUCCESS_RESULT_CODE, transactionId, marketStart, marketEnd);
     }
 
     /**
@@ -277,13 +265,13 @@ public class BuyOrderServiceImpl extends TradingService {
         if (Strings.isEmpty(currentStockPriceInfo.getPer()) || Strings.isEmpty(currentStockPriceInfo.getPbr())) {
             return false;
         }
-        if (Float.parseFloat(currentStockPriceInfo.getPer()) > limitPER || Float.parseFloat(currentStockPriceInfo.getPbr()) > limitPBR) {
+        if (Float.parseFloat(currentStockPriceInfo.getPer()) > maxPER || Float.parseFloat(currentStockPriceInfo.getPbr()) > maxPBR) {
             return false;
         }
-        if (Long.parseLong(currentStockPriceInfo.getHtsMarketCapitalization()) < limitHtsMarketCapital) { // 시가총액 (3000억 이상이어야함)
+        if (Long.parseLong(currentStockPriceInfo.getHtsMarketCapitalization()) < minMarketCapital) { // 시가총액 (3000억 이상이어야함)
             return false;
         }
-        if(Integer.parseInt(currentStockPriceInfo.getAccumulationVolume()) < limitAccumulationVolume) {   // 누적 거래량
+        if (Integer.parseInt(currentStockPriceInfo.getAccumulationVolume()) < minAccumulationTradingVolume) {   // 누적 거래량
             return false;
         }
         return true;
@@ -308,7 +296,7 @@ public class BuyOrderServiceImpl extends TradingService {
      * @param orderTrading 주문 정보
      */
     @Override
-    public void orderApiResultProcess(DomesticStockOrderExternalResDto result, OrderTrading orderTrading) {
+    public <T extends WebClientCommonResDto> void orderApiResultProcess(T result, OrderTrading orderTrading) {
         if (result.isSuccess()) {
             LogUtils.tradingOrderSuccess(DOMESTIC_STOCK_BUY_ORDER, orderTrading.getItemNameKor());
             notificator.sendMessage(MessageContentDto.OrderResult.fromOne(
@@ -316,5 +304,13 @@ public class BuyOrderServiceImpl extends TradingService {
         } else {
             LogUtils.openApiFailedResponseMessage(DOMESTIC_STOCK_BUY_ORDER, result.getMessage(), result.getMessageCode());
         }
+    }
+
+    /**
+     * MyServiceFactory를 통해 구현체를 반환받는다.
+     * @return MyService 구현체
+     */
+    private MyService myServiceImpl() {
+        return myServiceFactory.resolveService(MarketType.DOMESTIC);
     }
 }

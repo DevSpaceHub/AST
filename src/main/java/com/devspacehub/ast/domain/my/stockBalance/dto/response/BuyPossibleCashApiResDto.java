@@ -1,7 +1,7 @@
 /*
  © 2023 devspacehub, Inc. All rights reserved.
 
- name : BuyPossibleCheckExternalResDto
+ name : BuyPossibleCashApiResDto
  creation : 2023.12.20
  author : Yoonji Moon
  */
@@ -23,14 +23,7 @@ import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCES
  */
 @NoArgsConstructor
 @Getter
-public class BuyPossibleCheckExternalResDto extends WebClientCommonResDto {
-    @JsonProperty("rt_cd")
-    private String resultCode;
-    @JsonProperty("msg_cd")
-    private String messageCode;
-    @JsonProperty("msg1")
-    private String message;
-
+public class BuyPossibleCashApiResDto extends WebClientCommonResDto {
     @JsonProperty("output")
     private Output output;
 
@@ -76,6 +69,10 @@ public class BuyPossibleCheckExternalResDto extends WebClientCommonResDto {
         private String ordPsblFrcrAmtWcrc;  // 주문가능외화금액원화
     }
 
+    /**
+     * 응답이 성공 응답인지 체크한다.
+     * @return output 필드가 null이 아니고 resultCode가 0이면 True를 반환한다.
+     */
     @JsonIgnore
     @Override
     public boolean isSuccess() {

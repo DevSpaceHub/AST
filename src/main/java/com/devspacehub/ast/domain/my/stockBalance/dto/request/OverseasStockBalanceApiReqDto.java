@@ -1,49 +1,47 @@
 /*
- © 2023 devspacehub, Inc. All rights reserved.
+ © 2024 devspacehub, Inc. All rights reserved.
 
- name : BuyPossibleCheckExternalReqDto
- creation : 2023.12.20
+ name : OverseasStockBalanceApiReqDto
+ creation : 2024.6.15
  author : Yoonji Moon
  */
 
 package com.devspacehub.ast.domain.my.stockBalance.dto.request;
 
-import lombok.Builder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.math.BigDecimal;
 import java.util.function.Consumer;
 
-import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
-
 /**
- * 매수 가능 조회 요청 DTO.
+ * 해외 주식잔고 조회 API 요청 DTO
  */
-@Builder
-public class BuyPossibleCheckExternalReqDto {
-
-    public static MultiValueMap<String, String> createParameter(String accntNumber, String accntProductCode, String itemCode, BigDecimal orderPrice, String orderDivision) {
+public class OverseasStockBalanceApiReqDto {
+    /**
+     * parameter 생성하여 반환한다.
+     * @param accntNumber API 요청할 계좌번호 체계 앞 8자리
+     * @param accntProductCode API 요청할 계좌번호 체계 앞 2자리
+     * @return MultiValueMap 타입의 파라미터
+     */
+    public static MultiValueMap<String, String> createParameter(String accntNumber, String accntProductCode) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
         queryParams.add("CANO", accntNumber);
         queryParams.add("ACNT_PRDT_CD", accntProductCode);
-        queryParams.add("PDNO", itemCode);
-        queryParams.add("ORD_UNPR", orderPrice.toString());
-        queryParams.add("ORD_DVSN", orderDivision);
-        queryParams.add("CMA_EVLU_AMT_ICLD_YN", NO.getCode());  // CMA 평가 금액 포함 여부
-        queryParams.add("OVRS_ICLD_YN", NO.getCode());    // 해외 포함 여부
+        queryParams.add("OVRS_EXCG_CD", "");
+        queryParams.add("TR_CRCY_CD", "");
+        queryParams.add("CTX_AREA_FK200", "");
+        queryParams.add("CTX_AREA_NK200", "");
 
         return queryParams;
     }
 
     /**
-     * Sets headers.
-     *
-     * @param oauth the oauth
-     * @param txId  the tx id
-     * @return the headers
+     * Header 세팅하여 반환한다.
+     * @param oauth OpenAPI의 RestApi 접근 토큰
+     * @param txId transactionId
+     * @return 세팅된 헤더
      */
     public static Consumer<HttpHeaders> setHeaders(String oauth, String txId) {
         HttpHeaders headers = new HttpHeaders();
