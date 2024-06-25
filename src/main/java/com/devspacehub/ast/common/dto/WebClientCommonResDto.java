@@ -8,6 +8,7 @@
 
 package com.devspacehub.ast.common.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,6 +18,16 @@ import lombok.Setter;
 @Getter
 @Setter
 public abstract class WebClientCommonResDto {
+
+    @JsonProperty("msg1")
+    protected String message;
+
+    @JsonProperty("msg_cd")
+    protected String messageCode;
+
+    @JsonProperty("rt_cd")
+    protected String resultCode;
+
     public abstract boolean isSuccess();
 
     public boolean isFailed() {

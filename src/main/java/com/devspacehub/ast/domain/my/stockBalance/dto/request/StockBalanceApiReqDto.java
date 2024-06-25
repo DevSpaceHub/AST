@@ -1,7 +1,7 @@
 /*
  © 2024 devspacehub, Inc. All rights reserved.
 
- name : StockBalanceExternalReqDto
+ name : StockBalanceApiReqDto
  creation : 2024.1.13
  author : Yoonji Moon
  */
@@ -20,7 +20,7 @@ import static com.devspacehub.ast.common.constant.YesNoStatus.NO;
 /**
  * 주식 잔고 조회 요청 DTO.
  */
-public class StockBalanceExternalReqDto {
+public class StockBalanceApiReqDto {
     /**
      * Create parameter multi value map.
      * @param accntNumber      the accnt number

@@ -24,7 +24,7 @@ public class LogUtils {
      * @param messageCode
      */
     public static void openApiFailedResponseMessage(OpenApiType openApiType, String message, String messageCode) {
-        log.error("[{}] KIS Error Message : {}(Message Code : {})", openApiType.getDiscription(), message, messageCode);
+        log.error("[{}] KIS Error Message : {}, Message Code : {}", openApiType.getDiscription(), message, messageCode);
     }
 
     /**

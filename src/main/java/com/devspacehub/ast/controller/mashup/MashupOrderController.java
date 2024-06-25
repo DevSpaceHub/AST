@@ -8,6 +8,7 @@
 
 package com.devspacehub.ast.controller.mashup;
 
+import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.dto.ApiResult;
 import com.devspacehub.ast.domain.mashup.service.MashupService;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +30,8 @@ public class MashupOrderController {
      * @return the response entity
      */
     @PostMapping("/buy")
-    public ResponseEntity<ApiResult> buyOrder() {
-        mashupService.startBuyOrder();
+    public ResponseEntity<ApiResult> buyOrder(@RequestParam("openApiType") OpenApiType openApiType) {
+        mashupService.startOrder(openApiType);
         return ResponseEntity.ok(ApiResult.success());
     }
 
@@ -40,8 +41,8 @@ public class MashupOrderController {
      * @return the response entity
      */
     @PostMapping("/sell")
-    public ResponseEntity<ApiResult> sellOrder() {
-        mashupService.startSellOrder();
+    public ResponseEntity<ApiResult> sellOrder(@RequestParam("openApiType") OpenApiType openApiType) {
+        mashupService.startOrder(openApiType);
         return ResponseEntity.ok(ApiResult.success());
     }
 
@@ -52,11 +53,10 @@ public class MashupOrderController {
      * @return the response entity
      */
     @PostMapping("/reserve/buy")
-    public ResponseEntity<ApiResult> reservationBuyOrder() {
-        mashupService.startReservationBuyOrder();
+    public ResponseEntity<ApiResult> reservationBuyOrder(@RequestParam("openApiType") OpenApiType openApiType) {
+        mashupService.startOrder(openApiType);
         return ResponseEntity.ok(ApiResult.success());
     }
-
 
 
 }

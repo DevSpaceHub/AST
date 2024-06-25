@@ -25,7 +25,7 @@ class OrderConclusionDtoTest {
     @Test
     void of() {
         // given
-        OpenApiType givenOrderType = OpenApiType.ORDER_CONCLUSION_FIND;
+        OpenApiType givenOrderType = OpenApiType.DOMESTIC_ORDER_CONCLUSION_FIND;
         OrderConclusionFindExternalResDto.Output1 firstGivenOutput1 = OrderConclusionFindExternalResDto.Output1.builder()
                 .itemCode("00000")
                 .itemNameKor("테스트1")

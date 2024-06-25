@@ -44,7 +44,7 @@ public class SplitBuyPercents {
 
     /**
      * 분할 매수 퍼센트로 나눈 구매 단가 구하기.
-     * 주의. Float 값을 바로 BigDecimal로 변환하면 안된다.
+     * 주의. Float 값을 BigDecimal로 바로 변환하면 안된다.
      * @param currentPrice 현재가
      * @param percentsIdx 분할 퍼센트 리스트의 인덱스
      * @return 분할 수량으로 계산된 구매 단가

@@ -14,9 +14,9 @@ import com.devspacehub.ast.domain.oauth.OAuthTokens;
 import com.devspacehub.ast.domain.oauth.OAuthRepository;
 import com.devspacehub.ast.domain.oauth.dto.AccessTokenIssueExternalReqDto;
 import com.devspacehub.ast.domain.oauth.dto.OAuthTokenIssueExternalResDto;
-import com.devspacehub.ast.exception.error.BusinessException;
 import com.devspacehub.ast.exception.error.DtoConversionException;
 import com.devspacehub.ast.common.constant.ResultCode;
+import com.devspacehub.ast.exception.error.InternalServerErrorException;
 import com.devspacehub.ast.util.OpenApiRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +58,7 @@ public class OAuthService {
                 .appKey(appKey)
                 .appSecret(appSecret)
                 .build();
-        String response = openApiRequest.httpOAuthRequest(OAUTH_ACCESS_TOKEN_ISSUE.getUri(), dto);
+        String response = openApiRequest.httpOAuthRequest(OAUTH_ACCESS_TOKEN_ISSUE, dto);
 
         OAuthTokenIssueExternalResDto.WebClient resDto;
         try {
@@ -81,6 +81,6 @@ public class OAuthService {
             openApiProperties.setOauth(oauth.get().getOauthToken());
             return;
         }
-        throw new BusinessException(ResultCode.NOT_FOUND_ACCESS_TOKEN);
+        throw new InternalServerErrorException(ResultCode.NOT_FOUND_ACCESS_TOKEN);
     }
 }

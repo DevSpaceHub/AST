@@ -8,6 +8,7 @@
 
 package com.devspacehub.ast.controller.mashup;
 
+import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.domain.mashup.service.MashupService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,12 +40,13 @@ class MashupConclusionControllerTest {
     void conclusionResultProcess() throws Exception {
         mockMvc.perform(
                 put("/ast/conclusions/process")
+                        .param("openApiType", OpenApiType.DOMESTIC_ORDER_CONCLUSION_FIND.getCode())
                 ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").exists())
                 .andExpect(jsonPath("$.time").exists())
                 .andExpect(jsonPath("$.code").exists())
                 .andDo(print());
 
-        verify(mashupService).startOrderConclusionResultProcess();
+        verify(mashupService).startOrderConclusionResultProcess(OpenApiType.DOMESTIC_ORDER_CONCLUSION_FIND);
     }
 }

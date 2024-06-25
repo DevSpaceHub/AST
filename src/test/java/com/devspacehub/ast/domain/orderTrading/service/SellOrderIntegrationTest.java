@@ -13,11 +13,15 @@ import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,13 +33,20 @@ class SellOrderIntegrationTest {
     private OrderTradingRepository orderTradingRepository;
     @Autowired
     private SellOrderServiceImpl sellOrderService;
-    final String sellTxId = "VTTC0801U";
+    @Value("${openapi.rest.transaction-id.domestic.sell-order}")
+    private String sellTxId;
+    private static final int MARKET_START_HOUR = 9;
+    private static final int MARKET_END_HOUR = 16;
 
+    // TODO 테스트코드 성공 위해 .registerDateTime() 을 세팅할 수 있도록 해야 한다.
     @Test
-    @DisplayName("(실패)동일 종목에 대해 매도 주문은 각 1번씩만 발생한다.")
+    @DisplayName("전달한 종목으로 전달한 기간 사이에 이미 성공한 매도 주문 이력이 있다면 False를 반환한다.")
     void isNewOrder_failed() {
         // given
         final String alreadyOrderedItemCode = "000000";
+        LocalDate today = LocalDate.now();
+        LocalDateTime givenDateTime = LocalDateTime.of(today, LocalTime.of(MARKET_START_HOUR, 30, 0));
+
         orderTradingRepository.save(OrderTrading.builder()
                 .seq(0L)
                 .orderDivision(ORDER_DIVISION)
@@ -48,20 +59,29 @@ class SellOrderIntegrationTest {
                 .orderMessageCode("APBK0013")
                 .orderResultCode("0")
                 .transactionId(sellTxId)
-                .orderTime("090008")
+                .orderTime("093000")
+                .registrationDateTime(givenDateTime)
                 .build());
+        orderTradingRepository.flush();
+
         // when
-        boolean result = sellOrderService.isNewOrder(alreadyOrderedItemCode, sellTxId);
+        boolean result = sellOrderService.isNewOrder(alreadyOrderedItemCode, sellTxId,
+                LocalDateTime.of(today, LocalTime.of(MARKET_START_HOUR, 0, 0)),
+                LocalDateTime.of(today, LocalTime.of(MARKET_END_HOUR, 0, 0))
+        );
         // then
         assertThat(result).isFalse();
     }
 
     @Test
-    @DisplayName("(성공)동일 종목에 대해 매도 주문은 각 1번씩만 발생한다.")
+    @DisplayName("전달한 종목으로 전달한 기간 사이에 매도 주문이 1개도 없다면 True를 반환한다.")
     void isNewOrder_success() {
         // given
         final String alreadyOrderedItemCode = "000000";
         final String notOrderedItemCode = "100000";
+        LocalDate today = LocalDate.now();
+        LocalDateTime givenOrderDateTime = LocalDateTime.of(today, LocalTime.of(MARKET_START_HOUR, 30, 0));
+
         orderTradingRepository.save(OrderTrading.builder()
                 .seq(0L)
                 .orderDivision(ORDER_DIVISION)
@@ -75,9 +95,15 @@ class SellOrderIntegrationTest {
                 .orderResultCode("0")
                 .transactionId(sellTxId)
                 .orderTime("090008")
+                .registrationDateTime(givenOrderDateTime)
                 .build());
+        orderTradingRepository.flush();
+
         // when
-        boolean result = sellOrderService.isNewOrder(notOrderedItemCode, sellTxId);
+        boolean result = sellOrderService.isNewOrder(notOrderedItemCode, sellTxId,
+                LocalDateTime.of(today, LocalTime.of(MARKET_START_HOUR, 0, 0)),
+                LocalDateTime.of(today, LocalTime.of(MARKET_END_HOUR, 0, 0))
+        );
         // then
         assertThat(result).isTrue();
     }

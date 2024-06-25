@@ -19,6 +19,10 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
+
+/**
+ * 현재가 조회 Open Api 응답 DTO.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,15 +34,6 @@ public class CurrentStockPriceExternalResDto extends WebClientCommonResDto {
 
     @JsonProperty("output")
     private CurrentStockPriceInfo currentStockPriceInfo;
-
-    @JsonProperty("rt_cd")
-    private String resultCode;
-
-    @JsonProperty("msg_cd")
-    private String messageCode;
-
-    @JsonProperty("msg1")
-    private String msg1;
 
     @Getter
     @Builder

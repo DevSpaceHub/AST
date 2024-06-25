@@ -65,7 +65,7 @@ public class DomesticStockOrderExternalReqDto extends WebClientCommonReqDto {
                 .stockCode(stockItem.getItemCode())
                 .orderDivision(stockItem.getOrderDivision())
                 .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
-                .orderPrice(String.valueOf(stockItem.getOrderPrice()))
+                .orderPrice(String.valueOf(stockItem.getOrderPrice().intValue()))
                 .build();
     }
 

@@ -52,10 +52,10 @@ class BuyOrderServiceImplTest {
     @Mock
     ItemInfoRepository itemInfoRepository;
     private final String txIdBuyOrder = "TTTC0802U";
-    private final float limitPBR = 100.0F;
-    private final float limitPER = 5.0F;
-    private final Long limitHtsMarketCapital = 300000000000L;
-    private final Integer limitAccumulationVolume = 100000;
+    private final float maxPBR = 100.0F;
+    private final float maxPER = 5.0F;
+    private final Long minMarketCapital = 300000000000L;
+    private final Integer minAccumulationTradingVolume = 100000;
 
     @Test
     @DisplayName("매수 수량 = ((예수금 * 분할 매수 주문 위한 퍼센트) / 분할매수 갯수) / 구매단가")
@@ -74,25 +74,9 @@ class BuyOrderServiceImplTest {
     }
 
     @Test
-    @DisplayName("매수 수량이 0이면 True 반환하여 예수금이 부족함을 알 수 있다.")
-    void isZero_success() {
-        // given
-        final int orderQuantity = 0;
-        // when
-        boolean result = buyOrderService.isZero(orderQuantity);
-        // then
-        assertThat(result).isTrue();
-    }
-
-    @Test
     @DisplayName("지표 PER/PBR 초과 or 지표 시가총액 미만 or 지표 누적거래양 미만이면 매수할 수 없다.")
     void checkAccordingWithIndicators_falseCase() {
         // given
-        ReflectionTestUtils.setField(buyOrderService, "limitPBR", limitPBR);
-        ReflectionTestUtils.setField(buyOrderService, "limitPER", limitPER);
-        ReflectionTestUtils.setField(buyOrderService, "limitHtsMarketCapital", limitHtsMarketCapital);
-        ReflectionTestUtils.setField(buyOrderService, "limitAccumulationVolume", limitAccumulationVolume);
-
         final String perUnderLimit = "4.9";
         final String perOverLimit = "5.1";
         final String pbrUnderLimit = "99.0";
@@ -130,10 +114,10 @@ class BuyOrderServiceImplTest {
     @DisplayName("지표 PER/PBR 이하 + 지표 시가총액 이상 + 지표 누적거래양 이상일 때 매수할 수 있다.")
     void checkAccordingWithIndicators_trueCase() {
         // given
-        ReflectionTestUtils.setField(buyOrderService, "limitPBR", limitPBR);
-        ReflectionTestUtils.setField(buyOrderService, "limitPER", limitPER);
-        ReflectionTestUtils.setField(buyOrderService, "limitHtsMarketCapital", limitHtsMarketCapital);
-        ReflectionTestUtils.setField(buyOrderService, "limitAccumulationVolume", limitAccumulationVolume);
+        ReflectionTestUtils.setField(buyOrderService, "maxPBR", maxPBR);
+        ReflectionTestUtils.setField(buyOrderService, "maxPER", maxPER);
+        ReflectionTestUtils.setField(buyOrderService, "minMarketCapital", minMarketCapital);
+        ReflectionTestUtils.setField(buyOrderService, "minAccumulationTradingVolume", minAccumulationTradingVolume);
 
         final String perUnderLimit = "4.9";
         final String pbrUnderLimit = "99.9";
@@ -149,21 +133,22 @@ class BuyOrderServiceImplTest {
     }
 
     @Test
-    @DisplayName("ITEM_INFO 테이블에 있고 금일 매수 주문한 이력이 없다면 True 반환한다.")
+    @DisplayName("금일 매수 주문한 이력이 없다면 True 반환한다.")
     void isStockItemBuyOrderable_true() {
         // given
+        int givenMarketStartHour = 9;
+        int givenMarketEndHour = 16;
         DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo = new DomStockTradingVolumeRankingExternalResDto.StockInfo();
         stockInfo.setItemCode("000155");
 
-        given(itemInfoRepository.countByItemCode("000155")).willReturn(1);
         given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
             "000155", OPENAPI_SUCCESS_RESULT_CODE, txIdBuyOrder,
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0,0)),
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(23,59, 59)))
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(givenMarketStartHour, 0,0)),
+                LocalDateTime.of(LocalDate.now(), LocalTime.of(givenMarketEndHour,0, 0)))
         ).willReturn(0);
 
         // when
-        boolean result = buyOrderService.isStockItemBuyOrderable(stockInfo, txIdBuyOrder);
+        boolean result = buyOrderService.isStockItemBuyOrderable(stockInfo, txIdBuyOrder, givenMarketStartHour, givenMarketEndHour);
 
         // then
         assertThat(result).isTrue();
