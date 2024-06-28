@@ -148,7 +148,7 @@ class BigDecimalUtilTest {
         // when // then
         assertThatThrownBy(() -> BigDecimalUtil.isLessThanOrEqualTo(a, b))
                 .isInstanceOf(InvalidValueException.class)
-                .hasMessage("Code: NUMBER_IS_NULL (값이 Null 입니다.)");
+                .hasMessage("Code: DATA_IS_NULL_ERROR (값이 Null 입니다.)");
     }
 
     @DisplayName("isLessThan: 두 개의 인자 중 한개라도 값이 null이면 InvalidValueException이 발생한다.")
@@ -161,7 +161,7 @@ class BigDecimalUtilTest {
         // when // then
         assertThatThrownBy(() -> BigDecimalUtil.isLessThan(a, b))
                 .isInstanceOf(InvalidValueException.class)
-                .hasMessage("Code: NUMBER_IS_NULL (값이 Null 입니다.)");
+                .hasMessage("Code: DATA_IS_NULL_ERROR (값이 Null 입니다.)");
     }
 
     @DisplayName("전달하는 연산자 중 한개라도 값이 Null 이라면 InvalidValueException이 발생한다.")
@@ -174,7 +174,7 @@ class BigDecimalUtilTest {
         // when // then
         assertThatThrownBy(() -> BigDecimalUtil.nullCheck(a, b, givenNull))
                 .isInstanceOf(InvalidValueException.class)
-                .hasMessage("Code: NUMBER_IS_NULL (값이 Null 입니다.)");
+                .hasMessage("Code: DATA_IS_NULL_ERROR (값이 Null 입니다.)");
     }
 
     @DisplayName("BigDecimal 타입의 값의 소수점 자릿수를 지정한다.")

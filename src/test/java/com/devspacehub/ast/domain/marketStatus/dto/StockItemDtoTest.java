@@ -40,7 +40,7 @@ class StockItemDtoTest {
         // given
         BigDecimal givenOrderPrice = new BigDecimal("142.103900");
         OverseasStockBalanceApiResDto.MyStockBalance given = new OverseasStockBalanceApiResDto.MyStockBalance(
-                "", "", "", "APPL", "애플", "", null, "", "", 10, "", "", givenOrderPrice, "", "", "", "", ""
+                "", "", "", "APPL", "애플", "", null, "", "", 10, "", "", givenOrderPrice, "", "NASD", "", "", ""
         );
 
         // when

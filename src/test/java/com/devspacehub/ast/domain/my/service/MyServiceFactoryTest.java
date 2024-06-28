@@ -14,6 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,6 +23,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class MyServiceFactoryTest {
     @InjectMocks
     MyServiceFactory myServiceFactory;
+    @Mock
+    MyServiceImpl myService;
 
     @DisplayName("인자로 Null 값을 전달하면 InvalidValueException이 발생한다.")
     @Test
