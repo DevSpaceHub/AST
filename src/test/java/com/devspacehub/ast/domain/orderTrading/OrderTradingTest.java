@@ -11,6 +11,7 @@ package com.devspacehub.ast.domain.orderTrading;
 import com.devspacehub.ast.common.constant.CommonConstants;
 import com.devspacehub.ast.common.constant.ExchangeCode;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
+import com.devspacehub.ast.domain.my.reservationOrderInfo.dto.ReservationStockItem;
 import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,12 +26,15 @@ class OrderTradingTest {
     @DisplayName("예약 매수 주문 정보, 응답 값, 트랜잭션ID 값을 받아서 주문 거래 정보 Entity 생성한다.")
     void from_Reservation() {
         // given
-        StockItemDto.ReservationStockItem reservationStockItemDto = StockItemDto.ReservationStockItem.builder()
+        StockItemDto givenStockItemDto = StockItemDto.builder()
                 .itemCode("000000")
                 .itemNameKor("테스트주식")
                 .orderPrice(BigDecimal.valueOf(10000))
                 .orderQuantity(10)
                 .orderDivision(CommonConstants.ORDER_DIVISION)
+                .build();
+        ReservationStockItem.Domestic reservationStockItemDto = ReservationStockItem.Domestic.builder()
+                .stockItem(givenStockItemDto)
                 .build();
         StockOrderApiResDto openApiResponseDto = new StockOrderApiResDto();
         StockOrderApiResDto.Output output = new StockOrderApiResDto.Output();
@@ -43,11 +47,11 @@ class OrderTradingTest {
 
         String givenTxId = "KKKKK";
         // when
-        OrderTrading result = OrderTrading.from(reservationStockItemDto, openApiResponseDto, givenTxId);
+        OrderTrading result = OrderTrading.from(reservationStockItemDto.getStockItem(), openApiResponseDto, givenTxId);
 
         // then
         assertThat(result).extracting("itemCode", "itemNameKor", "orderPrice")
-                .containsExactly(reservationStockItemDto.getItemCode(), reservationStockItemDto.getItemNameKor(), reservationStockItemDto.getOrderPrice());
+                .containsExactly(givenStockItemDto.getItemCode(), givenStockItemDto.getItemNameKor(), givenStockItemDto.getOrderPrice());
 
         assertThat(result).extracting("orderNumber", "orderTime", "orderResultCode", "orderMessageCode", "orderMessage")
                 .containsExactly(
@@ -62,7 +66,7 @@ class OrderTradingTest {
     void from_overseas_success() {
         // given
         StockItemDto.Overseas overseasStockItemDto = StockItemDto.Overseas.builder()
-                .itemCode("APPL")
+                .itemCode("AAPL")
                 .itemNameKor("애플")
                 .orderPrice(new BigDecimal("142.1223"))
                 .orderQuantity(10)
@@ -84,7 +88,7 @@ class OrderTradingTest {
 
         // then
         assertThat(result).extracting("itemCode", "itemNameKor", "orderPrice")
-                .containsExactly("APPL", "애플", new BigDecimal("142.1223"));
+                .containsExactly("AAPL", "애플", new BigDecimal("142.1223"));
 
         assertThat(result).extracting("orderNumber", "orderTime", "orderResultCode", "orderMessageCode", "orderMessage")
                 .containsExactly("1234567890", "090010", "0", "40600000", "모의투자 매도주문이 완료 되었습니다.");
@@ -96,7 +100,7 @@ class OrderTradingTest {
     void from_overseas_fail() {
         // given
         StockItemDto.Overseas overseasStockItemDto = StockItemDto.Overseas.builder()
-                .itemCode("APPL")
+                .itemCode("AAPL")
                 .itemNameKor("애플")
                 .orderPrice(new BigDecimal("142.1223"))
                 .orderQuantity(10)
@@ -114,7 +118,7 @@ class OrderTradingTest {
 
         // then
         assertThat(result).extracting("itemCode", "itemNameKor", "orderPrice")
-                .containsExactly("APPL", "애플", new BigDecimal("142.1223"));
+                .containsExactly("AAPL", "애플", new BigDecimal("142.1223"));
 
         assertThat(result).extracting("orderNumber", "orderTime", "orderResultCode", "orderMessageCode", "orderMessage")
                 .containsExactly(null, null, "1", "40100000", "모의투자 영업일이 아닙니다.");

@@ -90,7 +90,7 @@ class MessageContentDtoTest {
         System.setProperty("spring.profiles.active", "test");
         OpenApiType givenOpenApiType = OpenApiType.OVERSEAS_STOCK_SELL_ORDER;
         OrderTrading givenOrderTrading = OrderTrading.builder()
-                .itemCode("APPL")
+                .itemCode("AAPL")
                 .itemNameKor("애플")
                 .orderPrice(new BigDecimal("134.02"))
                 .orderNumber("111111")
