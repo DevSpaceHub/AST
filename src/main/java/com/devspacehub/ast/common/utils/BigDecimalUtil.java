@@ -8,6 +8,7 @@
 package com.devspacehub.ast.common.utils;
 
 import com.devspacehub.ast.common.constant.CommonConstants;
+import com.devspacehub.ast.common.constant.DecimalScale;
 import com.devspacehub.ast.common.constant.ResultCode;
 import com.devspacehub.ast.exception.error.InvalidValueException;
 
@@ -27,7 +28,7 @@ public class BigDecimalUtil {
      */
     public static BigDecimal percentageToDecimal (BigDecimal percentage) {
         nullCheck(percentage);
-        return divide(percentage, new BigDecimal("100.0"), CommonConstants.DECIMAL_SCALE_FOUR);
+        return divide(percentage, new BigDecimal("100.0"), DecimalScale.FOUR.getCode());
     }
 
     /**

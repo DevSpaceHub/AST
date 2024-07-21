@@ -59,8 +59,8 @@ public class OverseasMyServiceImpl extends MyService {
      * 매수 가능 금액 조회 (Get)
      * @param requestDto requestDto MyService Layer Request Dto
      * @param <T> MyserviceRequestDto를 상속하는 타입.
-     * @error OpenApiFailedResponseException OpenApi 200OK 상태이나 응답
-     * @return
+     * @throws OpenApiFailedResponseException 성공 응답이 아닌 경우
+     * @return 해외 주문 가능 현금
      */
     @Override
     public <T extends MyServiceRequestDto> BigDecimal getBuyOrderPossibleCash(T requestDto) {

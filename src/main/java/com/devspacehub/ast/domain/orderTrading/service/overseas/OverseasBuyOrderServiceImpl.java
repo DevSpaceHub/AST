@@ -9,15 +9,13 @@
 package com.devspacehub.ast.domain.orderTrading.service.overseas;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
-import com.devspacehub.ast.common.constant.CommonConstants;
-import com.devspacehub.ast.common.constant.MarketType;
-import com.devspacehub.ast.common.constant.OpenApiType;
-import com.devspacehub.ast.common.constant.StockPriceUnit;
+import com.devspacehub.ast.common.constant.*;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.common.utils.BigDecimalUtil;
 import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.OverseasStockConditionSearchResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
+import com.devspacehub.ast.domain.orderTrading.dto.*;
 import com.devspacehub.ast.domain.marketStatus.service.OverseasMarketStatusService;
 import com.devspacehub.ast.domain.my.dto.MyServiceRequestDto;
 import com.devspacehub.ast.domain.my.service.MyService;
@@ -26,9 +24,6 @@ import com.devspacehub.ast.domain.notification.Notificator;
 import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
-import com.devspacehub.ast.domain.orderTrading.dto.OverseasStockOrderApiReqDto;
-import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
-import com.devspacehub.ast.domain.orderTrading.dto.SplitBuyPercents;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
 import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +38,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static com.devspacehub.ast.common.constant.DecimalScale.*;
 import static com.devspacehub.ast.common.constant.OpenApiType.OVERSEAS_STOCK_BUY_ORDER;
 import static com.devspacehub.ast.common.constant.ProfileType.getAccountStatus;
 import static com.devspacehub.ast.domain.marketStatus.dto.OverseasStockConditionSearchResDto.*;
@@ -127,8 +123,8 @@ public class OverseasBuyOrderServiceImpl extends TradingService {
 
             for (int i = 0; i < splitBuyPercents.getPercents().size(); i++) {
                 // 매수가격 조정
-                BigDecimal finalOrderPrice = StockPriceUnit.floatOrderPriceCuttingByDecimalScale(
-                        splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, i), getDecimalScaleByCurrentPrice(currentPrice));
+                BigDecimal finalOrderPrice = BigDecimalUtil.setScale(
+                        splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, i), getOrderPriceDecimalScale(currentPrice));
                 int orderQuantity = calculateOrderQuantity(myDeposit, finalOrderPrice);
 
                 if (isZero(orderQuantity)) {
@@ -143,20 +139,6 @@ public class OverseasBuyOrderServiceImpl extends TradingService {
         }
         log.info("[{}] 최종 매수 주문 예정 갯수 : {}", OVERSEAS_STOCK_BUY_ORDER.getDiscription(), buyPossibleStocks.size());
         return buyPossibleStocks;
-    }
-
-    /**
-     * 현재가 값에 따른 소수점 자릿수 반환한다.
-     * $1 미만 주식의 경우, 소수점 네자릿수로 세팅 필요.
-     * $1 이상 주식의 경우, 소수점 두자릿수로 세팅 필요.
-     * @param currentPrice 현재가
-     * @return 현재가 값에 따른 소수점 자릿수
-     */
-    private int getDecimalScaleByCurrentPrice(BigDecimal currentPrice) {
-        if (BigDecimalUtil.isLessThan(currentPrice, BigDecimal.valueOf(1))) {
-            return CommonConstants.DECIMAL_SCALE_FOUR;
-        }
-        return CommonConstants.DECIMAL_SCALE_TWO;
     }
 
     /**
@@ -232,7 +214,7 @@ public class OverseasBuyOrderServiceImpl extends TradingService {
      */
     public int calculateOrderQuantity(BigDecimal myCash, BigDecimal calculatedOrderPrice) {
         BigDecimal xPercentOfMyCash = myCash.multiply(BigDecimalUtil.percentageToDecimal(cashBuyOrderAmountPercent));
-        BigDecimal resultDividedBySplitBuyCount = BigDecimalUtil.divide(xPercentOfMyCash, splitBuyCount, 4);
-        return BigDecimalUtil.divide(resultDividedBySplitBuyCount, calculatedOrderPrice, 0).intValue();
+        BigDecimal resultDividedBySplitBuyCount = BigDecimalUtil.divide(xPercentOfMyCash, splitBuyCount, FOUR.getCode());
+        return BigDecimalUtil.divide(resultDividedBySplitBuyCount, calculatedOrderPrice, ZERO.getCode()).intValue();
     }
 }
