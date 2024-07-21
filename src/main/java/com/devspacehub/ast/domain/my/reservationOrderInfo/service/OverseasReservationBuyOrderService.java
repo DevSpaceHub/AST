@@ -87,7 +87,7 @@ public class OverseasReservationBuyOrderService extends TradingService {
             if (!this.hasSufficientDeposit(reservation, myDeposit)) {
                 continue;
             }
-            StockItemDto stockItem = this.prepareOrder(reservation, myDeposit);
+            StockItemDto.Overseas stockItem = this.prepareOrder(reservation, myDeposit);
 
             StockOrderApiResDto apiResponse = (StockOrderApiResDto) this.callOrderApi(openApiProperties, stockItem, openApiType, txIdBuyOrder);
 
@@ -107,13 +107,17 @@ public class OverseasReservationBuyOrderService extends TradingService {
      * @param myDeposit 예수금
      * @return 매수 주문 위해 세팅된 정보
      */
-    private StockItemDto prepareOrder(ReservationStockItem.Overseas reservation, BigDecimal myDeposit) {
-        StockItemDto stockItem = reservation.getStockItem();
-
+    private StockItemDto.Overseas prepareOrder(ReservationStockItem.Overseas reservation, BigDecimal myDeposit) {
         BigDecimal adjustedOrderPrice = BigDecimalUtil.setScale(reservation.getStockItem().getOrderPrice(), DecimalScale.getOrderPriceDecimalScale(reservation.getStockItem().getOrderPrice()));
-        stockItem.setOrderPrice(adjustedOrderPrice);
-        stockItem.setOrderQuantity(calculateOrderQuantity(myDeposit, adjustedOrderPrice));
-        return stockItem;
+
+        return StockItemDto.Overseas.builder()
+                .orderDivision(reservation.getStockItem().getOrderDivision())
+                .itemNameKor(reservation.getItemNameKor())
+                .exchangeCode(reservation.getExchangeCode())
+                .itemCode(reservation.getItemCode())
+                .orderPrice(adjustedOrderPrice)
+                .orderQuantity(calculateOrderQuantity(myDeposit, adjustedOrderPrice))
+                .build();
     }
 
     /**
@@ -169,7 +173,7 @@ public class OverseasReservationBuyOrderService extends TradingService {
         Consumer<HttpHeaders> headers = OverseasStockOrderApiReqDto.setHeaders(openApiProperties.getOauth(), transactionId);
         OverseasStockOrderApiReqDto reqDto = OverseasStockOrderApiReqDto.from(openApiProperties, stockItem);
 
-        return (StockOrderApiResDto) openApiRequest.httpPostRequest(openApiType, headers, reqDto);
+        return openApiRequest.httpPostRequest(openApiType, headers, reqDto);
     }
 
     /**
