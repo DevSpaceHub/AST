@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * 거래소 코드
@@ -24,7 +25,11 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public enum ExchangeCode {
     NASDAQ("NAS", "NASD"),
-    NEWYORK("NYS", "NYSE")
+    NEWYORK("NYS", "NYSE"),
+    KOSPI("KOSPI", "KOSPI"),
+    KOSDAQ("KOSDAQ", "KOSDAQ"),
+    KOSDAQ_GLOBAL("KOSDAQ GLOBAL", "KOSDAQ GLOBAL"),
+    KONEX("KONEX", "KONEX")
     ;
 
     private final String shortCode;
@@ -49,10 +54,18 @@ public enum ExchangeCode {
      * @return shortCode 혹은 longCode 값이 동일한 Enum 상수
      */
     @JsonCreator
-    public static ExchangeCode fromFieldData(String fieldData) {
+    public static ExchangeCode fromJsonField(String fieldData) {
         return Arrays.stream(ExchangeCode.values())
                 .filter(type -> type.getShortCode().equals(fieldData) || type.getLongCode().equals(fieldData))
                 .findFirst()
                 .orElseThrow(() -> new InvalidValueException(ResultCode.INVALID_EXCHANGE_CODE_ERROR));
+    }
+
+    /**
+     * 해외 거래소 코드를 응답한다.
+     * @return List 타입의 해외 거래소 코드
+     */
+    public static List<String> longCodeOverseas() {
+        return List.of(ExchangeCode.NASDAQ.getLongCode(), ExchangeCode.NEWYORK.getLongCode());
     }
 }

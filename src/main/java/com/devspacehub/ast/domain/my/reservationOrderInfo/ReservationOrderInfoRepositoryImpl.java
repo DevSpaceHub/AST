@@ -9,7 +9,10 @@
 package com.devspacehub.ast.domain.my.reservationOrderInfo;
 
 import com.devspacehub.ast.common.constant.YesNoStatus;
+import com.devspacehub.ast.domain.my.reservationOrderInfo.dto.QReservationStockItem_Overseas;
+import com.devspacehub.ast.domain.my.reservationOrderInfo.dto.ReservationStockItem;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -19,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.devspacehub.ast.domain.itemInfo.QItemInfo.itemInfo;
 import static com.devspacehub.ast.domain.my.reservationOrderInfo.QReservationOrderInfo.*;
 
 /**
@@ -31,22 +35,51 @@ public class ReservationOrderInfoRepositoryImpl implements ReservationOrderInfoR
 
     /**
      * 구매 가능한 예약 종목 전체 조회
-     * @param now
-     * @return
+     * @param date 예약 날짜 유효성 여부 기준 Date
+     * @return 유효한 예약종목 데이터
      */
     @Override
-    public List<ReservationOrderInfo> findValidAll(LocalDate now) {
+    public List<ReservationOrderInfo> findValidAll(LocalDate date) {
         return queryFactory.selectFrom(reservationOrderInfo)
-                .where(isEqualOrBetweenStartDateAndEndDate(now), isUsable())
+                .where(isEqualOrBetweenStartDateAndEndDate(date), isUsable())
                 .orderBy(reservationOrderInfo.priority.asc())
                 .fetch();
     }
 
     /**
+     * 구매 가능한 예약 종목 전체 조회
+     * @param date          예약 날짜 유효성 여부 기준 Date
+     * @param exchangeCodes 거래소 코드 필터링
+     * @return 유효한 예약종목 데이터
+     */
+    @Override
+    public List<ReservationStockItem.Overseas> findValidAllByExchangeCodes(LocalDate date, List<String> exchangeCodes) {
+        return queryFactory.select(new QReservationStockItem_Overseas(
+                        reservationOrderInfo.seq, reservationOrderInfo.itemCode, reservationOrderInfo.koreanItemName,
+                        reservationOrderInfo.orderQuantity, reservationOrderInfo.orderPrice, itemInfo.marketCategory
+                ))
+                .from(reservationOrderInfo)
+                .join(itemInfo)
+                .on(eqItemCode(itemInfo.itemCode))
+                .where(isEqualOrBetweenStartDateAndEndDate(date), isUsable(), inExchangeCode(exchangeCodes))
+                .orderBy(reservationOrderInfo.priority.asc())
+                .fetch();
+    }
+
+    /**
+     * 인자로 전달하는 거래소 코드들에 해당하는 지 확인한다.
+     * @param exchangeCodes 거래소 코드들
+     * @return 인자로 받은 거래소 코드들에 포함되면 True
+     */
+    private BooleanExpression inExchangeCode(List<String> exchangeCodes) {
+        return itemInfo.marketCategory.in(exchangeCodes);
+    }
+
+    /**
      * 특정 종목 중 구매 가능한 예약 종목 단일 조회
-     * @param now
-     * @param itemCode
-     * @return
+     * @param now 유효 기준 일자
+     * @param itemCode 종목 코드
+     * @return 유효한 예약 매수 종목
      */
     @Override
     public Optional<ReservationOrderInfo> findValidOneByItemCodeAndOrderNumber(LocalDate now, String itemCode, String orderNumber) {
@@ -61,7 +94,7 @@ public class ReservationOrderInfoRepositoryImpl implements ReservationOrderInfoR
 
     /**
      * 사용 가능 여부 확인한다.
-     * @return
+     * @return 'Y'이면 True
      */
     private BooleanExpression isUsable() {
         return reservationOrderInfo.useYn.eq(YesNoStatus.YES.getCharCode());
@@ -78,5 +111,14 @@ public class ReservationOrderInfoRepositoryImpl implements ReservationOrderInfoR
         }
         return (reservationOrderInfo.orderStartDate.eq(now).or(reservationOrderInfo.orderStartDate.before(now)))
                 .and((reservationOrderInfo.orderEndDate.eq(now).or(reservationOrderInfo.orderEndDate.after(now))));
+    }
+
+    /**
+     * 두 문자열이 동일한지 확인한다.
+     * @param itemCode 비교 대상 종목 코드
+     * @return 두 문자열이 동일한지 여부
+     */
+    protected BooleanExpression eqItemCode(StringPath itemCode) {
+        return itemCode.isNotEmpty().and(reservationOrderInfo.itemCode.isNotEmpty()).and(reservationOrderInfo.itemCode.eq(itemCode));
     }
 }

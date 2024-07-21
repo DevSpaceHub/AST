@@ -7,9 +7,9 @@
  */
 package com.devspacehub.ast.domain.marketStatus.dto;
 
+import com.devspacehub.ast.common.constant.DecimalScale;
 import com.devspacehub.ast.common.constant.ExchangeCode;
 import com.devspacehub.ast.common.utils.BigDecimalUtil;
-import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceApiResDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.overseas.OverseasStockBalanceApiResDto;
 import lombok.*;
@@ -25,14 +25,13 @@ import static com.devspacehub.ast.common.constant.CommonConstants.ORDER_DIVISION
 @SuperBuilder
 @Getter
 @Setter
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class StockItemDto {
-
-    private String itemCode;
-    private String itemNameKor;
-    private String orderDivision;
-    private Integer orderQuantity;
-    private BigDecimal orderPrice;
+    String itemCode;
+    String itemNameKor;
+    String orderDivision;
+    Integer orderQuantity;
+    BigDecimal orderPrice;
 
     @SuperBuilder
     @Getter
@@ -69,32 +68,10 @@ public class StockItemDto {
                     .build();
         }
     }
-
-    @SuperBuilder
-    @Getter
-    public static class ReservationStockItem extends StockItemDto {
-        private Long reservationSeq;
-
-        /**
-         * 예약 매수 종목 DTO 생성한다.
-         * @param reservationOrderInfo 예약 매수 정보 Entity
-         * @return 국내 예약매수 정보 Dto
-         */
-        public static ReservationStockItem of(ReservationOrderInfo reservationOrderInfo) {
-            return ReservationStockItem.builder()
-                    .reservationSeq(reservationOrderInfo.getSeq())
-                    .itemCode(reservationOrderInfo.getItemCode())
-                    .itemNameKor(reservationOrderInfo.getKoreanItemName())
-                    .orderQuantity(reservationOrderInfo.getOrderQuantity())
-                    .orderPrice(reservationOrderInfo.getOrderPrice())
-                    .orderDivision(ORDER_DIVISION)
-                    .build();
-        }
-    }
     @SuperBuilder
     @Getter
     public static class Overseas extends StockItemDto {
-        private ExchangeCode exchangeCode;
+        ExchangeCode exchangeCode;
 
         /**
          * 해외 주식 매수 종목 DTO
@@ -106,14 +83,7 @@ public class StockItemDto {
          * @return 해외 주식 매수 정보 Dto
          */
         public static Overseas from(String itemCode, String itemNameKor, int orderQuantity, BigDecimal orderPrice, ExchangeCode exchangeCode) {
-            return Overseas.builder()
-                    .exchangeCode(exchangeCode)
-                    .itemCode(itemCode)
-                    .itemNameKor(itemNameKor)
-                    .orderQuantity(orderQuantity)
-                    .orderPrice(orderPrice)
-                    .orderDivision(ORDER_DIVISION)
-                    .build();
+            return new Overseas(itemCode, itemNameKor, ORDER_DIVISION, orderQuantity, orderPrice, exchangeCode);
         }
 
         /**
@@ -123,14 +93,23 @@ public class StockItemDto {
          * - orderPrice : 매도 주문 시 소수점 아래 4자리 유지한다.
          */
         public static StockItemDto of(OverseasStockBalanceApiResDto.MyStockBalance myStockBalance) {
-            return Overseas.builder()
-                    .itemCode(myStockBalance.getItemCode())
-                    .itemNameKor(myStockBalance.getStockName())
-                    .orderQuantity(myStockBalance.getOrderPossibleQuantity())     // 전량 매도
-                    .orderPrice(BigDecimalUtil.setScale(myStockBalance.getCurrentPrice(), 4))
-                    .orderDivision(ORDER_DIVISION)
-                    .exchangeCode(ExchangeCode.fromCode(myStockBalance.getExchangeCode()))
-                    .build();
+            BigDecimal orderPrice = BigDecimalUtil.setScale(myStockBalance.getCurrentPrice(), DecimalScale.FOUR.getCode());
+            return new Overseas(myStockBalance.getItemCode(), myStockBalance.getStockName(), ORDER_DIVISION,
+                    myStockBalance.getOrderPossibleQuantity(), orderPrice, ExchangeCode.fromCode(myStockBalance.getExchangeCode()));
+        }
+
+        /**
+         * 생성자
+         * @param itemCode 종목 코드
+         * @param itemNameKor 종목 한글명
+         * @param orderDivision 지정가 필드
+         * @param orderQuantity 주문 수량
+         * @param orderPrice 주문 가격
+         * @param exchangeCode 거래소 코드
+         */
+        protected Overseas(String itemCode, String itemNameKor, String orderDivision, int orderQuantity, BigDecimal orderPrice, ExchangeCode exchangeCode) {
+            super(itemCode, itemNameKor, orderDivision, orderQuantity, orderPrice);
+            this.exchangeCode = exchangeCode;
         }
     }
 }

@@ -11,16 +11,15 @@ package com.devspacehub.ast.domain.my.reservationOrderInfo.service;
 import com.devspacehub.ast.common.constant.MarketType;
 import com.devspacehub.ast.common.constant.YesNoStatus;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
-import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
 import com.devspacehub.ast.domain.my.dto.MyServiceRequestDto;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
+import com.devspacehub.ast.domain.my.reservationOrderInfo.dto.ReservationStockItem;
 import com.devspacehub.ast.domain.my.service.MyServiceFactory;
 import com.devspacehub.ast.domain.my.service.MyServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -71,7 +70,7 @@ class ReservationBuyOrderServiceImplTest {
         given(myService.getBuyOrderPossibleCash(any(MyServiceRequestDto.class))).willReturn(BigDecimal.valueOf(10000));
 
         // when
-        List<StockItemDto.ReservationStockItem> result = reservationBuyOrderService.pickStockItems(List.of(givenOrderedReservationOrderInfo));
+        List<ReservationStockItem.Domestic> result = reservationBuyOrderService.pickStockItems(List.of(givenOrderedReservationOrderInfo));
         // then
         assertThat(result).hasSize(1)
                 .extracting("itemCode", "orderPrice")
@@ -98,7 +97,7 @@ class ReservationBuyOrderServiceImplTest {
         given(marketStatusService.getCurrentStockPrice(givenReservationOrderInfo.getItemCode())).willReturn(givenCurrentStockPriceInfo);
 
         // when
-        List<StockItemDto.ReservationStockItem> result = reservationBuyOrderService.pickStockItems(List.of(givenReservationOrderInfo));
+        List<ReservationStockItem.Domestic> result = reservationBuyOrderService.pickStockItems(List.of(givenReservationOrderInfo));
 
         // then
         assertThat(result).isEmpty();
