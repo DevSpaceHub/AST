@@ -64,7 +64,6 @@ public class OverseasStockOrderApiReqDto extends WebClientCommonReqDto {
      * @return 매수/매도 주문 API의 요청 Dto
      */
     public static <T extends StockItemDto> OverseasStockOrderApiReqDto from(OpenApiProperties openApiProperties, T stockItem) {
-        StockItemDto.Overseas overseasStockItem = (StockItemDto.Overseas) stockItem;
         return OverseasStockOrderApiReqDto.builder()
                 .accntNumber(openApiProperties.getAccntNumber())
                 .accntProductCode(openApiProperties.getAccntProductCode())
@@ -72,7 +71,7 @@ public class OverseasStockOrderApiReqDto extends WebClientCommonReqDto {
                 .orderDivision(stockItem.getOrderDivision())
                 .orderQuantity(String.valueOf(stockItem.getOrderQuantity()))
                 .orderPrice(String.valueOf(stockItem.getOrderPrice()))
-                .exchangeCode(overseasStockItem.getExchangeCode().getLongCode())
+                .exchangeCode(stockItem.castToOverseas().getExchangeCode().getLongCode())
                 .ordSvrDvsnCd("0")  // 주문서버구분 코드 (default:0)
                 .build();
     }

@@ -70,7 +70,7 @@ class ReservationBuyOrderServiceImplTest {
         given(myService.getBuyOrderPossibleCash(any(MyServiceRequestDto.class))).willReturn(BigDecimal.valueOf(10000));
 
         // when
-        List<ReservationStockItem.Domestic> result = reservationBuyOrderService.pickStockItems(List.of(givenOrderedReservationOrderInfo));
+        List<ReservationStockItem> result = reservationBuyOrderService.pickStockItems(List.of(givenOrderedReservationOrderInfo));
         // then
         assertThat(result).hasSize(1)
                 .extracting("itemCode", "orderPrice")
@@ -97,7 +97,7 @@ class ReservationBuyOrderServiceImplTest {
         given(marketStatusService.getCurrentStockPrice(givenReservationOrderInfo.getItemCode())).willReturn(givenCurrentStockPriceInfo);
 
         // when
-        List<ReservationStockItem.Domestic> result = reservationBuyOrderService.pickStockItems(List.of(givenReservationOrderInfo));
+        List<ReservationStockItem> result = reservationBuyOrderService.pickStockItems(List.of(givenReservationOrderInfo));
 
         // then
         assertThat(result).isEmpty();

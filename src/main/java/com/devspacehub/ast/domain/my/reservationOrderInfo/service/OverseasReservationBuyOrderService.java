@@ -75,14 +75,14 @@ public class OverseasReservationBuyOrderService extends TradingService {
      */
     @Override
     public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType) {
-        List<ReservationStockItem.Overseas> reservations = getValidReservationsForToday();
+        List<ReservationStockItem> reservations = getValidReservationsForToday();
 
         if (reservations.isEmpty()) {
             return Collections.emptyList();
         }
 
         List<OrderTrading> orderedItems = new ArrayList<>();
-        for (ReservationStockItem.Overseas reservation : reservations) {
+        for (ReservationStockItem reservation : reservations) {
             BigDecimal myDeposit = getMyDeposit(reservation);
             if (!this.hasSufficientDeposit(reservation, myDeposit)) {
                 continue;
@@ -107,13 +107,14 @@ public class OverseasReservationBuyOrderService extends TradingService {
      * @param myDeposit 예수금
      * @return 매수 주문 위해 세팅된 정보
      */
-    private StockItemDto.Overseas prepareOrder(ReservationStockItem.Overseas reservation, BigDecimal myDeposit) {
-        BigDecimal adjustedOrderPrice = BigDecimalUtil.setScale(reservation.getStockItem().getOrderPrice(), DecimalScale.getOrderPriceDecimalScale(reservation.getStockItem().getOrderPrice()));
+    private StockItemDto.Overseas prepareOrder(ReservationStockItem reservation, BigDecimal myDeposit) {
+        StockItemDto.Overseas overseasStockItem = reservation.getStockItem().castToOverseas();
+        BigDecimal adjustedOrderPrice = BigDecimalUtil.setScale(overseasStockItem.getOrderPrice(), DecimalScale.getOrderPriceDecimalScale(overseasStockItem.getOrderPrice()));
 
         return StockItemDto.Overseas.builder()
-                .orderDivision(reservation.getStockItem().getOrderDivision())
+                .orderDivision(overseasStockItem.getOrderDivision())
                 .itemNameKor(reservation.getItemNameKor())
-                .exchangeCode(reservation.getExchangeCode())
+                .exchangeCode(overseasStockItem.getExchangeCode())
                 .itemCode(reservation.getItemCode())
                 .orderPrice(adjustedOrderPrice)
                 .orderQuantity(calculateOrderQuantity(myDeposit, adjustedOrderPrice))
@@ -125,8 +126,9 @@ public class OverseasReservationBuyOrderService extends TradingService {
      * @param reservation 해외 예약 종목 정보 Dto
      * @return 예수금
      */
-    private BigDecimal getMyDeposit(ReservationStockItem.Overseas reservation) {
-        return myServiceImpl().getBuyOrderPossibleCash(MyServiceRequestDto.Overseas.from(reservation.getStockItem().getItemCode(), reservation.getStockItem().getOrderPrice(), reservation.getExchangeCode()));
+    private BigDecimal getMyDeposit(ReservationStockItem reservation) {
+        StockItemDto.Overseas overseasStockItem = reservation.getStockItem().castToOverseas();
+        return myServiceImpl().getBuyOrderPossibleCash(MyServiceRequestDto.Overseas.from(overseasStockItem.getItemCode(), overseasStockItem.getOrderPrice(), overseasStockItem.getExchangeCode()));
     }
 
     /**
@@ -134,11 +136,12 @@ public class OverseasReservationBuyOrderService extends TradingService {
      * @param reservation 해외 예약 종목 정보 Dto
      * @return 주문 가능한지 여부 boolean 값
      */
-    protected boolean hasSufficientDeposit(ReservationStockItem.Overseas reservation, BigDecimal myDeposit) {
-        if (BigDecimalUtil.isLessThanOrEqualTo(BigDecimalUtil.multiplyBigDecimalWithNumber(reservation.getStockItem().getOrderPrice(), reservation.getStockItem().getOrderQuantity()), myDeposit)) {
+    protected boolean hasSufficientDeposit(ReservationStockItem reservation, BigDecimal myDeposit) {
+        StockItemDto overseasStockItem = reservation.getStockItem();
+        if (BigDecimalUtil.isLessThanOrEqualTo(BigDecimalUtil.multiplyBigDecimalWithNumber(overseasStockItem.getOrderPrice(), overseasStockItem.getOrderQuantity()), myDeposit)) {
             return true;
         } else {
-            LogUtils.insufficientAmountError(OpenApiType.OVERSEAS_STOCK_RESERVATION_BUY_ORDER, reservation.getStockItem().getItemNameKor(), myDeposit);
+            LogUtils.insufficientAmountError(OpenApiType.OVERSEAS_STOCK_RESERVATION_BUY_ORDER, overseasStockItem.getItemNameKor(), myDeposit);
             return false;
         }
     }
@@ -155,7 +158,7 @@ public class OverseasReservationBuyOrderService extends TradingService {
      * 오늘 기준 유효한 예약 종목 데이터를 조회하여 반환한다.
      * @return 유효한 해외 종목 Dto들
      */
-    protected List<ReservationStockItem.Overseas> getValidReservationsForToday() {
+    protected List<ReservationStockItem> getValidReservationsForToday() {
         return reservationOrderInfoRepository.findValidAllByExchangeCodes(LocalDate.now(), ExchangeCode.longCodeOverseas());
     }
 

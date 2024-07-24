@@ -85,7 +85,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
 
         // 2. 매수 종목 선택 및 주문
         List<OrderTrading> orderTradings = new ArrayList<>();
-        for (ReservationStockItem.Domestic reservationItem : pickStockItems(reservationOrderInfos)) {
+        for (ReservationStockItem reservationItem : pickStockItems(reservationOrderInfos)) {
             StockOrderApiResDto result = callOrderApi(openApiProperties, reservationItem.getStockItem(), DOMESTIC_STOCK_RESERVATION_BUY_ORDER, transactionId);
             OrderTrading orderTrading = OrderTrading.from(reservationItem.getStockItem(), result, transactionId);
             orderTradings.add(orderTrading);
@@ -132,7 +132,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
      * - 충분한 예수금 있는지, 하한가보다 높은지 체크
      * @param reservationOrderInfos
      */
-    public List<ReservationStockItem.Domestic> pickStockItems(List<ReservationOrderInfo> reservationOrderInfos) {
+    public List<ReservationStockItem> pickStockItems(List<ReservationOrderInfo> reservationOrderInfos) {
         Map<Long, ReservationOrderInfo> itemCodeReservationOrderInfoMap = reservationOrderInfos.stream()
                 .collect(Collectors.toMap(ReservationOrderInfo::getSeq, reservationOrderInfo -> reservationOrderInfo));
 
@@ -140,7 +140,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
         Map<Long, CurrentStockPriceInfo> itemCodeResponseMap = reservationOrderInfos.stream()
                 .collect(Collectors.toMap(ReservationOrderInfo::getSeq, orderInfo -> marketStatusService.getCurrentStockPrice(orderInfo.getItemCode())));
 
-        List<ReservationStockItem.Domestic> pickedStockItems = new ArrayList<>();
+        List<ReservationStockItem> pickedStockItems = new ArrayList<>();
         for (Long seq : itemCodeReservationOrderInfoMap.keySet()) {
             ReservationOrderInfo currReservationOrderInfo = itemCodeReservationOrderInfoMap.get(seq);
 
@@ -160,7 +160,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
             }
 
             currReservationOrderInfo.subtractConcludedQuantity(currReservationOrderInfo.getConclusionQuantity());
-            pickedStockItems.add(ReservationStockItem.Domestic.of(currReservationOrderInfo));
+            pickedStockItems.add(ReservationStockItem.ofDomestic(currReservationOrderInfo));
         }
         log.info("[{}] 최종 선택된 주식 종목 갯수 : {}", DOMESTIC_STOCK_RESERVATION_BUY_ORDER.getDiscription(), pickedStockItems.size());
         return pickedStockItems;

@@ -33,7 +33,7 @@ class OrderTradingTest {
                 .orderQuantity(10)
                 .orderDivision(CommonConstants.ORDER_DIVISION)
                 .build();
-        ReservationStockItem.Domestic reservationStockItemDto = ReservationStockItem.Domestic.builder()
+        ReservationStockItem reservationStockItemDto = ReservationStockItem.builder()
                 .stockItem(givenStockItemDto)
                 .build();
         StockOrderApiResDto openApiResponseDto = new StockOrderApiResDto();

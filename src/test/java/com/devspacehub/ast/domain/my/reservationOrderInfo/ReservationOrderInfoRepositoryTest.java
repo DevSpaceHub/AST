@@ -196,7 +196,7 @@ class ReservationOrderInfoRepositoryTest {
                 .build());
         itemInfoRepository.saveAndFlush(new ItemInfo("AAPL1", null, "애플", "Apple Inc. Common Stock", ExchangeCode.NASDAQ.getLongCode(), "", "", LocalDateTime.now(), "application", null, null));
         // when
-        List<ReservationStockItem.Overseas> result = reservationOrderInfoRepository.findValidAllByExchangeCodes(givenNow,
+        List<ReservationStockItem> result = reservationOrderInfoRepository.findValidAllByExchangeCodes(givenNow,
                 List.of(ExchangeCode.NEWYORK.getLongCode(), ExchangeCode.NASDAQ.getLongCode()));
 
         // then

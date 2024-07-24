@@ -12,6 +12,7 @@ import com.devspacehub.ast.common.constant.ExchangeCode;
 import com.devspacehub.ast.common.utils.BigDecimalUtil;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceApiResDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.overseas.OverseasStockBalanceApiResDto;
+import com.devspacehub.ast.exception.error.DtoConversionException;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -111,5 +112,16 @@ public class StockItemDto {
             super(itemCode, itemNameKor, orderDivision, orderQuantity, orderPrice);
             this.exchangeCode = exchangeCode;
         }
+    }
+
+    /**
+     * StockItemDto를 하위 클래스로 캐스팅한다.
+     * @return StockItemDto.Overseas 로 캐스팅된 stockItem
+     */
+    public StockItemDto.Overseas castToOverseas() {
+        if (this instanceof StockItemDto.Overseas) {
+            return (StockItemDto.Overseas) this;
+        }
+        throw new DtoConversionException();
     }
 }

@@ -21,6 +21,6 @@ public interface ReservationOrderInfoRepositoryCustom {
 
     List<ReservationOrderInfo> findValidAll(LocalDate now);
 
-    List<ReservationStockItem.Overseas> findValidAllByExchangeCodes(LocalDate now, List<String> exchangeCodes);
+    List<ReservationStockItem> findValidAllByExchangeCodes(LocalDate now, List<String> exchangeCodes);
     Optional<ReservationOrderInfo> findValidOneByItemCodeAndOrderNumber(LocalDate now, String itemCode, String orderNumber);
 }

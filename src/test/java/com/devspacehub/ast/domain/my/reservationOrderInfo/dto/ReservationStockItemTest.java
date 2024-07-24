@@ -23,7 +23,7 @@ class ReservationStockItemTest {
                 .itemCode("00000")
                 .build();
 
-        ReservationStockItem.Domestic result = ReservationStockItem.Domestic.of(givenReservationStockItem);
+        ReservationStockItem result = ReservationStockItem.ofDomestic(givenReservationStockItem);
 
         assertThat(result.getReservationSeq()).isEqualTo(givenReservationStockItem.getSeq());
         assertThat(result.getStockItem().getItemCode()).isEqualTo(givenReservationStockItem.getItemCode());

@@ -71,59 +71,57 @@ public class ReservationStockItem {
     }
 
     /**
-     * 국내 예약 종목 정보 Dto
+     * Getter<br>
+     * stockItem의 타입이 StockItem.Overseas일 때만 유효하다.
+     * @return exchangeCode
      */
-    @SuperBuilder
-    @Getter
-    public static class Domestic extends ReservationStockItem {
-        /**
-         * 예약 매수 종목 DTO 생성한다.
-         *
-         * @param reservationOrderInfo 예약 매수 정보 Entity
-         * @return 국내 예약매수 정보 Dto
-         */
-        public static ReservationStockItem.Domestic of(ReservationOrderInfo reservationOrderInfo) {
-            return Domestic.builder()
-                    .reservationSeq(reservationOrderInfo.getSeq())
-                    .stockItem(StockItemDto.builder()
-                            .itemCode(reservationOrderInfo.getItemCode())
-                            .itemNameKor(reservationOrderInfo.getKoreanItemName())
-                            .orderQuantity(reservationOrderInfo.getOrderQuantity())
-                            .orderPrice(reservationOrderInfo.getOrderPrice())
-                            .orderDivision(ORDER_DIVISION)
-                            .build())
-                    .build();
+    public ExchangeCode getExchangeCode() {
+        if (this.stockItem instanceof StockItemDto.Overseas) {
+            return ((StockItemDto.Overseas) this.stockItem).getExchangeCode();
         }
+        return null;
     }
 
     /**
-     * 해외 예약 종목 정보 Dto
+     * 예약 매수 종목 DTO 생성한다.
+     *
+     * @param reservationOrderInfo 예약 매수 정보 Entity
+     * @return 국내 예약매수 정보 Dto
      */
-    @SuperBuilder
-    @Getter
-    public static class Overseas extends ReservationStockItem {
-        ExchangeCode exchangeCode;
+    public static ReservationStockItem ofDomestic(ReservationOrderInfo reservationOrderInfo) {
+        return ReservationStockItem.builder()
+                .reservationSeq(reservationOrderInfo.getSeq())
+                .stockItem(StockItemDto.builder()
+                        .itemCode(reservationOrderInfo.getItemCode())
+                        .itemNameKor(reservationOrderInfo.getKoreanItemName())
+                        .orderQuantity(reservationOrderInfo.getOrderQuantity())
+                        .orderPrice(reservationOrderInfo.getOrderPrice())
+                        .orderDivision(ORDER_DIVISION)
+                        .build())
+                .build();
+    }
 
-        /**
-         * 일반 생성자.<br>
-         * QueryDsl 반환 객체로써 사용되기 위함.
-         * @param itemCode 종목 코드
-         * @param itemNameKor 종목명
-         * @param orderQuantity 주문 수량
-         * @param orderPrice 주문가
-         * @param exchangeCode 거래소 코드
-         */
-        @QueryProjection
-        public Overseas(Long reservationSeq, String itemCode, String itemNameKor, Integer orderQuantity,
-                        BigDecimal orderPrice, String exchangeCode) {
-            super(StockItemDto.builder()
-                    .itemCode(itemCode)
-                    .itemNameKor(itemNameKor)
-                    .orderDivision(ORDER_DIVISION)
-                    .orderQuantity(orderQuantity)
-                    .orderPrice(orderPrice)
-                    .build(), reservationSeq);
-            this.exchangeCode = ExchangeCode.fromCode(exchangeCode);
-        }
+
+    /**
+     * 해외 주식 종목 위한 생성자.<br>
+     * QueryDsl 반환 객체로써 사용되기 위함.
+     * @param itemCode 종목 코드
+     * @param itemNameKor 종목명
+     * @param orderQuantity 주문 수량
+     * @param orderPrice 주문가
+     * @param exchangeCode 거래소 코드
+     */
+    @QueryProjection
+    public ReservationStockItem(Long reservationSeq, String itemCode, String itemNameKor, Integer orderQuantity,
+                    BigDecimal orderPrice, String exchangeCode) {
+        this.stockItem = StockItemDto.Overseas.builder()
+                .itemCode(itemCode)
+                .itemNameKor(itemNameKor)
+                .orderDivision(ORDER_DIVISION)
+                .orderQuantity(orderQuantity)
+                .orderPrice(orderPrice)
+                .exchangeCode(ExchangeCode.fromCode(exchangeCode))
+                .build();
+        this.reservationSeq = reservationSeq;
     }
 }

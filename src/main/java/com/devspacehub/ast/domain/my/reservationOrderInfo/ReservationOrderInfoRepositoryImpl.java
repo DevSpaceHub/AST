@@ -9,7 +9,7 @@
 package com.devspacehub.ast.domain.my.reservationOrderInfo;
 
 import com.devspacehub.ast.common.constant.YesNoStatus;
-import com.devspacehub.ast.domain.my.reservationOrderInfo.dto.QReservationStockItem_Overseas;
+import com.devspacehub.ast.domain.my.reservationOrderInfo.dto.QReservationStockItem;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.dto.ReservationStockItem;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.StringPath;
@@ -53,8 +53,8 @@ public class ReservationOrderInfoRepositoryImpl implements ReservationOrderInfoR
      * @return 유효한 예약종목 데이터
      */
     @Override
-    public List<ReservationStockItem.Overseas> findValidAllByExchangeCodes(LocalDate date, List<String> exchangeCodes) {
-        return queryFactory.select(new QReservationStockItem_Overseas(
+    public List<ReservationStockItem> findValidAllByExchangeCodes(LocalDate date, List<String> exchangeCodes) {
+        return queryFactory.select(new QReservationStockItem(
                         reservationOrderInfo.seq, reservationOrderInfo.itemCode, reservationOrderInfo.koreanItemName,
                         reservationOrderInfo.orderQuantity, reservationOrderInfo.orderPrice, itemInfo.marketCategory
                 ))
