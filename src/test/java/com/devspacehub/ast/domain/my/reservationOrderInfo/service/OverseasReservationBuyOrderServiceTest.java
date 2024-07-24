@@ -63,8 +63,6 @@ class OverseasReservationBuyOrderServiceTest {
     @DisplayName("DB에 유효한 예약 종목이 없으면 빈 값을 반환한다.")
     @Test
     void return_empty_list_when_validate_reservationItems_are_empty() {
-        given(reservationOrderInfoRepository.findValidAll(LocalDate.now())).willReturn(Collections.emptyList());
-
         List<OrderTrading> results = overseasReservationBuyOrderService.order(openApiProperties, OpenApiType.OVERSEAS_STOCK_RESERVATION_BUY_ORDER);
 
         assertThat(results).isEmpty();
@@ -74,8 +72,14 @@ class OverseasReservationBuyOrderServiceTest {
     @DisplayName("원하는 종목과 그 종목의 주문, 수량 데이터를 포함하여 매수 주문을 요청한 뒤 응답받은 DTO를 반환한다.")
     @Test
     void return_response_after_buy_order_openApi_request() {
-        ReservationStockItem.Overseas reservationStockItem = ReservationStockItem.Overseas.builder()
-                .exchangeCode(ExchangeCode.NASDAQ)
+        ReservationStockItem reservationStockItem = ReservationStockItem.builder()
+                .stockItem(StockItemDto.Overseas.builder()
+                        .itemCode("AAPL")
+                        .orderDivision("00")
+                        .orderQuantity(1)
+                        .orderPrice(new BigDecimal("2.928"))
+                        .exchangeCode(ExchangeCode.NASDAQ)
+                        .build())
                 .build();
 
         given(openApiProperties.getOauth()).willReturn("oauth");
@@ -99,7 +103,7 @@ class OverseasReservationBuyOrderServiceTest {
     @DisplayName("오늘 기준으로 유효한 예약 종목 데이터들을 조회하여 반환한다.")
     @Test
     void return_valid_reservations_for_today() {
-        ReservationStockItem.Overseas givenReservationDto = ReservationStockItem.Overseas.builder()
+        ReservationStockItem givenReservationDto = ReservationStockItem.builder()
                 .stockItem(StockItemDto.builder()
                         .itemCode("AAPL")
                         .orderQuantity(1)
@@ -110,7 +114,7 @@ class OverseasReservationBuyOrderServiceTest {
         given(reservationOrderInfoRepository.findValidAllByExchangeCodes(LocalDate.now(),
                 List.of(ExchangeCode.NASDAQ.getLongCode(), ExchangeCode.NEWYORK.getLongCode()))).willReturn(List.of(givenReservationDto));
 
-        List<ReservationStockItem.Overseas> result = overseasReservationBuyOrderService.getValidReservationsForToday();
+        List<ReservationStockItem> result = overseasReservationBuyOrderService.getValidReservationsForToday();
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getStockItem().getItemCode()).isEqualTo("AAPL");
@@ -157,7 +161,7 @@ class OverseasReservationBuyOrderServiceTest {
     @ParameterizedTest
     void return_true_when_myDeposit_is_greaterThan_totalOrderPrice(BigDecimal givenOrderPrice, int orderQuantity, boolean expected) {
         BigDecimal myDeposit = new BigDecimal("12.024").multiply(new BigDecimal("3.0"));
-        ReservationStockItem.Overseas givenReservation = ReservationStockItem.Overseas.builder()
+        ReservationStockItem givenReservation = ReservationStockItem.builder()
                 .stockItem(StockItemDto.builder()
                         .orderPrice(givenOrderPrice)
                         .orderQuantity(orderQuantity)
