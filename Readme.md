@@ -37,3 +37,19 @@
 | 0.2.1　　(24.05.20) | 체결 결과 기반 후처리 기능 관련 버그 수정, 디스코드 메시지 발송 기능 수정(시간 지연) |
 | 0.2.2　　(24.06.11) | 애플리케이션 내 전반적인 가격 데이터의 타입을 int -> BigDecimal로 수정 |
 | 0.3.0　　(???) | 해외 매수/매도 기능, 디스코드 메시지 발송 기능 도입 |
+
+
+
+<br>
+
+## License
+```
+ Copyright 2023-present DevSpaceHub.
+
+ Licensed under the GPL-3.0 license.
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ https://www.gnu.org/licenses/gpl-3.0.html
+```
+
