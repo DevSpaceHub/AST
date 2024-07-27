@@ -21,12 +21,15 @@ import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.OverseasStockOrderApiReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
+import com.devspacehub.ast.exception.error.InsufficientMoneyException;
+import com.devspacehub.ast.exception.error.InvalidValueException;
 import com.devspacehub.ast.util.OpenApiRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -38,7 +41,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
@@ -104,7 +107,7 @@ class OverseasReservationBuyOrderServiceTest {
     @Test
     void return_valid_reservations_for_today() {
         ReservationStockItem givenReservationDto = ReservationStockItem.builder()
-                .stockItem(StockItemDto.builder()
+                .stockItem(StockItemDto.Overseas.builder()
                         .itemCode("AAPL")
                         .orderQuantity(1)
                         .orderPrice(new BigDecimal("121.1011"))
@@ -152,25 +155,43 @@ class OverseasReservationBuyOrderServiceTest {
         verify(orderTradingRepository, never()).saveAll(any(List.class));
     }
 
-    @DisplayName("예약 금액 * 예약 수량이 예수금보다 낮거나 같으면 True를 반환한다.")
+    @DisplayName("예수금이 예약 금액 * 예약 수량보다 높거나 같으면 통과한다.")
     @CsvSource({
-            "12.023, 3, true",
-            "12.024, 3, true",
-            "12.025, 3, false"
+            "12.023, 3",
+            "12.024, 3"
     })
     @ParameterizedTest
-    void return_true_when_myDeposit_is_greaterThan_totalOrderPrice(BigDecimal givenOrderPrice, int orderQuantity, boolean expected) {
+    void passed_when_myDeposit_is_greaterThanOrEqualTo_totalOrderPrice(BigDecimal givenOrderPrice, int orderQuantity) {
         BigDecimal myDeposit = new BigDecimal("12.024").multiply(new BigDecimal("3.0"));
         ReservationStockItem givenReservation = ReservationStockItem.builder()
-                .stockItem(StockItemDto.builder()
+                .stockItem(StockItemDto.Overseas.builder()
                         .orderPrice(givenOrderPrice)
                         .orderQuantity(orderQuantity)
                         .build())
                 .build();
 
-        boolean result = overseasReservationBuyOrderService.hasSufficientDeposit(givenReservation, myDeposit);
+        overseasReservationBuyOrderService.sufficientDepositCheck(givenReservation, myDeposit);
+    }
 
-        assertThat(result).isEqualTo(expected);
+    @DisplayName("예약 금액 * 예약 수량이 예수금보다 높으면 InsufficientMoneyException이 발생한다.")
+    @CsvSource({
+            "12.0241, 3",
+            "12.0242, 3"
+    })
+    @ParameterizedTest
+    void throw_InsufficientMoneyException_when_myDeposit_is_lessThan_totalOrderPrice(BigDecimal givenOrderPrice, int orderQuantity) {
+        BigDecimal myDeposit = new BigDecimal("12.0240").multiply(new BigDecimal("3"));
+        ReservationStockItem givenReservation = ReservationStockItem.builder()
+                .stockItem(StockItemDto.Overseas.builder()
+                        .orderPrice(givenOrderPrice)
+                        .orderQuantity(orderQuantity)
+                        .build())
+                .build();
+
+        assertThatThrownBy(() -> overseasReservationBuyOrderService.sufficientDepositCheck(givenReservation, myDeposit))
+                .isInstanceOf(InsufficientMoneyException.class)
+                .hasMessage(String.format("Code: INSUFFICIENT_MONEY_ERROR (금액이 충분하지 않습니다.)%nException Message: totalAmount: %s, myDeposit: 36.0720",
+                                givenOrderPrice.multiply(BigDecimal.valueOf(orderQuantity))));
     }
 
     @DisplayName("응답 데이터가 성공일 때 알림 발송 객체에게 알림 발송 요청한다.")
@@ -199,5 +220,106 @@ class OverseasReservationBuyOrderServiceTest {
         overseasReservationBuyOrderService.orderApiResultProcess(response, orderTrading);
 
         verify(notificator, never()).sendMessage(any(MessageContentDto.OrderResult.class));
+    }
+
+    @DisplayName("주문가가 0원일 때 InvalidValueException이 발생한다.")
+    @Test
+    void throw_InvalidValueException_when_orderPrice_is_zero() {
+        BigDecimal given = new BigDecimal("0.0");
+
+        assertThatThrownBy(() -> overseasReservationBuyOrderService.prepareOrderPrice(given))
+                .isInstanceOf(InvalidValueException.class)
+                .hasMessage("Code: INVALID_VALUE (유효하지 않은 값 입니다.)\nException Message: 주문가 : 0.0");
+    }
+    @DisplayName("주어진 ReservationStockItem의 orderPrice를 호가에 맞게 조정하고 거래소 코드가 해외 것인지 확인한 뒤 StockItemDto를 생성한다.")
+    @Test
+    void prepare_StockItemDto_from_ReservationStockItem() {
+        ReservationStockItem given = ReservationStockItem.builder()
+                .stockItem(StockItemDto.Overseas.builder()
+                        .itemCode("AAPL")
+                        .orderPrice(new BigDecimal("0.09876"))
+                        .orderQuantity(1)
+                        .exchangeCode(ExchangeCode.NASDAQ).build())
+                .build();
+
+        StockItemDto.Overseas result = overseasReservationBuyOrderService.prepareOrderRequestInfo(given);
+
+        assertThat(result.getOrderPrice()).isEqualTo(new BigDecimal("0.0987"));
+        assertThat(result.getExchangeCode()).isEqualTo(ExchangeCode.NASDAQ);
+    }
+
+    @DisplayName("ReservationStockItem 필드들이 정상적이면 통과한다.")
+    @Test
+    void passed_when_all_fields_are_ok() {
+        ReservationStockItem given = ReservationStockItem.builder()
+                .stockItem(StockItemDto.Overseas.builder()
+                        .itemCode("AAPL")
+                        .orderPrice(new BigDecimal("2.00"))
+                        .orderQuantity(1)
+                        .exchangeCode(ExchangeCode.NASDAQ).build()).build();
+
+        overseasReservationBuyOrderService.validateValue(given);
+    }
+    @DisplayName("itemCode가 비었으면 InvalidValueException이 발생한다.")
+    @Test
+    void throw_InvalidValueException_when_itemCode_is_blank() {
+        String given = " ";
+        ReservationStockItem reservationStockItem = ReservationStockItem.builder()
+                .stockItem(StockItemDto.Overseas.builder()
+                        .itemCode(given)
+                        .orderPrice(new BigDecimal("2.00"))
+                        .orderQuantity(1)
+                        .exchangeCode(ExchangeCode.NASDAQ).build()).build();
+
+        assertThatThrownBy(() -> overseasReservationBuyOrderService.validateValue(reservationStockItem))
+                .isInstanceOf(InvalidValueException.class)
+                .hasMessage("Code: DATA_IS_BLANK_ERROR (값이 비었습니다.)");
+    }
+
+    @DisplayName("주문가가 0보다 작거나 같으면 InvalidValueException이 발생한다.")
+    @Test
+    void throw_InvalidValueException_when_orderPrice_is_lessThanOrEqualTo_zero() {
+        BigDecimal given = new BigDecimal("0.00");
+        ReservationStockItem reservationStockItem = ReservationStockItem.builder()
+                .stockItem(StockItemDto.Overseas.builder()
+                        .itemCode("AAPL")
+                        .orderPrice(given)
+                        .orderQuantity(1)
+                        .exchangeCode(ExchangeCode.NASDAQ).build()).build();
+
+        assertThatThrownBy(() -> overseasReservationBuyOrderService.validateValue(reservationStockItem))
+                .isInstanceOf(InvalidValueException.class)
+                .hasMessage("Code: INVALID_VALUE (유효하지 않은 값 입니다.)\nException Message: 주문가: 0.00");
+    }
+
+    @DisplayName("주문 수량이 0보다 작거나 같으면 InvalidValueException이 발생한다.")
+    @Test
+    void throw_InvalidValueException_when_orderQuantity_is_lessThanOrEqualTo_zero() {
+        int given = 0;
+        ReservationStockItem reservationStockItem = ReservationStockItem.builder()
+                .stockItem(StockItemDto.Overseas.builder()
+                        .itemCode("AAPL")
+                        .orderPrice(new BigDecimal("1.00"))
+                        .orderQuantity(given)
+                        .exchangeCode(ExchangeCode.NASDAQ).build()).build();
+
+        assertThatThrownBy(() -> overseasReservationBuyOrderService.validateValue(reservationStockItem))
+                .isInstanceOf(InvalidValueException.class)
+                .hasMessage("Code: INVALID_VALUE (유효하지 않은 값 입니다.)\nException Message: 주문 수량: 0");
+    }
+    @ValueSource(strings = {"KOSPI", "KOSDAQ", "KONEX"})
+    @DisplayName("거래소 코드가 해외 거래소 코드가 아니면 InvalidValueException이 발생한다.")
+    @ParameterizedTest
+    void throw_InvalidValueException_when_exchangeCode_is_not_overseas(ExchangeCode given) {
+        ReservationStockItem reservationStockItem = ReservationStockItem.builder()
+                .stockItem(StockItemDto.Overseas.builder()
+                        .itemCode("AAPL")
+                        .orderPrice(new BigDecimal("1.00"))
+                        .orderQuantity(1)
+                        .exchangeCode(given).build()).build();
+
+        assertThatThrownBy(() -> overseasReservationBuyOrderService.validateValue(reservationStockItem))
+                .isInstanceOf(InvalidValueException.class)
+                .hasMessage(String.format("Code: INVALID_VALUE (유효하지 않은 값 입니다.)%nException Message: 거래소 코드: %s", given.name()));
     }
 }

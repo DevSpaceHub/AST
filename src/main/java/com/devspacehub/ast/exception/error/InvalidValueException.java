@@ -17,4 +17,7 @@ public class InvalidValueException extends BusinessException {
     public InvalidValueException(ResultCode resultCode) {
         super(resultCode);
     }
+    public InvalidValueException(ResultCode resultCode, String valueDataMessage) {
+        super(resultCode, valueDataMessage);
+    }
 }

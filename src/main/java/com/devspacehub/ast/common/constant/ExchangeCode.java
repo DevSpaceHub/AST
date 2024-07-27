@@ -28,7 +28,6 @@ public enum ExchangeCode {
     NEWYORK("NYS", "NYSE"),
     KOSPI("KOSPI", "KOSPI"),
     KOSDAQ("KOSDAQ", "KOSDAQ"),
-    KOSDAQ_GLOBAL("KOSDAQ GLOBAL", "KOSDAQ GLOBAL"),
     KONEX("KONEX", "KONEX")
     ;
 
@@ -67,5 +66,14 @@ public enum ExchangeCode {
      */
     public static List<String> longCodeOverseas() {
         return List.of(ExchangeCode.NASDAQ.getLongCode(), ExchangeCode.NEWYORK.getLongCode());
+    }
+
+    /**
+     * 해외 거래소 코드인지 확인하여 응답한다.
+     * @return
+     */
+    public boolean isOverseas() {
+        final List<ExchangeCode> overseas = List.of(NASDAQ, NEWYORK);
+        return overseas.contains(this);
     }
 }

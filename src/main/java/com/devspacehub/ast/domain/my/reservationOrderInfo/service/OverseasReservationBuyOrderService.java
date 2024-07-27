@@ -9,10 +9,7 @@
 package com.devspacehub.ast.domain.my.reservationOrderInfo.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
-import com.devspacehub.ast.common.constant.DecimalScale;
-import com.devspacehub.ast.common.constant.ExchangeCode;
-import com.devspacehub.ast.common.constant.MarketType;
-import com.devspacehub.ast.common.constant.OpenApiType;
+import com.devspacehub.ast.common.constant.*;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.common.utils.BigDecimalUtil;
 import com.devspacehub.ast.common.utils.LogUtils;
@@ -30,11 +27,15 @@ import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.OverseasStockOrderApiReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
+import com.devspacehub.ast.exception.error.InsufficientMoneyException;
+import com.devspacehub.ast.exception.error.InvalidValueException;
 import com.devspacehub.ast.util.OpenApiRequest;
+import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -83,15 +84,16 @@ public class OverseasReservationBuyOrderService extends TradingService {
 
         List<OrderTrading> orderedItems = new ArrayList<>();
         for (ReservationStockItem reservation : reservations) {
-            BigDecimal myDeposit = getMyDeposit(reservation);
-            if (!this.hasSufficientDeposit(reservation, myDeposit)) {
+            try {
+                this.validateValue(reservation);
+                this.sufficientDepositCheck(reservation, getMyDeposit(reservation));
+            } catch(Exception ex) {
                 continue;
             }
-            StockItemDto.Overseas stockItem = this.prepareOrder(reservation, myDeposit);
+            StockItemDto.Overseas orderRequestStockItem = this.prepareOrderRequestInfo(reservation);
 
-            StockOrderApiResDto apiResponse = (StockOrderApiResDto) this.callOrderApi(openApiProperties, stockItem, openApiType, txIdBuyOrder);
-
-            OrderTrading orderTrading = OrderTrading.from(stockItem, apiResponse, txIdBuyOrder);
+            StockOrderApiResDto apiResponse = (StockOrderApiResDto) this.callOrderApi(openApiProperties, orderRequestStockItem, openApiType, txIdBuyOrder);
+            OrderTrading orderTrading = OrderTrading.from(orderRequestStockItem, apiResponse, txIdBuyOrder);
 
             this.updateLatestOrderNumber(apiResponse, reservation.getReservationSeq());
             this.orderApiResultProcess(apiResponse, orderTrading);
@@ -102,14 +104,33 @@ public class OverseasReservationBuyOrderService extends TradingService {
     }
 
     /**
+     * 예약 종목 데이터 validation check
+     * @param reservation 예약 종목 데이터
+     * @return 유효하면 True
+     */
+    protected void validateValue(ReservationStockItem reservation) {
+        if (StringUtils.isBlank(reservation.getItemCode())) {
+            throw new InvalidValueException(ResultCode.DATA_IS_BLANK_ERROR);
+        }
+        if (BigDecimalUtil.isLessThanOrEqualTo(reservation.getOrderPrice(), BigDecimal.valueOf(0))) {
+            throw new InvalidValueException(ResultCode.INVALID_VALUE, String.format("주문가: %s", reservation.getOrderPrice()));
+        }
+        if (reservation.getOrderQuantity() <= 0) {
+            throw new InvalidValueException(ResultCode.INVALID_VALUE, String.format("주문 수량: %s", reservation.getOrderQuantity()));
+        }
+        if (!reservation.getExchangeCode().isOverseas()) {
+            throw new InvalidValueException(ResultCode.INVALID_VALUE, String.format("거래소 코드: %s", reservation.getExchangeCode()));
+        }
+    }
+
+    /**
      * 매수 주문을 위한 주문가, 주문 수량을 세팅한다.
      * @param reservation 예약 주식 정보
-     * @param myDeposit 예수금
      * @return 매수 주문 위해 세팅된 정보
      */
-    private StockItemDto.Overseas prepareOrder(ReservationStockItem reservation, BigDecimal myDeposit) {
+     protected StockItemDto.Overseas prepareOrderRequestInfo(ReservationStockItem reservation) {
         StockItemDto.Overseas overseasStockItem = reservation.getStockItem().castToOverseas();
-        BigDecimal adjustedOrderPrice = BigDecimalUtil.setScale(overseasStockItem.getOrderPrice(), DecimalScale.getOrderPriceDecimalScale(overseasStockItem.getOrderPrice()));
+        BigDecimal adjustedOrderPrice = this.prepareOrderPrice(overseasStockItem.getOrderPrice());
 
         return StockItemDto.Overseas.builder()
                 .orderDivision(overseasStockItem.getOrderDivision())
@@ -117,8 +138,22 @@ public class OverseasReservationBuyOrderService extends TradingService {
                 .exchangeCode(overseasStockItem.getExchangeCode())
                 .itemCode(reservation.getItemCode())
                 .orderPrice(adjustedOrderPrice)
-                .orderQuantity(calculateOrderQuantity(myDeposit, adjustedOrderPrice))
+                .orderQuantity(reservation.getOrderQuantity())
                 .build();
+    }
+
+    /**
+     * 호가에 맞게 주문가 조정한다.
+     * @param orderPrice DB에서 조회한 주문가
+     * @return 호가 조정된 주문가
+     */
+    protected BigDecimal prepareOrderPrice(BigDecimal orderPrice) {
+        BigDecimal adjustedOrderPrice = BigDecimalUtil.setScale(orderPrice, DecimalScale.getOrderPriceDecimalScale(orderPrice));
+
+        if (BigDecimalUtil.isLessThanOrEqualTo(adjustedOrderPrice, BigDecimal.valueOf(0))) {
+            throw new InvalidValueException(ResultCode.INVALID_VALUE, String.format("주문가 : %s", orderPrice));
+        }
+        return adjustedOrderPrice;
     }
 
     /**
@@ -136,13 +171,11 @@ public class OverseasReservationBuyOrderService extends TradingService {
      * @param reservation 해외 예약 종목 정보 Dto
      * @return 주문 가능한지 여부 boolean 값
      */
-    protected boolean hasSufficientDeposit(ReservationStockItem reservation, BigDecimal myDeposit) {
+    protected void sufficientDepositCheck(ReservationStockItem reservation, BigDecimal myDeposit) {
         StockItemDto overseasStockItem = reservation.getStockItem();
-        if (BigDecimalUtil.isLessThanOrEqualTo(BigDecimalUtil.multiplyBigDecimalWithNumber(overseasStockItem.getOrderPrice(), overseasStockItem.getOrderQuantity()), myDeposit)) {
-            return true;
-        } else {
-            LogUtils.insufficientAmountError(OpenApiType.OVERSEAS_STOCK_RESERVATION_BUY_ORDER, overseasStockItem.getItemNameKor(), myDeposit);
-            return false;
+        BigDecimal totalAmount = BigDecimalUtil.multiplyBigDecimalWithNumber(overseasStockItem.getOrderPrice(), overseasStockItem.getOrderQuantity());
+        if (BigDecimalUtil.isLessThan(myDeposit, totalAmount)) {
+            throw new InsufficientMoneyException(String.format("totalAmount: %s, myDeposit: %s", totalAmount, myDeposit));
         }
     }
 
@@ -172,7 +205,7 @@ public class OverseasReservationBuyOrderService extends TradingService {
      * @return OpenApi 요청의 응답 Dto
      */
     @Override
-    public <T extends StockItemDto> WebClientCommonResDto callOrderApi(OpenApiProperties openApiProperties, T stockItem, OpenApiType openApiType, String transactionId) {
+    public <T extends StockItemDto> WebClientCommonResDto callOrderApi(OpenApiProperties openApiProperties, @Validated T stockItem, OpenApiType openApiType, String transactionId) {
         Consumer<HttpHeaders> headers = OverseasStockOrderApiReqDto.setHeaders(openApiProperties.getOauth(), transactionId);
         OverseasStockOrderApiReqDto reqDto = OverseasStockOrderApiReqDto.from(openApiProperties, stockItem);
 
@@ -207,21 +240,6 @@ public class OverseasReservationBuyOrderService extends TradingService {
         } else {
             LogUtils.openApiFailedResponseMessage(OVERSEAS_STOCK_RESERVATION_BUY_ORDER, result.getMessage(), result.getMessageCode());
         }
-    }
-
-    /**
-     * 예수금의 특정 퍼센트와 주문가를 이용여 알고리즘을 이용해 매수 수량 구한다.
-     * 1. 예수금에서 cashBuyOrderAmountPercent 만큼의 비율에 해당하는 금액만 고려한다.
-     * 2. 1번 결과를 분할 매수할 수량으로 나눈다.
-     * 3. 2번 결과를 주문가로 나누어 최종 주문 수량을 구한다.
-     * @param myDeposit 예수금
-     * @param orderPrice 주문가
-     * @return 소수점 버려진 int 타입의 매수 수량
-     */
-    public int calculateOrderQuantity(BigDecimal myDeposit, BigDecimal orderPrice) {
-        BigDecimal xPercentOfMyCash = myDeposit.multiply(BigDecimalUtil.percentageToDecimal(cashBuyOrderAmountPercent));
-        BigDecimal resultDividedBySplitBuyCount = BigDecimalUtil.divide(xPercentOfMyCash, splitBuyCount, DecimalScale.FOUR.getCode());
-        return BigDecimalUtil.divide(resultDividedBySplitBuyCount, orderPrice, DecimalScale.ZERO.getCode()).intValue();
     }
 
     /**
