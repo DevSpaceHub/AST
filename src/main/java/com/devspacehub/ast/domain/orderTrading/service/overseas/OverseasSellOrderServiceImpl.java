@@ -82,7 +82,7 @@ public class OverseasSellOrderServiceImpl extends TradingService {
 
         // 2. 주식 선택 후 매도 주문 (손절매도 & 수익매도)
         List<OrderTrading> orderTradings = new ArrayList<>();
-        for (StockItemDto item : pickStockItems(myStockBalance)) {
+        for (StockItemDto.Overseas item : pickStockItems(myStockBalance)) {
             StockOrderApiResDto result = callOrderApi(openApiProperties, item, OVERSEAS_STOCK_SELL_ORDER, transactionId);
             OrderTrading orderTrading = OrderTrading.from(item, result, transactionId);
             orderTradings.add(orderTrading);
@@ -97,8 +97,8 @@ public class OverseasSellOrderServiceImpl extends TradingService {
      * @param stockBalanceResponse 주식 잔고 응답 Dto
      * @return 매도할 수 있는 주식 종목들
      */
-    private List<StockItemDto> pickStockItems(OverseasStockBalanceApiResDto stockBalanceResponse) {
-        List<StockItemDto> pickedStockItems = new ArrayList<>();
+    private List<StockItemDto.Overseas> pickStockItems(OverseasStockBalanceApiResDto stockBalanceResponse) {
+        List<StockItemDto.Overseas> pickedStockItems = new ArrayList<>();
 
         for (OverseasStockBalanceApiResDto.MyStockBalance myStockBalance : stockBalanceResponse.getMyStockBalance()) {
             if (isSellOrderableItem(myStockBalance)) {

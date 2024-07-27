@@ -44,8 +44,8 @@ public class StockItemDto {
          * @param orderPrice 주문 단가
          * @return 국내 주식 매수 정보 Dto
          */
-        public static StockItemDto buyFrom(DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo, int orderQuantity, BigDecimal orderPrice) {
-            return StockItemDto.builder()
+        public static StockItemDto.Domestic buyFrom(DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo, int orderQuantity, BigDecimal orderPrice) {
+            return StockItemDto.Domestic.builder()
                     .itemCode(stockInfo.getItemCode())
                     .itemNameKor(stockInfo.getHtsStockNameKor())
                     .orderQuantity(orderQuantity)
@@ -93,7 +93,7 @@ public class StockItemDto {
          * @return 매도 주문 위한 주식 종목 정보 DTO<br>
          * - orderPrice : 매도 주문 시 소수점 아래 4자리 유지한다.
          */
-        public static StockItemDto of(OverseasStockBalanceApiResDto.MyStockBalance myStockBalance) {
+        public static StockItemDto.Overseas of(OverseasStockBalanceApiResDto.MyStockBalance myStockBalance) {
             BigDecimal orderPrice = BigDecimalUtil.setScale(myStockBalance.getCurrentPrice(), DecimalScale.FOUR.getCode());
             return new Overseas(myStockBalance.getItemCode(), myStockBalance.getStockName(), ORDER_DIVISION,
                     myStockBalance.getOrderPossibleQuantity(), orderPrice, ExchangeCode.fromCode(myStockBalance.getExchangeCode()));

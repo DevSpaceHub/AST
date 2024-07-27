@@ -91,7 +91,7 @@ public class ReservationStockItem {
     public static ReservationStockItem ofDomestic(ReservationOrderInfo reservationOrderInfo) {
         return ReservationStockItem.builder()
                 .reservationSeq(reservationOrderInfo.getSeq())
-                .stockItem(StockItemDto.builder()
+                .stockItem(StockItemDto.Domestic.builder()
                         .itemCode(reservationOrderInfo.getItemCode())
                         .itemNameKor(reservationOrderInfo.getKoreanItemName())
                         .orderQuantity(reservationOrderInfo.getOrderQuantity())
