@@ -12,7 +12,7 @@ import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.my.dto.MyServiceRequestDto;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfoRepository;
-import com.devspacehub.ast.domain.orderTrading.dto.OrderConclusionDto;
+import com.devspacehub.ast.domain.my.dto.orderConclusion.OrderConclusionDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -8,6 +8,7 @@
 package com.devspacehub.ast.domain.orderTrading;
 
 import com.devspacehub.ast.common.constant.OpenApiType;
+import com.devspacehub.ast.domain.my.reservationOrderInfo.service.OverseasReservationBuyOrderService;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.service.ReservationBuyOrderServiceImpl;
 import com.devspacehub.ast.domain.orderTrading.service.BuyOrderServiceImpl;
 import com.devspacehub.ast.domain.orderTrading.service.SellOrderServiceImpl;
@@ -28,6 +29,7 @@ public class OrderTradingServiceFactory {
     private final ReservationBuyOrderServiceImpl reservationBuyOrderService;
     private final OverseasBuyOrderServiceImpl overseasBuyOrderService;
     private final OverseasSellOrderServiceImpl overseasSellOrderService;
+    private final OverseasReservationBuyOrderService overseasReservationBuyOrderService;
 
     public TradingService getServiceImpl(OpenApiType type) {
         return switch (type) {
@@ -36,6 +38,7 @@ public class OrderTradingServiceFactory {
             case DOMESTIC_STOCK_RESERVATION_BUY_ORDER -> reservationBuyOrderService;
             case OVERSEAS_STOCK_BUY_ORDER -> overseasBuyOrderService;
             case OVERSEAS_STOCK_SELL_ORDER -> overseasSellOrderService;
+            case OVERSEAS_STOCK_RESERVATION_BUY_ORDER -> overseasReservationBuyOrderService;
             default -> throw new IllegalArgumentException("적절하지 않은 OpenApiType 구매 타입 입니다.");
         };
     }

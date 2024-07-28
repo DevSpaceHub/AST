@@ -36,7 +36,7 @@ class OverseasStockOrderApiReqDtoTest {
         given(openApiProperties.getAccntProductCode()).willReturn("01");
 
         StockItemDto.Overseas stockItem = StockItemDto.Overseas.builder()
-                .itemCode("APPL")
+                .itemCode("AAPL")
                 .orderDivision(CommonConstants.ORDER_DIVISION)
                 .orderPrice(new BigDecimal("172.0325"))
                 .orderQuantity(1)

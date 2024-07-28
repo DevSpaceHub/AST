@@ -10,7 +10,7 @@ package com.devspacehub.ast.domain.notification.dto;
 
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
-import com.devspacehub.ast.domain.orderTrading.dto.OrderConclusionDto;
+import com.devspacehub.ast.domain.my.dto.orderConclusion.OrderConclusionDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

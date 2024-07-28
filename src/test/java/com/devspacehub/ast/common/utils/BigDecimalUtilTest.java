@@ -11,6 +11,8 @@ import com.devspacehub.ast.exception.error.InvalidValueException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
 
 import java.math.BigDecimal;
 
@@ -139,42 +141,42 @@ class BigDecimalUtilTest {
     }
 
     @DisplayName("isLessThanOrEqualTo: a 혹은 b 값이 null이면 InvalidValueException이 발생한다.")
-    @Test
-    void isLessThanOrEqualTo_exception() {
+    @NullSource
+    @ParameterizedTest
+    void isLessThanOrEqualTo_exception(BigDecimal a) {
         // given
-        BigDecimal a = null;
         BigDecimal b = new BigDecimal("999.98");
 
         // when // then
         assertThatThrownBy(() -> BigDecimalUtil.isLessThanOrEqualTo(a, b))
                 .isInstanceOf(InvalidValueException.class)
-                .hasMessage("Code: NUMBER_IS_NULL (값이 Null 입니다.)");
+                .hasMessage("Code: DATA_IS_NULL_ERROR (값이 Null 입니다.)");
     }
 
     @DisplayName("isLessThan: 두 개의 인자 중 한개라도 값이 null이면 InvalidValueException이 발생한다.")
-    @Test
-    void isLessThan_exception() {
+    @NullSource
+    @ParameterizedTest
+    void isLessThan_exception(BigDecimal a) {
         // given
-        BigDecimal a = null;
         BigDecimal b = new BigDecimal("999.98");
 
         // when // then
         assertThatThrownBy(() -> BigDecimalUtil.isLessThan(a, b))
                 .isInstanceOf(InvalidValueException.class)
-                .hasMessage("Code: NUMBER_IS_NULL (값이 Null 입니다.)");
+                .hasMessage("Code: DATA_IS_NULL_ERROR (값이 Null 입니다.)");
     }
 
     @DisplayName("전달하는 연산자 중 한개라도 값이 Null 이라면 InvalidValueException이 발생한다.")
-    @Test
-    void nullCheck() {
+    @NullSource
+    @ParameterizedTest
+    void nullCheck(BigDecimal givenNull) {
         // given
         BigDecimal a = new BigDecimal("11.00");
         int b = 10;
-        BigDecimal givenNull = null;
         // when // then
         assertThatThrownBy(() -> BigDecimalUtil.nullCheck(a, b, givenNull))
                 .isInstanceOf(InvalidValueException.class)
-                .hasMessage("Code: NUMBER_IS_NULL (값이 Null 입니다.)");
+                .hasMessage("Code: DATA_IS_NULL_ERROR (값이 Null 입니다.)");
     }
 
     @DisplayName("BigDecimal 타입의 값의 소수점 자릿수를 지정한다.")

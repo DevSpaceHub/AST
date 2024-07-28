@@ -14,7 +14,7 @@ import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.OverseasStockConditionSearchResDto;
-import com.devspacehub.ast.domain.my.orderConclusion.dto.OrderConclusionFindExternalResDto;
+import com.devspacehub.ast.domain.my.dto.orderConclusion.OrderConclusionFindExternalResDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.BuyPossibleCashApiResDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceApiResDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.overseas.OverseasBuyPossibleCashApiResDto;
@@ -47,8 +47,8 @@ public class OpenApiRequest {
 
     /**
      * 접근 토큰 발급 OpenApi Api 호출 (Post)
-     * @param openApiType
-     * @param requestDto
+     * @param openApiType OpenApi 타입
+     * @param requestDto 요청 Dto
      * @return 신규 발급된 접근 토큰
      */
     public String httpOAuthRequest(OpenApiType openApiType, AccessTokenIssueExternalReqDto requestDto) {
@@ -78,7 +78,6 @@ public class OpenApiRequest {
 
     /**
      * web client 통해 OpenApi 호출 (Get)
-     *
      * @param openApiType the open api type
      * @param headers     the headers
      * @param queryParams the query params
@@ -112,7 +111,6 @@ public class OpenApiRequest {
 
     /**
      * OpenApi 호출 (Post)
-     *
      * @param <T>         the type parameter
      * @param openApiType the open api type
      * @param headers     the headers
@@ -153,7 +151,7 @@ public class OpenApiRequest {
     public Class<? extends WebClientCommonResDto> implyReturnType(OpenApiType openApiType) {
         switch (openApiType) {
             case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER, DOMESTIC_STOCK_RESERVATION_BUY_ORDER,
-                    OVERSEAS_STOCK_BUY_ORDER, OVERSEAS_STOCK_SELL_ORDER -> {
+                    OVERSEAS_STOCK_BUY_ORDER, OVERSEAS_STOCK_SELL_ORDER, OVERSEAS_STOCK_RESERVATION_BUY_ORDER -> {
                 return StockOrderApiResDto.class;
             }
             case DOMESTIC_BUY_ORDER_POSSIBLE_CASH -> {
@@ -186,6 +184,8 @@ public class OpenApiRequest {
 
     /**
      * 응답값이 null이면 예외를 발생시킨다.
+     * @param openApiType OpenApi 타입
+     * @param response 응답 Dto
      */
     private void checkResponseIsNull(OpenApiType openApiType, Object response) {
         if (Objects.isNull(response)) {

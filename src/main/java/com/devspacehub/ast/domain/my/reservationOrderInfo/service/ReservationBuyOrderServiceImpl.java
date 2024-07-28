@@ -20,6 +20,7 @@ import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
 import com.devspacehub.ast.domain.my.dto.MyServiceRequestDto;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfoRepository;
+import com.devspacehub.ast.domain.my.reservationOrderInfo.dto.ReservationStockItem;
 import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.my.service.MyServiceFactory;
 import com.devspacehub.ast.domain.notification.Notificator;
@@ -73,11 +74,9 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
      * @return
      */
     @Override
-    @Transactional
     public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType) {
         // 1. 예약 종목들 조회
-        List<ReservationOrderInfo> reservationOrderInfos = reservationOrderInfoRepository
-                .findValidAll(LocalDate.now());
+        List<ReservationOrderInfo> reservationOrderInfos = getValidReservationsForToday();
 
         if (reservationOrderInfos.isEmpty()) {
             LogUtils.notFoundDataError("금일 예약 매수할 종목 데이터");
@@ -86,9 +85,9 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
 
         // 2. 매수 종목 선택 및 주문
         List<OrderTrading> orderTradings = new ArrayList<>();
-        for (StockItemDto.ReservationStockItem reservationItem : pickStockItems(reservationOrderInfos)) {
-            StockOrderApiResDto result = callOrderApi(openApiProperties, reservationItem, DOMESTIC_STOCK_RESERVATION_BUY_ORDER, transactionId);
-            OrderTrading orderTrading = OrderTrading.from(reservationItem, result, transactionId);
+        for (ReservationStockItem reservationItem : pickStockItems(reservationOrderInfos)) {
+            StockOrderApiResDto result = callOrderApi(openApiProperties, reservationItem.getStockItem(), DOMESTIC_STOCK_RESERVATION_BUY_ORDER, transactionId);
+            OrderTrading orderTrading = OrderTrading.from(reservationItem.getStockItem(), result, transactionId);
             orderTradings.add(orderTrading);
 
             updateLatestOrderNumber(result, reservationItem.getReservationSeq());
@@ -99,9 +98,17 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
     }
 
     /**
+     * 유효한 예약 종목 데이터를 조회하여 반환한다.
+     * @return 유효한 예약 종목 Entity
+     */
+    protected List<ReservationOrderInfo> getValidReservationsForToday() {
+        return reservationOrderInfoRepository.findValidAll(LocalDate.now());
+    }
+
+    /**
      * 최신 주문번호로 업데이트한다.
-     * @param result
-     * @param reservationItemSeq
+     * @param result 주문 OpenApi 응답 Dto
+     * @param reservationItemSeq 예약 종목 Seq
      */
     public void updateLatestOrderNumber(StockOrderApiResDto result, Long reservationItemSeq) {
         if (result.isFailed()) {
@@ -114,7 +121,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
         }
 
         ReservationOrderInfo reservationOrderInfo = optionalReservationOrderInfo.get();
-        reservationOrderInfo.setOrderNumber(result.getOutput().getOrderNumber());
+        reservationOrderInfo.updateOrderNumber(result.getOutput().getOrderNumber());
         reservationOrderInfo.updateMetaData(LocalDateTime.now());
     }
 
@@ -125,7 +132,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
      * - 충분한 예수금 있는지, 하한가보다 높은지 체크
      * @param reservationOrderInfos
      */
-    public List<StockItemDto.ReservationStockItem> pickStockItems(List<ReservationOrderInfo> reservationOrderInfos) {
+    public List<ReservationStockItem> pickStockItems(List<ReservationOrderInfo> reservationOrderInfos) {
         Map<Long, ReservationOrderInfo> itemCodeReservationOrderInfoMap = reservationOrderInfos.stream()
                 .collect(Collectors.toMap(ReservationOrderInfo::getSeq, reservationOrderInfo -> reservationOrderInfo));
 
@@ -133,7 +140,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
         Map<Long, CurrentStockPriceInfo> itemCodeResponseMap = reservationOrderInfos.stream()
                 .collect(Collectors.toMap(ReservationOrderInfo::getSeq, orderInfo -> marketStatusService.getCurrentStockPrice(orderInfo.getItemCode())));
 
-        List<StockItemDto.ReservationStockItem> pickedStockItems = new ArrayList<>();
+        List<ReservationStockItem> pickedStockItems = new ArrayList<>();
         for (Long seq : itemCodeReservationOrderInfoMap.keySet()) {
             ReservationOrderInfo currReservationOrderInfo = itemCodeReservationOrderInfoMap.get(seq);
 
@@ -145,7 +152,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
                 continue;
             }
             // 예수금 체크
-            BigDecimal myDeposit = myServiceImpl().getBuyOrderPossibleCash(MyServiceRequestDto.Domestic.from(currReservationOrderInfo.getItemCode(), adjustedOrderPrice, ORDER_DIVISION));
+            BigDecimal myDeposit = getMyService().getBuyOrderPossibleCash(MyServiceRequestDto.Domestic.from(currReservationOrderInfo.getItemCode(), adjustedOrderPrice, ORDER_DIVISION));
             BigDecimal purchaseAmount = BigDecimalUtil.multiplyBigDecimalWithNumber(adjustedOrderPrice, currReservationOrderInfo.getOrderQuantity());
             if (BigDecimalUtil.isLessThan(myDeposit, purchaseAmount)) {
                 LogUtils.insufficientAmountError(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, currReservationOrderInfo.getKoreanItemName(), myDeposit);
@@ -153,13 +160,17 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
             }
 
             currReservationOrderInfo.subtractConcludedQuantity(currReservationOrderInfo.getConclusionQuantity());
-            pickedStockItems.add(StockItemDto.ReservationStockItem.of(currReservationOrderInfo));
+            pickedStockItems.add(ReservationStockItem.ofDomestic(currReservationOrderInfo));
         }
         log.info("[{}] 최종 선택된 주식 종목 갯수 : {}", DOMESTIC_STOCK_RESERVATION_BUY_ORDER.getDiscription(), pickedStockItems.size());
         return pickedStockItems;
     }
 
-    private MyService myServiceImpl() {
+    /**
+     * Market Type에 따라 MyService 구현체를 반환한다.
+     * @return MyService 구현체
+     */
+    private MyService getMyService() {
         return myServiceFactory.resolveService(MarketType.DOMESTIC);
     }
 
@@ -172,7 +183,6 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
     }
 
     @Override
-    @Transactional
     public List<OrderTrading> saveOrderInfos(List<OrderTrading> orderTradingInfos) {
         if (!orderTradingInfos.isEmpty()) {
             return orderTradingRepository.saveAll(orderTradingInfos);

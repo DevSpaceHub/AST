@@ -6,7 +6,7 @@
  author : Yoonji Moon
  */
 
-package com.devspacehub.ast.domain.my.orderConclusion.dto;
+package com.devspacehub.ast.domain.my.dto.orderConclusion;
 
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;

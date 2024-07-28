@@ -10,8 +10,8 @@ package com.devspacehub.ast.domain.my.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
-import com.devspacehub.ast.domain.my.orderConclusion.dto.OrderConclusionFindExternalResDto;
-import com.devspacehub.ast.domain.orderTrading.dto.OrderConclusionDto;
+import com.devspacehub.ast.domain.my.dto.orderConclusion.OrderConclusionFindExternalResDto;
+import com.devspacehub.ast.domain.my.dto.orderConclusion.OrderConclusionDto;
 import com.devspacehub.ast.util.OpenApiRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

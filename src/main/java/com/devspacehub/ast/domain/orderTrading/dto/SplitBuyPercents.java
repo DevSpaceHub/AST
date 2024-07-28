@@ -10,7 +10,6 @@ package com.devspacehub.ast.domain.orderTrading.dto;
 
 import com.devspacehub.ast.common.utils.BigDecimalUtil;
 import io.micrometer.common.util.StringUtils;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
  * 분할 매수 전략 위한 퍼센트 관리 일급 컬렉션.
  */
 @Getter
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 public class SplitBuyPercents {
     private static final String COMMA_FOR_SPLIT = ",";
     private final List<Float> percents;

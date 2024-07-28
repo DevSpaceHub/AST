@@ -13,7 +13,10 @@ import com.devspacehub.ast.exception.error.InvalidValueException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,11 +25,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class MyServiceFactoryTest {
     @InjectMocks
     MyServiceFactory myServiceFactory;
+    @Mock
+    MyServiceImpl myService;
 
     @DisplayName("인자로 Null 값을 전달하면 InvalidValueException이 발생한다.")
-    @Test
-    void resolveServiceTest_fail() {
-        MarketType given = null;
+    @ParameterizedTest
+    @NullSource
+    void resolveServiceTest_fail(MarketType given) {
         assertThatThrownBy(() -> myServiceFactory.resolveService(given))
                 .isInstanceOf(InvalidValueException.class)
                 .hasMessage("Code: DATA_IS_NULL_ERROR (값이 Null 입니다.)");
