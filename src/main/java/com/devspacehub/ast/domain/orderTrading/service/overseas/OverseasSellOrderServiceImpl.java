@@ -25,7 +25,6 @@ import com.devspacehub.ast.domain.orderTrading.dto.OverseasStockOrderApiReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
 import com.devspacehub.ast.util.OpenApiRequest;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -48,15 +47,9 @@ import static com.devspacehub.ast.common.constant.ProfileType.getAccountStatus;
  * 해외 주식 주문 서비스 구현체 - 매도
  */
 @Slf4j
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Service
 public class OverseasSellOrderServiceImpl extends TradingService {
-    private final OpenApiRequest openApiRequest;
-    private final OrderTradingRepository orderTradingRepository;
-    private final Notificator notificator;
-    private final MyServiceFactory myServiceFactory;
-
     @Value("${openapi.rest.header.transaction-id.overseas.sell-order}")
     private String transactionId;
     @Value("${trading.overseas.indicator.minimum-loss-figure-ratio}")
@@ -67,6 +60,12 @@ public class OverseasSellOrderServiceImpl extends TradingService {
 
     private static final int MARKET_START_HOUR = 22;
     private static final int MAKRET_END_HOUR = 6;
+
+    public OverseasSellOrderServiceImpl(OpenApiRequest openApiRequest, Notificator notificator,
+                                        OrderTradingRepository orderTradingRepository, MyServiceFactory myServiceFactory) {
+        super(openApiRequest, notificator, orderTradingRepository, myServiceFactory);
+    }
+
 
     /**
      * 해외 매도 주문

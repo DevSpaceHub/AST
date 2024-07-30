@@ -24,7 +24,6 @@ import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import com.devspacehub.ast.util.OpenApiRequest;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -47,15 +46,9 @@ import static com.devspacehub.ast.common.constant.ProfileType.getAccountStatus;
  * 국내 주식 주문 서비스 구현체 - 매도
  */
 @Slf4j
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Service
 public class SellOrderServiceImpl extends TradingService {
-    private final OpenApiRequest openApiRequest;
-    private final OrderTradingRepository orderTradingRepository;
-    private final Notificator notificator;
-    private final MyServiceFactory myServiceFactory;
-
     @Value("${trading.domestic.indicator.stop-loss-sell-ratio}")
     private Float stopLossSellRatio;
 
@@ -65,6 +58,11 @@ public class SellOrderServiceImpl extends TradingService {
     private String transactionId;
     private static final int MARKET_START_HOUR = 9;
     private static final int MARKET_END_HOUR = 16;
+
+    public SellOrderServiceImpl(OpenApiRequest openApiRequest, Notificator notificator,
+                                OrderTradingRepository orderTradingRepository, MyServiceFactory myServiceFactory) {
+        super(openApiRequest, notificator, orderTradingRepository, myServiceFactory);
+    }
 
     /**
      * 매도 주문

@@ -30,7 +30,6 @@ import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReq
 import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import com.devspacehub.ast.domain.orderTrading.dto.SplitBuyPercents;
 import com.devspacehub.ast.util.OpenApiRequest;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,14 +57,9 @@ import static com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeR
  * 국내 주식 주문 서비스 구현체 - 매수
  */
 @Slf4j
-@RequiredArgsConstructor
 @Service
 public class BuyOrderServiceImpl extends TradingService {
-    private final OpenApiRequest openApiRequest;
-    private final OrderTradingRepository orderTradingRepository;
-    private final MyServiceFactory myServiceFactory;
     private final MarketStatusService marketStatusService;
-    private final Notificator notificator;
 
     @Value("${trading.domestic.indicator.maximum-price-to-book-ratio}")
     private float maxPBR;
@@ -83,8 +77,15 @@ public class BuyOrderServiceImpl extends TradingService {
     private BigDecimal splitBuyCount;
     @Value("${openapi.rest.header.transaction-id.domestic.buy-order}")
     private String transactionId;
-    private static final int MARKET_START_HOUR = 9;
-    private static final int MARKET_END_HOUR = 16;
+    private static final LocalDateTime MARKET_START_DATETIME = LocalDateTime.of(LocalDate.now(), LocalTime.of(9, 0));
+    private static final LocalDateTime MARKET_END_DATETIME = LocalDateTime.of(LocalDate.now(), LocalTime.of(16, 0));
+
+    public BuyOrderServiceImpl(OpenApiRequest openApiRequest, Notificator notificator, OrderTradingRepository orderTradingRepository,
+                               MyServiceFactory myServiceFactory, MarketStatusService marketStatusService) {
+        super(openApiRequest, notificator, orderTradingRepository, myServiceFactory);
+        this.marketStatusService = marketStatusService;
+    }
+
     /**
      * 국내주식 매수 주문
      * : itemCode 종목코드(6자리) / orderDivision 주문구분(지정가,00) / orderQuantity 주문수량 / orderPrice 주문단가
@@ -170,7 +171,7 @@ public class BuyOrderServiceImpl extends TradingService {
         while (++count < 10) {
             StockInfo stockInfo = stockItems.getStockInfos().get(count);
             // 2. 매수 가능 여부 체크
-            if (!isStockItemBuyOrderable(stockInfo, transactionId, MARKET_START_HOUR, MARKET_END_HOUR)) {
+            if (!isStockItemBuyOrderable(stockInfo.getItemCode(), transactionId, MARKET_START_DATETIME, MARKET_END_DATETIME)) {
                 continue;
             }
 
@@ -224,32 +225,6 @@ public class BuyOrderServiceImpl extends TradingService {
         return pickedStockItems;
     }
 
-    /**
-     * 매수 가능한지 체크한다.
-     * @param stockInfo 종목 정보 DTO
-     * @param transactionId 트랜잭션 Id
-     * @return 유효한 종목이고 신규 주문이면 True 반환한다. 반대는 False.
-     */
-    protected boolean isStockItemBuyOrderable(StockInfo stockInfo, String transactionId, int marketStartHour, int marketEndHour) {
-        return isNewOrder(stockInfo.getItemCode(), transactionId,
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(marketStartHour,0,0)),
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(marketEndHour, 0, 0))
-        );
-    }
-
-    /**
-     * 종목에 대해 새 주문인지 체크
-     * @param itemCode     String 타입의 종목 코드
-     * @param transactionId 트랜잭션 Id
-     * @param marketStart 장 시작 시각
-     * @param marketEnd 장 종료 시각
-     * @return 금일 기준 신규 주문이면 True 반환. 이미 주문 이력 있으면 False 반환.
-     */
-    @Override
-    public boolean isNewOrder(String itemCode, String transactionId, LocalDateTime marketStart, LocalDateTime marketEnd){
-        return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
-                itemCode, OPENAPI_SUCCESS_RESULT_CODE, transactionId, marketStart, marketEnd);
-    }
 
     /**
      * 지표(per, pbr, 투자유의여부(N), 단기과열여부(N), 정리매매여부(N), 시가총액, 거래량) 고려
