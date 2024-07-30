@@ -15,24 +15,26 @@ import com.devspacehub.ast.common.utils.BigDecimalUtil;
 import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.OverseasStockConditionSearchResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
+import com.devspacehub.ast.domain.my.service.MyServiceFactory;
+import com.devspacehub.ast.domain.notification.Notificator;
+import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.*;
 import com.devspacehub.ast.domain.marketStatus.service.OverseasMarketStatusService;
 import com.devspacehub.ast.domain.my.dto.MyServiceRequestDto;
 import com.devspacehub.ast.domain.my.service.MyService;
-import com.devspacehub.ast.domain.my.service.MyServiceFactory;
-import com.devspacehub.ast.domain.notification.Notificator;
 import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
-import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
 import com.devspacehub.ast.util.OpenApiRequest;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,13 +50,9 @@ import static com.devspacehub.ast.domain.marketStatus.dto.OverseasStockCondition
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class OverseasBuyOrderServiceImpl extends TradingService {
-    private final OrderTradingRepository orderTradingRepository;
     private final OverseasMarketStatusService overseasMarketStatusService;
-    private final Notificator notificator;
-    private final OpenApiRequest openApiRequest;
-    private final MyServiceFactory myServiceFactory;
+
     @Value("${openapi.rest.header.transaction-id.overseas.buy-order}")
     private String transactionId;
     @Value("${trading.overseas.split-buy-percents-by-comma}")
@@ -64,6 +62,16 @@ public class OverseasBuyOrderServiceImpl extends TradingService {
     protected BigDecimal splitBuyCount;
     @Value("${trading.overseas.cash-buy-order-amount-percent}")
     protected BigDecimal cashBuyOrderAmountPercent;
+
+    private static final LocalDateTime MARKET_START_DATETIME = LocalDateTime.of(LocalDate.now(), LocalTime.of(22, 0));
+    private static final LocalDateTime MARKET_END_DATETIME = LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.of(6, 0));
+
+    public OverseasBuyOrderServiceImpl(OpenApiRequest openApiRequest, Notificator notificator,
+                                       OrderTradingRepository orderTradingRepository, MyServiceFactory myServiceFactory,
+                                       OverseasMarketStatusService overseasMarketStatusService) {
+        super(openApiRequest, notificator, orderTradingRepository, myServiceFactory);
+        this.overseasMarketStatusService = overseasMarketStatusService;
+    }
 
     /**
      * 해외 주식 매수 주문한다.
@@ -113,8 +121,13 @@ public class OverseasBuyOrderServiceImpl extends TradingService {
         List<StockItemDto.Overseas> buyPossibleStocks = new ArrayList<>();
         while (++idx < tradeItemIterCount) {
             ResultDetail stockSearchDto = searchResDto.getResultDetails().get(idx);
-            BigDecimal currentPrice = stockSearchDto.getCurrentPrice();
+
+            if (!isStockItemBuyOrderable(stockSearchDto.getItemCode(), transactionId, MARKET_START_DATETIME, MARKET_END_DATETIME)) {
+                continue;
+            }
+
             // 매수 가능 금액
+            BigDecimal currentPrice = stockSearchDto.getCurrentPrice();
             BigDecimal myDeposit = myServiceImpl().getBuyOrderPossibleCash(MyServiceRequestDto.Overseas.from(
                     stockSearchDto.getItemCode(), currentPrice, stockSearchDto.getExchangeCode()));
 
