@@ -23,6 +23,6 @@ public class OpenApiFailedResponseException extends BusinessException {
         super(ResultCode.OPENAPI_SERVER_RESPONSE_ERROR, message);
     }
     public OpenApiFailedResponseException(OpenApiType openApiType, String exMessage) {
-        super(ResultCode.OPENAPI_SERVER_RESPONSE_ERROR, String.format("요청 실패하였습니다.(API : %s, Exception Message: %s)", openApiType.getDiscription(), exMessage));
+        super(ResultCode.OPENAPI_SERVER_RESPONSE_ERROR, String.format("요청 실패하였습니다.(API : %s, Open Api Server Response Message: %s)", openApiType.getDiscription(), exMessage));
     }
 }

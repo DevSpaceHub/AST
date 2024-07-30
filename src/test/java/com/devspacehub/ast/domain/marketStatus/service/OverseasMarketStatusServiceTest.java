@@ -44,7 +44,7 @@ class OverseasMarketStatusServiceTest {
     @DisplayName("NASDAQ, NEWYORK 거래소 코드의 조건검색 API 모두 호출 실패 시 OpenApiFailedResponseException이 발생한다.")
     void getStockConditionSearch_failed() {
         // given
-        String givenOpenApiFailedResponseExceptionMessage = "요청 실패하였습니다.(API : 해외주식 조건검색, Exception Message: <NASDAQ> : credentials_type이 유효하지 않습니다.(Bearer)<NEWYORK> : credentials_type이 유효하지 않습니다.(Bearer))";
+        String givenOpenApiFailedResponseExceptionMessage = "요청 실패하였습니다.(API : 해외주식 조건검색, Open Api Server Response Message: <NASDAQ> : credentials_type이 유효하지 않습니다.(Bearer)<NEWYORK> : credentials_type이 유효하지 않습니다.(Bearer))";
         String givenBusinessExceptionMessage = String.format("Code: OPENAPI_SERVER_RESPONSE_ERROR (OpenApi 서버에서 오류 응답을 반환하였습니다.)%nException Message: %s", givenOpenApiFailedResponseExceptionMessage);
 
         OverseasStockConditionSearchResDto givenResponse = new OverseasStockConditionSearchResDto();

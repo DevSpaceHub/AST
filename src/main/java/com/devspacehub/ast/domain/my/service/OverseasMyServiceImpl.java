@@ -71,7 +71,7 @@ public class OverseasMyServiceImpl extends MyService {
         OverseasBuyPossibleCashApiResDto responseDto = (OverseasBuyPossibleCashApiResDto) openApiRequest.httpGetRequest(OVERSEAS_BUY_ORDER_POSSIBLE_CASH, httpHeaders, queryParams);
 
         if (responseDto.isFailed()) {
-            throw new OpenApiFailedResponseException(OVERSEAS_BUY_ORDER_POSSIBLE_CASH, responseDto.getMessage());
+            throw new OpenApiFailedResponseException(OVERSEAS_BUY_ORDER_POSSIBLE_CASH, responseDto.toString());
         }
         log.info("[{}] 주문 가능 현금 : {}", OVERSEAS_BUY_ORDER_POSSIBLE_CASH.getDiscription(), responseDto.getResultDetail().getOrderPossibleCash());
 
