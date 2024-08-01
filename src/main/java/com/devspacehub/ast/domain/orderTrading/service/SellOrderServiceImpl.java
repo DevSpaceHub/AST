@@ -30,9 +30,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -56,8 +54,6 @@ public class SellOrderServiceImpl extends TradingService {
     private Float profitSellRatio;
     @Value("${openapi.rest.header.transaction-id.domestic.sell-order}")
     private String transactionId;
-    private static final int MARKET_START_HOUR = 9;
-    private static final int MARKET_END_HOUR = 16;
 
     public SellOrderServiceImpl(OpenApiRequest openApiRequest, Notificator notificator,
                                 OrderTradingRepository orderTradingRepository, MyServiceFactory myServiceFactory) {
@@ -87,10 +83,10 @@ public class SellOrderServiceImpl extends TradingService {
 
     /**
      * 주문 API 호출 메서드 호출
-     * @param openApiProperties
-     * @param stockItem
-     * @param openApiType
-     * @param transactionId
+     * @param openApiProperties OpenApi 호출 시 필요한 프로퍼티
+     * @param stockItem 주식 종목 정보
+     * @param openApiType OpenApi 타입
+     * @param transactionId OpenApi 타입 별 트랜잭션 ID
      * @return DomesticStockOrderExternalResDto
      */
     @Override
@@ -132,10 +128,7 @@ public class SellOrderServiceImpl extends TradingService {
         if (isEvaluateProfitLossRateBetweenProfitAndStopLossPercent(myStockBalance.getEvaluateProfitLossRate())) {
             return false;
         }
-        return isNewOrder(myStockBalance.getItemCode(), transactionId,
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(MARKET_START_HOUR, 0, 0)),
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(MARKET_END_HOUR, 0, 0))
-        );
+        return isNewOrder(myStockBalance.getItemCode(), transactionId, DOMESTIC_MARKET_START_DATETIME_KST, DOMESTIC_MARKET_END_DATETIME_KST);
     }
 
     /**
@@ -166,9 +159,9 @@ public class SellOrderServiceImpl extends TradingService {
     /**
      * 매수됐지만 체결되지 않은 종목은 주문하지 않는다.
      * 매수됐던 이력도 없다면 주문할 수 있다.
-     * @param itemCode
-     * @param transactionId
-     * @return
+     * @param itemCode 종목 코드
+     * @param transactionId OpenApi 타입 별 트랜잭션 ID
+     * @return 신규 주문이면 True 반환한다.
      */
     @Override
     public boolean isNewOrder(String itemCode, String transactionId, LocalDateTime marketStart, LocalDateTime marketEnd){

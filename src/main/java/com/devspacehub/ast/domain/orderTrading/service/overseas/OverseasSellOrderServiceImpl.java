@@ -31,15 +31,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
+import static com.devspacehub.ast.common.constant.CommonConstants.*;
 import static com.devspacehub.ast.common.constant.OpenApiType.OVERSEAS_STOCK_SELL_ORDER;
 import static com.devspacehub.ast.common.constant.ProfileType.getAccountStatus;
 
@@ -57,9 +55,6 @@ public class OverseasSellOrderServiceImpl extends TradingService {
 
     @Value("${trading.overseas.indicator.minimum-profit-figure-ratio}")
     private Float minimumProfitFigureRatio;
-
-    private static final int MARKET_START_HOUR = 22;
-    private static final int MAKRET_END_HOUR = 6;
 
     public OverseasSellOrderServiceImpl(OpenApiRequest openApiRequest, Notificator notificator,
                                         OrderTradingRepository orderTradingRepository, MyServiceFactory myServiceFactory) {
@@ -119,9 +114,7 @@ public class OverseasSellOrderServiceImpl extends TradingService {
         if (isEvaluateProfitLossRateBetweenProfitAndLossIndicator(myStockBalance.getEvaluateProfitLossRate())) {
             return false;
         }
-        return isNewOrder(myStockBalance.getItemCode(), transactionId,
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(MARKET_START_HOUR, 0, 0)),
-                LocalDateTime.of(LocalDate.now().plusDays(1L), LocalTime.of(MAKRET_END_HOUR, 0, 0)));
+        return isNewOrder(myStockBalance.getItemCode(), transactionId, OVERSEAS_MARKET_START_DATETIME_KST, OVERSEAS_MARKET_END_DATETIME_KST);
     }
 
     /**
@@ -193,9 +186,9 @@ public class OverseasSellOrderServiceImpl extends TradingService {
      *
      * @param itemCode      주식 종목
      * @param transactionId 매도 transactionId
-     * @param marketStart
-     * @param marketEnd
-     * @return 신규 주문이면
+     * @param marketStart 해외 주식시장 시작 일시
+     * @param marketEnd 해외 주식시장 마감 일시
+     * @return 신규 주문이면 True 반환한다.
      */
     @Override
     public boolean isNewOrder(String itemCode, String transactionId, LocalDateTime marketStart, LocalDateTime marketEnd) {
