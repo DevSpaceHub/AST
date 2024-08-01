@@ -16,7 +16,7 @@ import com.devspacehub.ast.domain.my.stockBalance.dto.request.OverseasBuyPossibl
 import com.devspacehub.ast.domain.my.stockBalance.dto.request.OverseasStockBalanceApiReqDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.overseas.OverseasBuyPossibleCashApiResDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.overseas.OverseasStockBalanceApiResDto;
-import com.devspacehub.ast.domain.orderTrading.dto.OrderConclusionDto;
+import com.devspacehub.ast.domain.my.dto.orderConclusion.OrderConclusionDto;
 import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
 import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -59,8 +59,8 @@ public class OverseasMyServiceImpl extends MyService {
      * 매수 가능 금액 조회 (Get)
      * @param requestDto requestDto MyService Layer Request Dto
      * @param <T> MyserviceRequestDto를 상속하는 타입.
-     * @error OpenApiFailedResponseException OpenApi 200OK 상태이나 응답
-     * @return
+     * @throws OpenApiFailedResponseException 성공 응답이 아닌 경우
+     * @return 해외 주문 가능 현금
      */
     @Override
     public <T extends MyServiceRequestDto> BigDecimal getBuyOrderPossibleCash(T requestDto) {
@@ -71,7 +71,7 @@ public class OverseasMyServiceImpl extends MyService {
         OverseasBuyPossibleCashApiResDto responseDto = (OverseasBuyPossibleCashApiResDto) openApiRequest.httpGetRequest(OVERSEAS_BUY_ORDER_POSSIBLE_CASH, httpHeaders, queryParams);
 
         if (responseDto.isFailed()) {
-            throw new OpenApiFailedResponseException(OVERSEAS_BUY_ORDER_POSSIBLE_CASH, responseDto.getMessage());
+            throw new OpenApiFailedResponseException(OVERSEAS_BUY_ORDER_POSSIBLE_CASH, responseDto.toString());
         }
         log.info("[{}] 주문 가능 현금 : {}", OVERSEAS_BUY_ORDER_POSSIBLE_CASH.getDiscription(), responseDto.getResultDetail().getOrderPossibleCash());
 

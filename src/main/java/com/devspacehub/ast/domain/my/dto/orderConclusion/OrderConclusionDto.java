@@ -6,10 +6,9 @@
  author : Yoonji Moon
  */
 
-package com.devspacehub.ast.domain.orderTrading.dto;
+package com.devspacehub.ast.domain.my.dto.orderConclusion;
 
 import com.devspacehub.ast.common.constant.OpenApiType;
-import com.devspacehub.ast.domain.my.orderConclusion.dto.OrderConclusionFindExternalResDto;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -20,6 +19,7 @@ import java.util.List;
 /**
  * 주문 체결 정보 DTO.
  */
+@Builder
 @Getter
 public class OrderConclusionDto {
     private String itemCode;
@@ -32,19 +32,6 @@ public class OrderConclusionDto {
     private BigDecimal orderPrice;
     private String orderTime;
 
-    @Builder
-    private OrderConclusionDto(String itemCode, String itemNameKor, String orderNumber, int concludedQuantity, BigDecimal concludedPrice,
-                               OpenApiType orderType, int orderQuantity, BigDecimal orderPrice, String orderTime) {
-        this.itemCode = itemCode;
-        this.itemNameKor = itemNameKor;
-        this.orderNumber = orderNumber;
-        this.concludedQuantity = concludedQuantity;
-        this.concludedPrice = concludedPrice;
-        this.orderType = orderType;
-        this.orderQuantity = orderQuantity;
-        this.orderPrice = orderPrice;
-        this.orderTime = orderTime;
-    }
     /**
      * 팩토리 메서드
      * @param responseBodies 주문 체결 조회 응답 DTO

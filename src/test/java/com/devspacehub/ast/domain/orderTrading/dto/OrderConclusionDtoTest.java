@@ -9,7 +9,8 @@
 package com.devspacehub.ast.domain.orderTrading.dto;
 
 import com.devspacehub.ast.common.constant.OpenApiType;
-import com.devspacehub.ast.domain.my.orderConclusion.dto.OrderConclusionFindExternalResDto;
+import com.devspacehub.ast.domain.my.dto.orderConclusion.OrderConclusionDto;
+import com.devspacehub.ast.domain.my.dto.orderConclusion.OrderConclusionFindExternalResDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

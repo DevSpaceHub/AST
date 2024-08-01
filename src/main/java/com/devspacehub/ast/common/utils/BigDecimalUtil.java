@@ -7,7 +7,7 @@
  */
 package com.devspacehub.ast.common.utils;
 
-import com.devspacehub.ast.common.constant.CommonConstants;
+import com.devspacehub.ast.common.constant.DecimalScale;
 import com.devspacehub.ast.common.constant.ResultCode;
 import com.devspacehub.ast.exception.error.InvalidValueException;
 
@@ -27,7 +27,7 @@ public class BigDecimalUtil {
      */
     public static BigDecimal percentageToDecimal (BigDecimal percentage) {
         nullCheck(percentage);
-        return divide(percentage, new BigDecimal("100.0"), CommonConstants.DECIMAL_SCALE_FOUR);
+        return divide(percentage, new BigDecimal("100.0"), DecimalScale.FOUR.getCode());
     }
 
     /**
@@ -37,7 +37,7 @@ public class BigDecimalUtil {
      */
     public static BigDecimal multiplyBigDecimalWithNumber(BigDecimal a, int b) {
         nullCheck(a, b);
-        return a.multiply(BigDecimal.valueOf(b)).setScale(CommonConstants.DECIMAL_SCALE_FOUR, RoundingMode.DOWN);
+        return a.multiply(BigDecimal.valueOf(b)).setScale(DecimalScale.FOUR.getCode(), RoundingMode.DOWN);
     }
 
     /**
@@ -56,10 +56,10 @@ public class BigDecimalUtil {
     }
 
     /**
-     * a가 b 보다 작으면 True를 반환한다.
+     * a가 b 보다 작은지 체크한다.
      * @param a b보다 더 적은지 체크되는 값
      * @param b a보다 더 큰지 체크되는 값
-     * @return
+     * @return a가 b보다 작으면 True 반환한다.
      */
     public static boolean isLessThan(BigDecimal a, BigDecimal b) {
         nullCheck(a, b);

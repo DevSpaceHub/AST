@@ -25,22 +25,19 @@ import com.devspacehub.ast.domain.orderTrading.dto.OverseasStockOrderApiReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
 import com.devspacehub.ast.util.OpenApiRequest;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
+import static com.devspacehub.ast.common.constant.CommonConstants.*;
 import static com.devspacehub.ast.common.constant.OpenApiType.OVERSEAS_STOCK_SELL_ORDER;
 import static com.devspacehub.ast.common.constant.ProfileType.getAccountStatus;
 
@@ -48,15 +45,9 @@ import static com.devspacehub.ast.common.constant.ProfileType.getAccountStatus;
  * 해외 주식 주문 서비스 구현체 - 매도
  */
 @Slf4j
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Service
 public class OverseasSellOrderServiceImpl extends TradingService {
-    private final OpenApiRequest openApiRequest;
-    private final OrderTradingRepository orderTradingRepository;
-    private final Notificator notificator;
-    private final MyServiceFactory myServiceFactory;
-
     @Value("${openapi.rest.header.transaction-id.overseas.sell-order}")
     private String transactionId;
     @Value("${trading.overseas.indicator.minimum-loss-figure-ratio}")
@@ -65,8 +56,11 @@ public class OverseasSellOrderServiceImpl extends TradingService {
     @Value("${trading.overseas.indicator.minimum-profit-figure-ratio}")
     private Float minimumProfitFigureRatio;
 
-    private static final int MARKET_START_HOUR = 22;
-    private static final int MAKRET_END_HOUR = 6;
+    public OverseasSellOrderServiceImpl(OpenApiRequest openApiRequest, Notificator notificator,
+                                        OrderTradingRepository orderTradingRepository, MyServiceFactory myServiceFactory) {
+        super(openApiRequest, notificator, orderTradingRepository, myServiceFactory);
+    }
+
 
     /**
      * 해외 매도 주문
@@ -82,7 +76,7 @@ public class OverseasSellOrderServiceImpl extends TradingService {
 
         // 2. 주식 선택 후 매도 주문 (손절매도 & 수익매도)
         List<OrderTrading> orderTradings = new ArrayList<>();
-        for (StockItemDto item : pickStockItems(myStockBalance)) {
+        for (StockItemDto.Overseas item : pickStockItems(myStockBalance)) {
             StockOrderApiResDto result = callOrderApi(openApiProperties, item, OVERSEAS_STOCK_SELL_ORDER, transactionId);
             OrderTrading orderTrading = OrderTrading.from(item, result, transactionId);
             orderTradings.add(orderTrading);
@@ -97,8 +91,8 @@ public class OverseasSellOrderServiceImpl extends TradingService {
      * @param stockBalanceResponse 주식 잔고 응답 Dto
      * @return 매도할 수 있는 주식 종목들
      */
-    private List<StockItemDto> pickStockItems(OverseasStockBalanceApiResDto stockBalanceResponse) {
-        List<StockItemDto> pickedStockItems = new ArrayList<>();
+    private List<StockItemDto.Overseas> pickStockItems(OverseasStockBalanceApiResDto stockBalanceResponse) {
+        List<StockItemDto.Overseas> pickedStockItems = new ArrayList<>();
 
         for (OverseasStockBalanceApiResDto.MyStockBalance myStockBalance : stockBalanceResponse.getMyStockBalance()) {
             if (isSellOrderableItem(myStockBalance)) {
@@ -120,9 +114,7 @@ public class OverseasSellOrderServiceImpl extends TradingService {
         if (isEvaluateProfitLossRateBetweenProfitAndLossIndicator(myStockBalance.getEvaluateProfitLossRate())) {
             return false;
         }
-        return isNewOrder(myStockBalance.getItemCode(), transactionId,
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(MARKET_START_HOUR, 0, 0)),
-                LocalDateTime.of(LocalDate.now().plusDays(1L), LocalTime.of(MAKRET_END_HOUR, 0, 0)));
+        return isNewOrder(myStockBalance.getItemCode(), transactionId, OVERSEAS_MARKET_START_DATETIME_KST, OVERSEAS_MARKET_END_DATETIME_KST);
     }
 
     /**
@@ -194,9 +186,9 @@ public class OverseasSellOrderServiceImpl extends TradingService {
      *
      * @param itemCode      주식 종목
      * @param transactionId 매도 transactionId
-     * @param marketStart
-     * @param marketEnd
-     * @return 신규 주문이면
+     * @param marketStart 해외 주식시장 시작 일시
+     * @param marketEnd 해외 주식시장 마감 일시
+     * @return 신규 주문이면 True 반환한다.
      */
     @Override
     public boolean isNewOrder(String itemCode, String transactionId, LocalDateTime marketStart, LocalDateTime marketEnd) {

@@ -10,7 +10,11 @@ package com.devspacehub.ast.domain.my.reservationOrderInfo;
 
 import com.devspacehub.ast.common.config.QuerydslConfig;
 import com.devspacehub.ast.common.constant.CommonConstants;
+import com.devspacehub.ast.common.constant.ExchangeCode;
 import com.devspacehub.ast.common.constant.YesNoStatus;
+import com.devspacehub.ast.domain.itemInfo.ItemInfo;
+import com.devspacehub.ast.domain.itemInfo.ItemInfoRepository;
+import com.devspacehub.ast.domain.my.reservationOrderInfo.dto.ReservationStockItem;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
@@ -20,7 +24,9 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,6 +42,8 @@ class ReservationOrderInfoRepositoryTest {
     JPAQueryFactory queryFactory;
     @Autowired
     ReservationOrderInfoRepository reservationOrderInfoRepository;
+    @Autowired
+    ItemInfoRepository itemInfoRepository;
 
     @Test
     @DisplayName("ORDER_START_DATE가 현재와 같거나 과거이고, ORDER_END_DATE가 현재와 같거나 미래인 종목을 조회한다.")
@@ -148,7 +156,7 @@ class ReservationOrderInfoRepositoryTest {
 
     @DisplayName("데이터 등록 시 BaseEntity 클래스의 필드들도 값 세팅이 정상적으로 이루어진다.")
     @Test
-    void baseEntityTest() {
+    void findValidAllTest() {
         // given
         LocalDate givenDate = LocalDate.of(2021, 12, 21);
         LocalDate givenNow = LocalDate.now();
@@ -167,5 +175,33 @@ class ReservationOrderInfoRepositoryTest {
                 .extracting("registrationId", "itemCode")
                 .containsExactly(tuple(CommonConstants.REGISTER_ID, "000000"));
         assertThat(result.get(0).getRegistrationDateTime().toLocalDate()).isEqualTo(givenNow);
+    }
+
+
+    @DisplayName("인자로 전달하는 일자가 ORDER_START_DATE와 ORDER_END_DATE 사이에 있고, USE_YN이 Y이면 정상 조회된다.")
+    @Test
+    void findValidAllByExchangeCodesTest() {
+        // given
+        LocalDate givenNow = LocalDate.of(2021, 12, 21);
+
+        reservationOrderInfoRepository.saveAndFlush(ReservationOrderInfo.builder()
+                .itemCode("AAPL1")
+                .orderStartDate(LocalDate.of(2021, 12, 20))
+                .orderEndDate(LocalDate.of(2021, 12, 21))
+                .useYn(YesNoStatus.YES.getCharCode())
+                .priority(1)
+                .orderQuantity(2)
+                .orderPrice(new BigDecimal("2.9200"))
+                .koreanItemName("애플")
+                .build());
+        itemInfoRepository.saveAndFlush(new ItemInfo("AAPL1", null, "애플", "Apple Inc. Common Stock", ExchangeCode.NASDAQ.getLongCode(), "", "", LocalDateTime.now(), "application", null, null));
+        // when
+        List<ReservationStockItem> result = reservationOrderInfoRepository.findValidAllByExchangeCodes(givenNow,
+                List.of(ExchangeCode.NEWYORK.getLongCode(), ExchangeCode.NASDAQ.getLongCode()));
+
+        // then
+        assertThat(result).hasSize(1)
+                .extracting("exchangeCode", "itemCode", "orderQuantity", "itemNameKor", "orderPrice")
+                .containsExactly(tuple(ExchangeCode.NASDAQ, "AAPL1", 2, "애플", new BigDecimal("2.9200")));
     }
 }

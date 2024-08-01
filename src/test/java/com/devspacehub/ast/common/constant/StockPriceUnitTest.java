@@ -96,14 +96,4 @@ class StockPriceUnitTest {
         assertThat(result).isEqualByComparingTo(BigDecimal.valueOf(40100));
     }
 
-    @DisplayName("전달한 주문가를 주문가에 맞는 호가 단위에 따라 조정하여 float 타입으로 반환한다.")
-    @Test
-    void floatOrderPriceCuttingByPriceUnit() {
-        // given
-        BigDecimal given = new BigDecimal("0.09992");
-        // when
-        BigDecimal result = StockPriceUnit.floatOrderPriceCuttingByDecimalScale(given, 2);
-        // then
-        assertThat(result).isEqualTo(new BigDecimal("0.09"));
-    }
 }

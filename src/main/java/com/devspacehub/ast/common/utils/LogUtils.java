@@ -56,6 +56,10 @@ public class LogUtils {
         log.error(message);
     }
 
+    /**
+     * 데이터가 없음을 알리는 ERROR 로그 메시지
+     * @param dataDescription 존재하지 않는 데이터 설명
+     */
     public static void notFoundDataError(String dataDescription) {
         log.error("{}가 존재하지 않습니다.", dataDescription);
     }

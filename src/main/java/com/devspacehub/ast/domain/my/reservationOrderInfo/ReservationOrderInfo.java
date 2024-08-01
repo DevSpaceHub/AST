@@ -54,7 +54,6 @@ public class ReservationOrderInfo extends BaseEntity {
     @Column(name = "conclusion_quantity", nullable = false)
     private int conclusionQuantity;
 
-    @Setter
     @Column(name = "order_number")
     private String orderNumber;
 
@@ -65,10 +64,18 @@ public class ReservationOrderInfo extends BaseEntity {
 
     /**
      * 주문 금액을 조정한다.
-     * @param orderPrice
+     * @param orderPrice 주문가
      */
     public void updateOrderPrice(BigDecimal orderPrice) {
         this.orderPrice = orderPrice;
+    }
+
+    /**
+     * 주문 번호를 조정한다.
+     * @param orderNumber 주문 번호
+     */
+    public void updateOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
     }
 
     /**

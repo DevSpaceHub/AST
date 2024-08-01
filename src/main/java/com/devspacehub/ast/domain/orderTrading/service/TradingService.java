@@ -12,15 +12,27 @@ import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
+import com.devspacehub.ast.domain.my.service.MyServiceFactory;
+import com.devspacehub.ast.domain.notification.Notificator;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
+import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
+import com.devspacehub.ast.util.OpenApiRequest;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
+
 /**
  * 주식 주문 서비스 인터페이스.
  */
+@RequiredArgsConstructor
 public abstract class TradingService {
+    protected final OpenApiRequest openApiRequest;
+    protected final Notificator notificator;
+    protected final OrderTradingRepository orderTradingRepository;
+    protected final MyServiceFactory myServiceFactory;
     /**
      * 주식 주문 (매수/매도).
      */
@@ -41,18 +53,6 @@ public abstract class TradingService {
     public abstract List<OrderTrading> saveOrderInfos(List<OrderTrading> orderTradingInfos);
 
     /**
-     * 금일 한번도 매수/매도 주문되지 않은 종목인지 체크.
-     * @param itemCode 주식 종목 코드
-     * @param transactionId API 별 트랜잭션 ID
-     * @param marketStart 장 시작 시각
-     * @param marketEnd 장 종료 시각
-     * @return
-     */
-    public boolean isNewOrder(String itemCode, String transactionId, LocalDateTime marketStart, LocalDateTime marketEnd) {
-        return true;
-    }
-
-    /**
      * OpenAPI 매수/매도 주문 요청의 응답에 대한 결과 처리<br>
      * - 성공 -> 메세지 발송<br>
      * - 실패 -> 에러 로그
@@ -61,4 +61,27 @@ public abstract class TradingService {
      */
     public abstract <T extends WebClientCommonResDto> void orderApiResultProcess(T result, OrderTrading orderTrading);
 
+
+    /**
+     * 매수 가능한지 체크한다.
+     * @param itemCode 주식 종목 코드
+     * @param transactionId 트랜잭션 Id
+     * @return 유효한 종목이고 신규 주문이면 True 반환한다. 반대는 False.
+     */
+    protected boolean isStockItemBuyOrderable(String itemCode, String transactionId, LocalDateTime marketStart, LocalDateTime marketEnd) {
+        return isNewOrder(itemCode, transactionId, marketStart, marketEnd);
+    }
+
+    /**
+     * 종목에 대해 새 주문인지 체크
+     * @param itemCode     String 타입의 종목 코드
+     * @param transactionId 트랜잭션 Id
+     * @param marketStart 장 시작 시각
+     * @param marketEnd 장 종료 시각
+     * @return 금일 기준 신규 주문이면 True 반환. 이미 주문 이력 있으면 False 반환.
+     */
+    protected boolean isNewOrder(String itemCode, String transactionId, LocalDateTime marketStart, LocalDateTime marketEnd){
+        return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
+                itemCode, OPENAPI_SUCCESS_RESULT_CODE, transactionId, marketStart, marketEnd);
+    }
 }

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,9 +25,8 @@ class SplitBuyPercentsTest {
     @DisplayName("국내 - 현재가에 대해 분할 매수 퍼센트에 따른 구매 단가를 계산한다.")
     void calculateBuyPriceBySplitBuyPercents_domestic() {
         // given
-        String percentsStr = "2,5,8";
         final BigDecimal currentPrice = new BigDecimal(99900);
-        SplitBuyPercents splitBuyPercents = SplitBuyPercents.of(percentsStr);
+        SplitBuyPercents splitBuyPercents = new SplitBuyPercents(List.of(0.02F, 0.05F, 0.08F));
 
         // when
         BigDecimal result1 = splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, 0);
@@ -41,9 +41,8 @@ class SplitBuyPercentsTest {
     @DisplayName("해외 - 현재가에 대해 분할 매수 퍼센트에 따른 구매 단가를 계산한다.")
     void calculateBuyPriceBySplitBuyPercents_overseas() {
         // given
-        String percentsStr = "10,12,14";
         final BigDecimal currentPrice = new BigDecimal("25.25");
-        SplitBuyPercents splitBuyPercents = SplitBuyPercents.of(percentsStr);
+        SplitBuyPercents splitBuyPercents = new SplitBuyPercents(List.of(0.1F, 0.12F, 0.14F));
 
         // when
         BigDecimal result0 = splitBuyPercents.calculateOrderPriceBySplitBuyPercents(currentPrice, 0);

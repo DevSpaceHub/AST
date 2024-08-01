@@ -8,6 +8,8 @@
 
 package com.devspacehub.ast.domain.my.reservationOrderInfo;
 
+import com.devspacehub.ast.domain.my.reservationOrderInfo.dto.ReservationStockItem;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -19,5 +21,6 @@ public interface ReservationOrderInfoRepositoryCustom {
 
     List<ReservationOrderInfo> findValidAll(LocalDate now);
 
+    List<ReservationStockItem> findValidAllByExchangeCodes(LocalDate now, List<String> exchangeCodes);
     Optional<ReservationOrderInfo> findValidOneByItemCodeAndOrderNumber(LocalDate now, String itemCode, String orderNumber);
 }

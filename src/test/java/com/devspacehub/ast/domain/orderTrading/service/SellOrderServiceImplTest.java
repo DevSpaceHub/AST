@@ -8,6 +8,7 @@
 
 package com.devspacehub.ast.domain.orderTrading.service;
 
+import com.devspacehub.ast.common.constant.CommonConstants;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.my.service.MyServiceFactory;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceApiResDto;
@@ -23,9 +24,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
@@ -47,9 +45,6 @@ class SellOrderServiceImplTest {
 
     @Value("${openapi.rest.transaction-id.domestic.sell-order}")
     private String sellOrderTxId;
-
-    private static final int MARKET_START_HOUR = 9;
-    private static final int MARKET_END_HOUR = 16;
 
     @BeforeEach
     void setUp() {
@@ -111,13 +106,11 @@ class SellOrderServiceImplTest {
 
         given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
                 givenLossSellItem.getItemCode(), OPENAPI_SUCCESS_RESULT_CODE, sellOrderTxId,
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(MARKET_START_HOUR, 0, 0)),
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(MARKET_END_HOUR, 0, 0)))
+                CommonConstants.DOMESTIC_MARKET_START_DATETIME_KST, CommonConstants.DOMESTIC_MARKET_END_DATETIME_KST)
         ).willReturn(0);
         given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
                 givenProfitSellItem.getItemCode(), OPENAPI_SUCCESS_RESULT_CODE, sellOrderTxId,
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(MARKET_START_HOUR, 0, 0)),
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(MARKET_END_HOUR, 0, 0)))
+                CommonConstants.DOMESTIC_MARKET_START_DATETIME_KST, CommonConstants.DOMESTIC_MARKET_END_DATETIME_KST)
         ).willReturn(0);
 
         // when
@@ -149,8 +142,7 @@ class SellOrderServiceImplTest {
 
         given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
                 alreadyOrdered.getItemCode(), OPENAPI_SUCCESS_RESULT_CODE, sellOrderTxId,
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(MARKET_START_HOUR, 0, 0)),
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(MARKET_END_HOUR, 0, 0)))
+                CommonConstants.DOMESTIC_MARKET_START_DATETIME_KST, CommonConstants.DOMESTIC_MARKET_END_DATETIME_KST)
         ).willReturn(1);
 
         // when

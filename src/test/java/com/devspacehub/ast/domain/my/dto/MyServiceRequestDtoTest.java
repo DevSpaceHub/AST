@@ -28,7 +28,7 @@ class MyServiceRequestDtoTest {
         // given
         BigDecimal givenOrderPrice = new BigDecimal("142.2345");
         // when
-        MyServiceRequestDto.Overseas result = MyServiceRequestDto.Overseas.from("APPL", givenOrderPrice, ExchangeCode.NASDAQ);
+        MyServiceRequestDto.Overseas result = MyServiceRequestDto.Overseas.from("AAPL", givenOrderPrice, ExchangeCode.NASDAQ);
         // then
         assertThat(result.getOrderPrice()).isEqualTo(new BigDecimal("142.234"));
     }

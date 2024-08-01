@@ -19,7 +19,7 @@ import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
 import com.devspacehub.ast.domain.oauth.service.OAuthService;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingServiceFactory;
-import com.devspacehub.ast.domain.orderTrading.dto.OrderConclusionDto;
+import com.devspacehub.ast.domain.my.dto.orderConclusion.OrderConclusionDto;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
 import com.devspacehub.ast.util.RequestUtil;
 import lombok.RequiredArgsConstructor;
