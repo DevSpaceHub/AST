@@ -8,6 +8,7 @@
 
 package com.devspacehub.ast.domain.orderTrading.service;
 
+import com.devspacehub.ast.common.constant.CommonConstants;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -101,9 +102,7 @@ class SellOrderIntegrationTest {
 
         // when
         boolean result = sellOrderService.isNewOrder(notOrderedItemCode, sellTxId,
-                LocalDateTime.of(today, LocalTime.of(MARKET_START_HOUR, 0, 0)),
-                LocalDateTime.of(today, LocalTime.of(MARKET_END_HOUR, 0, 0))
-        );
+                CommonConstants.DOMESTIC_MARKET_START_DATETIME_KST, CommonConstants.DOMESTIC_MARKET_END_DATETIME_KST);
         // then
         assertThat(result).isTrue();
     }

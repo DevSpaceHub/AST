@@ -31,7 +31,6 @@ import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReq
 import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
 import com.devspacehub.ast.util.OpenApiRequest;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -54,18 +53,21 @@ import static com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExter
  * 주문 서비스 - 예약 매수
  */
 @Slf4j
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Service
 public class ReservationBuyOrderServiceImpl extends TradingService {
-    private final OpenApiRequest openApiRequest;
     private final ReservationOrderInfoRepository reservationOrderInfoRepository;
-    private final OrderTradingRepository orderTradingRepository;
     private final MarketStatusService marketStatusService;
-    private final MyServiceFactory myServiceFactory;
-    private final Notificator notificator;
     @Value("${openapi.rest.header.transaction-id.domestic.buy-order}")
     private String transactionId;
+
+    public ReservationBuyOrderServiceImpl(OpenApiRequest openApiRequest, Notificator notificator,
+                                          OrderTradingRepository orderTradingRepository, MyServiceFactory myServiceFactory,
+                                          ReservationOrderInfoRepository reservationOrderInfoRepository, MarketStatusService marketStatusService) {
+        super(openApiRequest, notificator, orderTradingRepository, myServiceFactory);
+        this.reservationOrderInfoRepository = reservationOrderInfoRepository;
+        this.marketStatusService = marketStatusService;
+    }
 
     /**
      * 유효한 예약 매수 종목 데이터를 예약 매수 주문한다.

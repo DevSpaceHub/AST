@@ -27,11 +27,12 @@ import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.OverseasStockOrderApiReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
+import com.devspacehub.ast.exception.error.BusinessException;
 import com.devspacehub.ast.exception.error.InsufficientMoneyException;
 import com.devspacehub.ast.exception.error.InvalidValueException;
 import com.devspacehub.ast.util.OpenApiRequest;
 import io.micrometer.common.util.StringUtils;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -52,14 +53,10 @@ import static com.devspacehub.ast.common.constant.ProfileType.getAccountStatus;
 /**
  * TradingService 구현체인, 해외 예약 주문 서비스
  */
-@RequiredArgsConstructor
+@Slf4j
 @Service
 public class OverseasReservationBuyOrderService extends TradingService {
-    private final OpenApiRequest openApiRequest;
     private final ReservationOrderInfoRepository reservationOrderInfoRepository;
-    private final OrderTradingRepository orderTradingRepository;
-    private final MyServiceFactory myServiceFactory;
-    private final Notificator notificator;
 
     @Value("${openapi.rest.header.transaction-id.overseas.buy-order}")
     private String txIdBuyOrder;
@@ -67,6 +64,13 @@ public class OverseasReservationBuyOrderService extends TradingService {
     protected BigDecimal cashBuyOrderAmountPercent;
     @Value("${trading.overseas.split-buy-count}")
     protected BigDecimal splitBuyCount;
+
+    public OverseasReservationBuyOrderService(OpenApiRequest openApiRequest, Notificator notificator,
+                                              OrderTradingRepository orderTradingRepository, MyServiceFactory myServiceFactory,
+                                              ReservationOrderInfoRepository reservationOrderInfoRepository) {
+        super(openApiRequest, notificator, orderTradingRepository, myServiceFactory);
+        this.reservationOrderInfoRepository = reservationOrderInfoRepository;
+    }
 
     /**
      * 매수 주문을 요청한다.
@@ -87,7 +91,8 @@ public class OverseasReservationBuyOrderService extends TradingService {
             try {
                 this.validateValue(reservation);
                 this.sufficientDepositCheck(reservation, getMyDeposit(reservation));
-            } catch(Exception ex) {
+            } catch(BusinessException ex) {
+                log.warn("code = {}, message = '{}'", ex.getResultCode(), ex.getMessage());
                 continue;
             }
             StockItemDto.Overseas orderRequestStockItem = this.prepareOrderRequestInfo(reservation);

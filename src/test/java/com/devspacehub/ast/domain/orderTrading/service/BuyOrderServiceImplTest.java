@@ -136,19 +136,16 @@ class BuyOrderServiceImplTest {
     @DisplayName("금일 매수 주문한 이력이 없다면 True 반환한다.")
     void isStockItemBuyOrderable_true() {
         // given
-        int givenMarketStartHour = 9;
-        int givenMarketEndHour = 16;
-        DomStockTradingVolumeRankingExternalResDto.StockInfo stockInfo = new DomStockTradingVolumeRankingExternalResDto.StockInfo();
-        stockInfo.setItemCode("000155");
+        LocalDateTime givenMarketStart = LocalDateTime.of(LocalDate.now(), LocalTime.of(9, 0));
+        LocalDateTime givenMarketEnd = LocalDateTime.of(LocalDate.now(), LocalTime.of(16, 0));
+        String givenItemCode = "000155";
 
         given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
-            "000155", OPENAPI_SUCCESS_RESULT_CODE, txIdBuyOrder,
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(givenMarketStartHour, 0,0)),
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(givenMarketEndHour,0, 0)))
+            "000155", OPENAPI_SUCCESS_RESULT_CODE, txIdBuyOrder, givenMarketStart, givenMarketEnd)
         ).willReturn(0);
 
         // when
-        boolean result = buyOrderService.isStockItemBuyOrderable(stockInfo, txIdBuyOrder, givenMarketStartHour, givenMarketEndHour);
+        boolean result = buyOrderService.isStockItemBuyOrderable(givenItemCode, txIdBuyOrder, givenMarketStart, givenMarketEnd);
 
         // then
         assertThat(result).isTrue();

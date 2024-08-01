@@ -8,6 +8,10 @@
 
 package com.devspacehub.ast.common.constant;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 /**
  * 애플리케이션 전반에서 사용하는 공통 상수를 관리하는 클래스.
  */
@@ -28,13 +32,23 @@ public class CommonConstants {
      * 거래량 순위 조회 API 테스트 환경에서 필요한 Json 형태의 응답 데이터 파일 경로.
      */
     public static final String TRADING_VOLUME_RANKING_DATA_SAMPLE_JSON_PATH = "/www/ast/trading-volume/sampleTradingVolumeGetData.json";
+
     /**
-     * 소수점 자릿수 크기 - 넷째자리
+     * 현지(KR) 기준 국내 장 시작 시각
      */
-    public static final int DECIMAL_SCALE_FOUR = 4;
+    public static final LocalDateTime DOMESTIC_MARKET_START_DATETIME_KST = LocalDateTime.of(LocalDate.now(), LocalTime.of(9, 0, 0));
     /**
-     * 소수점 자릿수 크기 - 둘째자리
+     * 현지(KR) 기준 국내 장 마감 시각
      */
-    public static final int DECIMAL_SCALE_TWO = 2;
+    public static final LocalDateTime DOMESTIC_MARKET_END_DATETIME_KST = LocalDateTime.of(LocalDate.now(), LocalTime.of(16, 0, 0));
+
+    /**
+     * 현지(KR) 기준 해외 장 시작 시각
+     */
+    public static final LocalDateTime OVERSEAS_MARKET_START_DATETIME_KST = LocalDateTime.of(LocalDate.now(), LocalTime.of(22, 0, 0));
+    /**
+     * 현지(KR) 기준 해외 장 마감 시각
+     */
+    public static final LocalDateTime OVERSEAS_MARKET_END_DATETIME_KST = LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.of(6, 0, 0));
 
 }

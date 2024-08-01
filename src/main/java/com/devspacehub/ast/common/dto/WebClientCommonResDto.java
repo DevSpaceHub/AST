@@ -8,6 +8,7 @@
 
 package com.devspacehub.ast.common.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,5 +33,12 @@ public abstract class WebClientCommonResDto {
 
     public boolean isFailed() {
         return !isSuccess();
+    }
+
+
+    @JsonIgnore
+    @Override
+    public String toString() {
+        return String.format("message = %s, messageCode = %s, resultCode = %s", message, messageCode, resultCode);
     }
 }

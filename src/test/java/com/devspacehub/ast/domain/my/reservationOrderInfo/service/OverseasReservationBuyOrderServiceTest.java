@@ -229,7 +229,7 @@ class OverseasReservationBuyOrderServiceTest {
 
         assertThatThrownBy(() -> overseasReservationBuyOrderService.prepareOrderPrice(given))
                 .isInstanceOf(InvalidValueException.class)
-                .hasMessage("Code: INVALID_VALUE (유효하지 않은 값 입니다.)\nException Message: 주문가 : 0.0");
+                .hasMessage(String.format("Code: INVALID_VALUE (유효하지 않은 값 입니다.)%nException Message: 주문가 : 0.0"));
     }
     @DisplayName("주어진 ReservationStockItem의 orderPrice를 호가에 맞게 조정하고 거래소 코드가 해외 것인지 확인한 뒤 StockItemDto를 생성한다.")
     @Test
@@ -289,7 +289,7 @@ class OverseasReservationBuyOrderServiceTest {
 
         assertThatThrownBy(() -> overseasReservationBuyOrderService.validateValue(reservationStockItem))
                 .isInstanceOf(InvalidValueException.class)
-                .hasMessage("Code: INVALID_VALUE (유효하지 않은 값 입니다.)\nException Message: 주문가: 0.00");
+                .hasMessage(String.format("Code: INVALID_VALUE (유효하지 않은 값 입니다.)%nException Message: 주문가: 0.00"));
     }
 
     @DisplayName("주문 수량이 0보다 작거나 같으면 InvalidValueException이 발생한다.")
@@ -305,7 +305,7 @@ class OverseasReservationBuyOrderServiceTest {
 
         assertThatThrownBy(() -> overseasReservationBuyOrderService.validateValue(reservationStockItem))
                 .isInstanceOf(InvalidValueException.class)
-                .hasMessage("Code: INVALID_VALUE (유효하지 않은 값 입니다.)\nException Message: 주문 수량: 0");
+                .hasMessage(String.format("Code: INVALID_VALUE (유효하지 않은 값 입니다.)%nException Message: 주문 수량: 0"));
     }
     @ValueSource(strings = {"KOSPI", "KOSDAQ", "KONEX"})
     @DisplayName("거래소 코드가 해외 거래소 코드가 아니면 InvalidValueException이 발생한다.")

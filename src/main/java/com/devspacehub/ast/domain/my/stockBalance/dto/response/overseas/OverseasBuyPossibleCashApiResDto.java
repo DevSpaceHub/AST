@@ -9,6 +9,7 @@
 package com.devspacehub.ast.domain.my.stockBalance.dto.response.overseas;
 
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,6 +35,13 @@ public class OverseasBuyPossibleCashApiResDto extends WebClientCommonResDto {
     public boolean isSuccess() {
         return !Objects.isNull(resultDetail) && OPENAPI_SUCCESS_RESULT_CODE.equals(this.resultCode);
     }
+
+    @JsonIgnore
+    @Override
+    public String toString() {
+        return String.format("detail(%s), status(%s)", Objects.isNull(resultDetail) ? "null" : resultDetail.toString(), super.toString());
+    }
+
     @Getter
     public static class ResultDetail {
 
@@ -62,12 +70,19 @@ public class OverseasBuyPossibleCashApiResDto extends WebClientCommonResDto {
         private String ovrsMaxOrdPsblQty;
 
         @JsonProperty("ovrs_ord_psbl_amt")
-        private BigDecimal OrderPossibleCash;
+        private BigDecimal orderPossibleCash;
 
         @JsonProperty("sll_ruse_psbl_amt")
         private String sllRusePsblAmt;
 
         @JsonProperty("tr_crcy_cd")
         private String trCrcyCd;
+
+
+        @JsonIgnore
+        @Override
+        public String toString() {
+            return String.format("orderPossibleCash = %s", orderPossibleCash);
+        }
     }
 }
