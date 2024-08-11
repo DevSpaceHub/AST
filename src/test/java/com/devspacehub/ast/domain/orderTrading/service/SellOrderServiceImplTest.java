@@ -8,7 +8,6 @@
 
 package com.devspacehub.ast.domain.orderTrading.service;
 
-import com.devspacehub.ast.common.constant.CommonConstants;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.my.service.MyServiceFactory;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceApiResDto;
@@ -24,6 +23,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
@@ -45,6 +47,8 @@ class SellOrderServiceImplTest {
 
     @Value("${openapi.rest.transaction-id.domestic.sell-order}")
     private String sellOrderTxId;
+    private static final LocalTime MARKET_OPEN_TIME = LocalTime.of(9, 0, 0);
+    private static final LocalTime MARKET_CLOSE_TIME = LocalTime.of(16, 0, 0);
 
     @BeforeEach
     void setUp() {
@@ -88,6 +92,7 @@ class SellOrderServiceImplTest {
     @DisplayName("보유 수량이 1개 이상이고 주문 성공 이력이 없고 매도 지표에 부합하면 매도 주문 종목 리스트에 포함한다.")
     void pickStockItemsIncluded() {
         // given
+        LocalDate today = LocalDate.now();
         StockBalanceApiResDto.MyStockBalance givenLossSellItem = new StockBalanceApiResDto.MyStockBalance(
                 "000002", "", "", "", "", "", "",
                 1, "", "","",
@@ -106,11 +111,11 @@ class SellOrderServiceImplTest {
 
         given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
                 givenLossSellItem.getItemCode(), OPENAPI_SUCCESS_RESULT_CODE, sellOrderTxId,
-                CommonConstants.DOMESTIC_MARKET_START_DATETIME_KST, CommonConstants.DOMESTIC_MARKET_END_DATETIME_KST)
+                LocalDateTime.of(today, MARKET_OPEN_TIME), LocalDateTime.of(today, MARKET_CLOSE_TIME))
         ).willReturn(0);
         given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
                 givenProfitSellItem.getItemCode(), OPENAPI_SUCCESS_RESULT_CODE, sellOrderTxId,
-                CommonConstants.DOMESTIC_MARKET_START_DATETIME_KST, CommonConstants.DOMESTIC_MARKET_END_DATETIME_KST)
+                LocalDateTime.of(today, MARKET_OPEN_TIME), LocalDateTime.of(today, MARKET_CLOSE_TIME))
         ).willReturn(0);
 
         // when
@@ -125,6 +130,7 @@ class SellOrderServiceImplTest {
     @DisplayName("이미 체결된 종목이거나 매도 주문한 이력이 있으면 매도 주문 종목 리스트에 포함하지 않는다.")
     void pickStockItemsNotIncluded() {
         // given
+        LocalDate today = LocalDate.now();
         StockBalanceApiResDto.MyStockBalance alreadyOrdered = new StockBalanceApiResDto.MyStockBalance(
                 "000000", "", "", "", "", "", "",
                 1, "", "","",
@@ -142,7 +148,7 @@ class SellOrderServiceImplTest {
 
         given(orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
                 alreadyOrdered.getItemCode(), OPENAPI_SUCCESS_RESULT_CODE, sellOrderTxId,
-                CommonConstants.DOMESTIC_MARKET_START_DATETIME_KST, CommonConstants.DOMESTIC_MARKET_END_DATETIME_KST)
+                LocalDateTime.of(today, MARKET_OPEN_TIME), LocalDateTime.of(today, MARKET_CLOSE_TIME))
         ).willReturn(1);
 
         // when

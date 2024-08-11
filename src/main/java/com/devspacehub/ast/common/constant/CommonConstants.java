@@ -8,8 +8,6 @@
 
 package com.devspacehub.ast.common.constant;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 /**
@@ -36,19 +34,19 @@ public class CommonConstants {
     /**
      * 현지(KR) 기준 국내 장 시작 시각
      */
-    public static final LocalDateTime DOMESTIC_MARKET_START_DATETIME_KST = LocalDateTime.of(LocalDate.now(), LocalTime.of(9, 0, 0));
+    public static final LocalTime DOMESTIC_MARKET_OPEN_TIME_KST = LocalTime.of(9, 0, 0);
     /**
      * 현지(KR) 기준 국내 장 마감 시각
      */
-    public static final LocalDateTime DOMESTIC_MARKET_END_DATETIME_KST = LocalDateTime.of(LocalDate.now(), LocalTime.of(16, 0, 0));
+    public static final LocalTime DOMESTIC_MARKET_CLOSE_TIME_KST = LocalTime.of(16, 0, 0);
 
     /**
      * 현지(KR) 기준 해외 장 시작 시각
      */
-    public static final LocalDateTime OVERSEAS_MARKET_START_DATETIME_KST = LocalDateTime.of(LocalDate.now(), LocalTime.of(22, 0, 0));
+    public static final LocalTime OVERSEAS_MARKET_OPEN_TIME_KST = LocalTime.of(22, 0, 0);
     /**
      * 현지(KR) 기준 해외 장 마감 시각
      */
-    public static final LocalDateTime OVERSEAS_MARKET_END_DATETIME_KST = LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.of(6, 0, 0));
+    public static final LocalTime OVERSEAS_MARKET_CLOSE_TIME_KST = LocalTime.of(6, 0, 0);
 
 }
