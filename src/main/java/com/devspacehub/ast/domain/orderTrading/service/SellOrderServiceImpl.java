@@ -30,6 +30,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -120,7 +121,8 @@ public class SellOrderServiceImpl extends TradingService {
      * @return 매도 주문할 수 있는 종목이면 True를 반환한다.
      */
     protected boolean isStockItemSellOrderable(StockBalanceApiResDto.MyStockBalance myStockBalance, String transactionId) {
-        // 이미 체결된 주식인지 체크 (KIS : 체결 + 2일동안 0으로 응답함)
+        final LocalDateTime marketOpenDateTimeKST = LocalDateTime.of(LocalDate.now(), DOMESTIC_MARKET_OPEN_TIME_KST);
+        final LocalDateTime marketCloseDateTimeKST = LocalDateTime.of(LocalDate.now(), DOMESTIC_MARKET_CLOSE_TIME_KST);
         if (0 == myStockBalance.getHoldingQuantity()) {
             return false;
         }
@@ -128,7 +130,7 @@ public class SellOrderServiceImpl extends TradingService {
         if (isEvaluateProfitLossRateBetweenProfitAndStopLossPercent(myStockBalance.getEvaluateProfitLossRate())) {
             return false;
         }
-        return isNewOrder(myStockBalance.getItemCode(), transactionId, DOMESTIC_MARKET_START_DATETIME_KST, DOMESTIC_MARKET_END_DATETIME_KST);
+        return isNewOrder(myStockBalance.getItemCode(), transactionId, marketOpenDateTimeKST, marketCloseDateTimeKST);
     }
 
     /**
@@ -154,20 +156,6 @@ public class SellOrderServiceImpl extends TradingService {
             return orderTradingRepository.saveAll(orderTradingInfos);
         }
         return Collections.emptyList();
-    }
-
-    /**
-     * 매수됐지만 체결되지 않은 종목은 주문하지 않는다.
-     * 매수됐던 이력도 없다면 주문할 수 있다.
-     * @param itemCode 종목 코드
-     * @param transactionId OpenApi 타입 별 트랜잭션 ID
-     * @return 신규 주문이면 True 반환한다.
-     */
-    @Override
-    public boolean isNewOrder(String itemCode, String transactionId, LocalDateTime marketStart, LocalDateTime marketEnd){
-        // 주문 가능 수량 초과 시 주문 불가.
-        return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
-                itemCode, OPENAPI_SUCCESS_RESULT_CODE, transactionId, marketStart, marketEnd);
     }
 
     /**

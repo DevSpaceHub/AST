@@ -8,7 +8,6 @@
 
 package com.devspacehub.ast.domain.orderTrading.service;
 
-import com.devspacehub.ast.common.constant.CommonConstants;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -36,17 +35,16 @@ class SellOrderIntegrationTest {
     private SellOrderServiceImpl sellOrderService;
     @Value("${openapi.rest.transaction-id.domestic.sell-order}")
     private String sellTxId;
-    private static final int MARKET_START_HOUR = 9;
-    private static final int MARKET_END_HOUR = 16;
+    private static final LocalTime MARKET_OPEN_TIME = LocalTime.of(9, 0, 0);
+    private static final LocalTime MARKET_CLOSE_TIME = LocalTime.of(16, 0, 0);
 
-    // TODO 테스트코드 성공 위해 .registerDateTime() 을 세팅할 수 있도록 해야 한다.
     @Test
     @DisplayName("전달한 종목으로 전달한 기간 사이에 이미 성공한 매도 주문 이력이 있다면 False를 반환한다.")
     void isNewOrder_failed() {
         // given
         final String alreadyOrderedItemCode = "000000";
         LocalDate today = LocalDate.now();
-        LocalDateTime givenDateTime = LocalDateTime.of(today, LocalTime.of(MARKET_START_HOUR, 30, 0));
+        LocalDateTime givenDateTime = LocalDateTime.of(today, LocalTime.of(9, 30, 0));
 
         orderTradingRepository.save(OrderTrading.builder()
                 .seq(0L)
@@ -67,8 +65,7 @@ class SellOrderIntegrationTest {
 
         // when
         boolean result = sellOrderService.isNewOrder(alreadyOrderedItemCode, sellTxId,
-                LocalDateTime.of(today, LocalTime.of(MARKET_START_HOUR, 0, 0)),
-                LocalDateTime.of(today, LocalTime.of(MARKET_END_HOUR, 0, 0))
+                LocalDateTime.of(today, MARKET_OPEN_TIME), LocalDateTime.of(today, MARKET_CLOSE_TIME)
         );
         // then
         assertThat(result).isFalse();
@@ -81,7 +78,7 @@ class SellOrderIntegrationTest {
         final String alreadyOrderedItemCode = "000000";
         final String notOrderedItemCode = "100000";
         LocalDate today = LocalDate.now();
-        LocalDateTime givenOrderDateTime = LocalDateTime.of(today, LocalTime.of(MARKET_START_HOUR, 30, 0));
+        LocalDateTime givenOrderDateTime = LocalDateTime.of(today, LocalTime.of(9, 30, 0));
 
         orderTradingRepository.save(OrderTrading.builder()
                 .seq(0L)
@@ -102,7 +99,8 @@ class SellOrderIntegrationTest {
 
         // when
         boolean result = sellOrderService.isNewOrder(notOrderedItemCode, sellTxId,
-                CommonConstants.DOMESTIC_MARKET_START_DATETIME_KST, CommonConstants.DOMESTIC_MARKET_END_DATETIME_KST);
+                LocalDateTime.of(today, MARKET_OPEN_TIME), LocalDateTime.of(today, MARKET_CLOSE_TIME));
+
         // then
         assertThat(result).isTrue();
     }

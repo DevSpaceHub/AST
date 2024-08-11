@@ -66,7 +66,7 @@ public class StockBalanceApiResDto extends WebClientCommonResDto {
         private String thdtSllQty;
 
         @JsonProperty("hldg_qty")
-        private int holdingQuantity;         // 보유 수량
+        private int holdingQuantity;         // 보유 수량. 체결 날 + 2일 동안 0으로 응답함.
 
         @JsonProperty("ord_psbl_qty")
         private String orderPossibleQuantity;   // 주문 가능 수량
