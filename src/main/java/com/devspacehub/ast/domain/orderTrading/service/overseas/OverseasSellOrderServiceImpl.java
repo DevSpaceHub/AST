@@ -31,6 +31,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,11 +111,13 @@ public class OverseasSellOrderServiceImpl extends TradingService {
      * 2. 해당 종목에 대해 금일 이미 매도 주문을 했다면 False
      */
     public boolean isSellOrderableItem(OverseasStockBalanceApiResDto.MyStockBalance myStockBalance) {
+        final LocalDateTime marketOpenDateTimeKST = LocalDateTime.of(LocalDate.now(), OVERSEAS_MARKET_OPEN_TIME_KST);
+        final LocalDateTime marketCloseDateTimeKST = LocalDateTime.of(LocalDate.now().plusDays(1), OVERSEAS_MARKET_CLOSE_TIME_KST);
         // 기준 : 손절 퍼센트보다 낮으면 손절. 익절 퍼센트보다 높으면 익절.
         if (isEvaluateProfitLossRateBetweenProfitAndLossIndicator(myStockBalance.getEvaluateProfitLossRate())) {
             return false;
         }
-        return isNewOrder(myStockBalance.getItemCode(), transactionId, OVERSEAS_MARKET_START_DATETIME_KST, OVERSEAS_MARKET_END_DATETIME_KST);
+        return isNewOrder(myStockBalance.getItemCode(), transactionId, marketOpenDateTimeKST, marketCloseDateTimeKST);
     }
 
     /**
@@ -179,20 +182,5 @@ public class OverseasSellOrderServiceImpl extends TradingService {
 
     private MyService myServiceImpl() {
         return myServiceFactory.resolveService(MarketType.OVERSEAS);
-    }
-
-    /**
-     * 금일 인자로 전달받은 itemCode에 대해 최초 매도 주문인지 확인한다.
-     *
-     * @param itemCode      주식 종목
-     * @param transactionId 매도 transactionId
-     * @param marketStart 해외 주식시장 시작 일시
-     * @param marketEnd 해외 주식시장 마감 일시
-     * @return 신규 주문이면 True 반환한다.
-     */
-    @Override
-    public boolean isNewOrder(String itemCode, String transactionId, LocalDateTime marketStart, LocalDateTime marketEnd) {
-        return 0 == orderTradingRepository.countByItemCodeAndOrderResultCodeAndTransactionIdAndRegistrationDateTimeBetween(
-                itemCode, OPENAPI_SUCCESS_RESULT_CODE, transactionId, marketStart, marketEnd);
     }
 }

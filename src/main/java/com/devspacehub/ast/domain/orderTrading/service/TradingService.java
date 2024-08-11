@@ -73,7 +73,7 @@ public abstract class TradingService {
     }
 
     /**
-     * 종목에 대해 새 주문인지 체크
+     * 전달받은 종목의 주문 종류(매수/매도)에 대해 최초 주문인지 체크한다.
      * @param itemCode     String 타입의 종목 코드
      * @param transactionId 트랜잭션 Id
      * @param marketStart 장 시작 시각
