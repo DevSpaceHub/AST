@@ -77,8 +77,6 @@ public class BuyOrderServiceImpl extends TradingService {
     private BigDecimal splitBuyCount;
     @Value("${openapi.rest.header.transaction-id.domestic.buy-order}")
     private String transactionId;
-    private static final LocalDateTime MARKET_START_DATETIME = LocalDateTime.of(LocalDate.now(), LocalTime.of(9, 0));
-    private static final LocalDateTime MARKET_END_DATETIME = LocalDateTime.of(LocalDate.now(), LocalTime.of(16, 0));
 
     public BuyOrderServiceImpl(OpenApiRequest openApiRequest, Notificator notificator, OrderTradingRepository orderTradingRepository,
                                MyServiceFactory myServiceFactory, MarketStatusService marketStatusService) {
@@ -166,12 +164,14 @@ public class BuyOrderServiceImpl extends TradingService {
         DomStockTradingVolumeRankingExternalResDto stockItems = (DomStockTradingVolumeRankingExternalResDto) resDto;
 
         List<StockItemDto> pickedStockItems = new ArrayList<>();
+        final LocalDateTime marketOpenDateTimeKST = LocalDateTime.of(LocalDate.now(), DOMESTIC_MARKET_OPEN_TIME_KST);
+        final LocalDateTime marketCloseDateTimeKST = LocalDateTime.of(LocalDate.now(), DOMESTIC_MARKET_CLOSE_TIME_KST);
 
         int count = -1;
         while (++count < 10) {
             StockInfo stockInfo = stockItems.getStockInfos().get(count);
             // 2. 매수 가능 여부 체크
-            if (!isStockItemBuyOrderable(stockInfo.getItemCode(), transactionId, MARKET_START_DATETIME, MARKET_END_DATETIME)) {
+            if (!isStockItemBuyOrderable(stockInfo.getItemCode(), transactionId, marketOpenDateTimeKST, marketCloseDateTimeKST)) {
                 continue;
             }
 
