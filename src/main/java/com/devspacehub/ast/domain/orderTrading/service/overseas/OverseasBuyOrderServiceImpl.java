@@ -34,12 +34,13 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static com.devspacehub.ast.common.constant.CommonConstants.OVERSEAS_MARKET_CLOSE_TIME_KST;
+import static com.devspacehub.ast.common.constant.CommonConstants.OVERSEAS_MARKET_OPEN_TIME_KST;
 import static com.devspacehub.ast.common.constant.DecimalScale.*;
 import static com.devspacehub.ast.common.constant.OpenApiType.OVERSEAS_STOCK_BUY_ORDER;
 import static com.devspacehub.ast.common.constant.ProfileType.getAccountStatus;
@@ -62,9 +63,6 @@ public class OverseasBuyOrderServiceImpl extends TradingService {
     protected BigDecimal splitBuyCount;
     @Value("${trading.overseas.cash-buy-order-amount-percent}")
     protected BigDecimal cashBuyOrderAmountPercent;
-
-    private static final LocalDateTime MARKET_START_DATETIME = LocalDateTime.of(LocalDate.now(), LocalTime.of(22, 0));
-    private static final LocalDateTime MARKET_END_DATETIME = LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.of(6, 0));
 
     public OverseasBuyOrderServiceImpl(OpenApiRequest openApiRequest, Notificator notificator,
                                        OrderTradingRepository orderTradingRepository, MyServiceFactory myServiceFactory,
@@ -119,10 +117,13 @@ public class OverseasBuyOrderServiceImpl extends TradingService {
         int tradeItemIterCount = Math.min(searchResDto.getResultDetails().size(), 10);
 
         List<StockItemDto.Overseas> buyPossibleStocks = new ArrayList<>();
+        final LocalDateTime marketOpenDateTimeKST = LocalDateTime.of(LocalDate.now(), OVERSEAS_MARKET_OPEN_TIME_KST);
+        final LocalDateTime marketCloseDateTimeKST = LocalDateTime.of(LocalDate.now().plusDays(1), OVERSEAS_MARKET_CLOSE_TIME_KST);
+
         while (++idx < tradeItemIterCount) {
             ResultDetail stockSearchDto = searchResDto.getResultDetails().get(idx);
 
-            if (!isStockItemBuyOrderable(stockSearchDto.getItemCode(), transactionId, MARKET_START_DATETIME, MARKET_END_DATETIME)) {
+            if (!isStockItemBuyOrderable(stockSearchDto.getItemCode(), transactionId, marketOpenDateTimeKST, marketCloseDateTimeKST)) {
                 continue;
             }
 
