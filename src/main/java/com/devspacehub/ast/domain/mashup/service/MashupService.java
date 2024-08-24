@@ -67,12 +67,15 @@ public class MashupService {
     public void startOrderConclusionResultProcess(OpenApiType openApiType) {
         oAuthService.setAccessToken(TokenType.AccessToken);
         MyService myServiceImpl = myServiceImpl(openApiType);
+        LocalDate today = LocalDate.now();
 
         // 체결 상태 확인
-        List<OrderConclusionDto> concludedOrderTradingResults = myServiceImpl.getConcludedStock(LocalDate.now());
+        List<OrderConclusionDto> concludedOrderTradingResults = myServiceImpl.getConcludedStock(today);
+        log.info("{} API 호출 완료. 총 매수 체결 갯수 : {} 개", openApiType.getDiscription(), concludedOrderTradingResults.size());
+
         for (OrderConclusionDto orderConclusion : concludedOrderTradingResults) {
-            // 예약 매수 종목인 경우 처리
-            myServiceImpl.updateMyReservationOrderUseYn(orderConclusion, LocalDate.now());
+            // 종목 매수 예약 데이터 업데이트
+            myServiceImpl.updateMyReservationOrderUseYn(orderConclusion, today);
 
             // 체결된 종목들에 대해 디스코드 메시지 전달
             notificator.sendMessage(MessageContentDto.ConclusionResult.fromOne(openApiType, getAccountStatus(), orderConclusion));

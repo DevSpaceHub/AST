@@ -87,11 +87,10 @@ public class ReservationOrderInfo extends BaseEntity {
 
     /**
      * 주문 수량만큼 모두 체결됐는지 체크한다.
-     * @param concludedQuantity
-     * @return
+     * @return 희망하는 주문 수량과 체결 수량이 동일하면 True.
      */
-    public boolean checkTotalConcluded(int concludedQuantity) {
-        return this.orderQuantity == concludedQuantity;
+    public boolean checkTotalConcluded() {
+        return this.orderQuantity == this.conclusionQuantity;
     }
 
     /**

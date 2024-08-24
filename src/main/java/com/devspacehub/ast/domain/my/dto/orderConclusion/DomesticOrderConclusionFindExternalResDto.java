@@ -22,17 +22,18 @@ import java.util.Objects;
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 
 /**
- * 주식 일별 주문 체결 조회 응답 DTO.
+ * 국내 주식 일별 주문 체결 조회 응답 DTO.
  */
 @Setter
-public class OrderConclusionFindExternalResDto extends WebClientCommonResDto {
+@Getter
+public class DomesticOrderConclusionFindExternalResDto extends WebClientCommonResDto {
 
     @JsonProperty("ctx_area_fk100")
     private String ctxAreaFk100;
 
     @JsonProperty("ctx_area_nk100")
     private String ctxAreaNk100;
-    @Getter
+
     @JsonProperty("output1")
     private List<Output1> output1;
 
