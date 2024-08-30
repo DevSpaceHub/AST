@@ -167,7 +167,7 @@ public class MyServiceImpl extends MyService {
         }
 
         if (StringUtils.isNotBlank(response.getHeaders().getFirst(MORE_DATA_YN_HEADER_NAME)) && MORE_DATA_HEADER_FLAGS.contains(response.getHeaders().getFirst(MORE_DATA_YN_HEADER_NAME))) {
-            return callApiUntilDone(accumulatedResponses, openApiType, this.prepareHeadersForSequentialApiCalls(headers),
+            return this.callApiUntilDone(accumulatedResponses, openApiType, this.prepareHeadersForSequentialApiCalls(headers),
                     this.prepareParamsForSequentialApiCalls(queryParams, response.getBody().getCtxAreaNk100(), response.getBody().getCtxAreaFk100()));
         } else {
             return accumulatedResponses;

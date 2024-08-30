@@ -22,6 +22,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.time.LocalDate;
@@ -68,6 +69,18 @@ class MyServiceImplTest {
         // then
         assertNotNull(result);
         assertThat(result).hasSize(1);
-        assertThat(givenOpenApiResponseDto.getOutput1().get(0).getItemCode()).isEqualTo(result.get(0).getItemCode());
+        assertThat(result.get(0).getItemCode()).isEqualTo("000000");
+        assertThat(result.get(0).getOrderNumber()).isEqualTo("0000011111");
+    }
+
+    @DisplayName("연쇄적인 API 호출 시 요청 파라미터를 추가 세팅한다.")
+    @Test
+    void prepareParamsForSequentialApiCalls() {
+        MultiValueMap<String, String> result = myServiceImpl.prepareParamsForSequentialApiCalls(new LinkedMultiValueMap<>(), "100001", "200001");
+
+        assertThat(result)
+                .hasSize(2)
+                .containsEntry("CTX_AREA_NK100", List.of("100001"))
+                .containsEntry("CTX_AREA_FK100", List.of("200001"));
     }
 }
