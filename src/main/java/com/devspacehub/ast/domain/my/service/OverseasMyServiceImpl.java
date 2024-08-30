@@ -35,6 +35,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import static com.devspacehub.ast.common.constant.OpenApiType.*;
@@ -148,7 +149,7 @@ public class OverseasMyServiceImpl extends MyService {
         ResponseEntity<OverseasOrderConclusionFindExternalResDto> response =
                 (ResponseEntity<OverseasOrderConclusionFindExternalResDto>) openApiRequest.httpGetRequestWithExecute(openApiType, headers, queryParams);
 
-        if (response.getBody().isSuccess()) {
+        if (!Objects.isNull(response.getBody()) && response.getBody().isSuccess()) {
             log.info("[{}] 일부 데이터 갯수 : {} 개", openApiType.getDiscription(), response.getBody().getOutput().size());
             accumulatedResponses.addAll(response.getBody().getOutput());
         } else {

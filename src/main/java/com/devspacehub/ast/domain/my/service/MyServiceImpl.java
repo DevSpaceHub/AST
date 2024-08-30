@@ -10,9 +10,10 @@ package com.devspacehub.ast.domain.my.service;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.OpenApiType;
+import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.my.dto.MyServiceRequestDto;
 import com.devspacehub.ast.domain.my.dto.orderConclusion.OrderConclusionFindExternalReqDto;
-import com.devspacehub.ast.domain.my.dto.orderConclusion.OrderConclusionFindExternalResDto;
+import com.devspacehub.ast.domain.my.dto.orderConclusion.DomesticOrderConclusionFindExternalResDto;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfoRepository;
 import com.devspacehub.ast.domain.my.stockBalance.dto.request.StockBalanceApiReqDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.BuyPossibleCashApiResDto;
@@ -21,20 +22,23 @@ import com.devspacehub.ast.domain.my.stockBalance.dto.request.BuyPossibleCashApi
 import com.devspacehub.ast.domain.my.dto.orderConclusion.OrderConclusionDto;
 import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
 import com.devspacehub.ast.util.OpenApiRequest;
+import io.micrometer.common.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
-import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_BUY_ORDER_POSSIBLE_CASH;
-import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_ORDER_CONCLUSION_FIND;
+import static com.devspacehub.ast.common.constant.OpenApiType.*;
 
 /**
  * 사용자 개인 서비스 구현체.
@@ -45,9 +49,6 @@ import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_ORDER_CON
 @Slf4j
 @Service
 public class MyServiceImpl extends MyService {
-    private final OpenApiRequest openApiRequest;
-    private final OpenApiProperties openApiProperties;
-
     @Value("${openapi.rest.header.transaction-id.domestic.buy-order-possible-cash-find}")
     private String txIdBuyPossibleCashFind;
 
@@ -64,9 +65,7 @@ public class MyServiceImpl extends MyService {
      */
     public MyServiceImpl(ReservationOrderInfoRepository reservationOrderInfoRepository, OpenApiRequest openApiRequest,
                          OpenApiProperties openApiProperties) {
-        super(reservationOrderInfoRepository);
-        this.openApiRequest = openApiRequest;
-        this.openApiProperties = openApiProperties;
+        super(reservationOrderInfoRepository, openApiRequest, openApiProperties);
     }
 
     /**
@@ -126,18 +125,66 @@ public class MyServiceImpl extends MyService {
     @Override
     public List<OrderConclusionDto> getConcludedStock(LocalDate today) {
         // 헤더 & 파라미터 값 생성
-        Consumer<HttpHeaders> httpHeaders = OrderConclusionFindExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdOrderConclusionFind);
+        HttpHeaders headers = OrderConclusionFindExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdOrderConclusionFind);
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        MultiValueMap<String, String> queryParams = OrderConclusionFindExternalReqDto.createParameter(
+        MultiValueMap<String, String> queryParams = OrderConclusionFindExternalReqDto.Domestic.createParameter(
                 openApiProperties.getAccntNumber(), openApiProperties.getAccntProductCode(), today.format(dateTimeFormatter));
 
-        OrderConclusionFindExternalResDto responseDto = (OrderConclusionFindExternalResDto) openApiRequest.httpGetRequest(DOMESTIC_ORDER_CONCLUSION_FIND, httpHeaders, queryParams);
-
-        if (responseDto.isFailed()) {
-            throw new OpenApiFailedResponseException(DOMESTIC_ORDER_CONCLUSION_FIND, responseDto.getMessage());
-        }
-
-        return OrderConclusionDto.of(responseDto.getOutput1());
+        return OrderConclusionDto.domesticOf(this.callOrderConclusionGetApi(DOMESTIC_ORDER_CONCLUSION_FIND, headers, queryParams));
     }
 
+    /**
+     * 체결 내역 조회 API 호출 요청한다.
+     * 연쇄적으로 데이터 호출이 발생할 수 있다.
+     * @param openApiType Open Api 타입
+     * @param headers 요청 헤더
+     * @param queryParams 요청 쿼리 파라미터
+     * @return 체결 내역 조회 결과
+     */
+    protected List<DomesticOrderConclusionFindExternalResDto.Output1> callOrderConclusionGetApi(OpenApiType openApiType, final HttpHeaders headers, MultiValueMap<String, String> queryParams) {
+        return this.callApiUntilDone(new ArrayList<>(), openApiType, headers, queryParams);
+    }
+
+    /**
+     * 연속 조회해야할 때까지 재귀적으로 호출 수행한다.
+     * @param accumulatedResponses 최종 응답 데이터들
+     * @param openApiType OpenApi 타입
+     * @param headers 요청 헤더
+     * @param queryParams 요청 파라미터
+     * @return 최종 응답 데이터들
+     */
+    private List<DomesticOrderConclusionFindExternalResDto.Output1> callApiUntilDone(List<DomesticOrderConclusionFindExternalResDto.Output1> accumulatedResponses,
+                                                                                     OpenApiType openApiType, final HttpHeaders headers,
+                                                                                     final MultiValueMap<String, String> queryParams) {
+        ResponseEntity<DomesticOrderConclusionFindExternalResDto> response =
+                (ResponseEntity<DomesticOrderConclusionFindExternalResDto>) openApiRequest.httpGetRequestWithExecute(openApiType, headers, queryParams);
+
+        if (!Objects.isNull(response.getBody()) && response.getBody().isSuccess()) {
+            log.info("[{}] 일부 데이터 갯수 : {} 개", openApiType.getDiscription(), response.getBody().getOutput1().size());
+            accumulatedResponses.addAll(response.getBody().getOutput1());
+        } else {
+            LogUtils.openApiFailedResponseMessage(openApiType, response.getBody().getMessage(), response.getBody().getMessageCode());
+        }
+
+        if (StringUtils.isNotBlank(response.getHeaders().getFirst(MORE_DATA_YN_HEADER_NAME)) && MORE_DATA_HEADER_FLAGS.contains(response.getHeaders().getFirst(MORE_DATA_YN_HEADER_NAME))) {
+            return callApiUntilDone(accumulatedResponses, openApiType, this.prepareHeadersForSequentialApiCalls(headers),
+                    this.prepareParamsForSequentialApiCalls(queryParams, response.getBody().getCtxAreaNk100(), response.getBody().getCtxAreaFk100()));
+        } else {
+            return accumulatedResponses;
+        }
+    }
+
+    /**
+     * 연속 데이터 조회위해 추가 API 호출 위한 요청 파라미터 추가 세팅한다.
+     * @param queryParams 기존 쿼리 파라미터
+     * @param ctxAreaNk 연속조회키100
+     * @param ctxAreaFk 연속조회검색조건100
+     * @return 추가 세팅된 쿼리 파라미터
+     */
+    @Override
+    protected MultiValueMap<String, String> prepareParamsForSequentialApiCalls(MultiValueMap<String, String> queryParams, String ctxAreaNk, String ctxAreaFk) {
+        queryParams.add("CTX_AREA_FK100", ctxAreaFk);
+        queryParams.add("CTX_AREA_NK100", ctxAreaNk);
+        return queryParams;
+    }
 }
