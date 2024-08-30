@@ -46,6 +46,7 @@ openapi:
           buy-order-possible-cash-find: VTTS3007R
           stock-balance-find: VTTS3012R
           stock-condition-search: HHDFS76410000
+          order-conclusion-find: VTTS3035R
     appkey: ${APP_KEY}
     appsecret: ${APP_SECRET}
 
@@ -89,6 +90,7 @@ openapi:
           stock-balance-find: TTTS3012R
           stock-condition-search: HHDFS76410000
           buy-order-possible-cash-find: TTTS3007R
+          order-conclusion-find: TTTS3035R
 
     appkey: ${APP_KEY}
     appSecret: ${APP_SECRET}

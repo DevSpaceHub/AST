@@ -65,8 +65,7 @@ public class Notificator {
             if (ex instanceof WebClientResponseException webClientResponseException && HttpStatus.NO_CONTENT.equals(webClientResponseException.getStatusCode())) {
                 return;
             }
-            log.error("response error: {}", ex.getMessage());
-            throw new NotificationException();
+            throw new NotificationException(ex.getMessage());
         }
     }
     /**
@@ -79,6 +78,7 @@ public class Notificator {
             case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER, DOMESTIC_STOCK_RESERVATION_BUY_ORDER -> DOMESTIC_ORDER_NOTI_SENDER_NAME;
             case DOMESTIC_ORDER_CONCLUSION_FIND -> DOMESTIC_CONCLUSION_NOTI_SENDER_NAME;
             case OVERSEAS_STOCK_BUY_ORDER, OVERSEAS_STOCK_SELL_ORDER, OVERSEAS_STOCK_RESERVATION_BUY_ORDER -> OVERSEAS_ORDER_NOTI_SENDER_NAME;
+            case OVERSEAS_ORDER_CONCLUSION_FIND -> OVERSEAS_CONCLUSION_NOTI_SENDER_NAME;
             default -> throw new InvalidValueException(ResultCode.INVALID_OPENAPI_TYPE_ERROR);
         };
     }
