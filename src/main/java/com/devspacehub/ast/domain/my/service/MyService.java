@@ -8,13 +8,17 @@
 
 package com.devspacehub.ast.domain.my.service;
 
+import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.my.dto.MyServiceRequestDto;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfo;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfoRepository;
 import com.devspacehub.ast.domain.my.dto.orderConclusion.OrderConclusionDto;
+import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MultiValueMap;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,7 +31,13 @@ import java.util.Optional;
  */
 @RequiredArgsConstructor
 public abstract class MyService {
-     protected final ReservationOrderInfoRepository reservationOrderInfoRepository;
+    protected static final String MORE_DATA_YN_HEADER_NAME = "tr_cont";
+    protected static final List<String> MORE_DATA_HEADER_FLAGS = List.of("F", "M");
+    protected static final String MORE_DATA_Y_HEADER_VALUE = "N";
+
+    protected final ReservationOrderInfoRepository reservationOrderInfoRepository;
+    protected final OpenApiRequest openApiRequest;
+    protected final OpenApiProperties openApiProperties;
 
     /**
      * 매수 가능 금액 조회 (Get)
@@ -65,9 +75,28 @@ public abstract class MyService {
         ReservationOrderInfo validReservationItem = optionalReservationItem.get();
         validReservationItem.addConcludedQuantity(todayOrderConclusion.getConcludedQuantity());
 
-        if (validReservationItem.checkTotalConcluded(todayOrderConclusion.getConcludedQuantity())) {
+        if (validReservationItem.checkTotalConcluded()) {
             validReservationItem.disable();
         }
         validReservationItem.updateMetaData(LocalDateTime.now());
     }
+
+    /**
+     * 추가 데이터 조회 위한 API 호출에 필요한 헤더 세팅한다.
+     * @param httpHeaders 요청 헤더
+     * @return HttpHeaders
+     */
+    protected HttpHeaders prepareHeadersForSequentialApiCalls(HttpHeaders httpHeaders) {
+        httpHeaders.add(MORE_DATA_YN_HEADER_NAME, MORE_DATA_Y_HEADER_VALUE);
+        return httpHeaders;
+    }
+
+    /**
+     * 추가 데이터 조회 위한 API 호출에 필요한 파라미터 세팅한다.
+     * @param queryParams 쿼리 파라미터
+     * @param ctxAreaNk 연속조회키
+     * @param ctxAreaFk 연속조회검색조건
+     * @return MultiValueMap 쿼리 파라미터
+     */
+    protected abstract MultiValueMap<String, String> prepareParamsForSequentialApiCalls(MultiValueMap<String, String> queryParams, String ctxAreaNk, String ctxAreaFk);
 }

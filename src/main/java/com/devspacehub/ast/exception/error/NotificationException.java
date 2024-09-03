@@ -17,7 +17,7 @@ public class NotificationException extends BusinessException {
     /**
      * Instantiates a notification exception.
      */
-    public NotificationException() {
-        super(ResultCode.NOTIFICATION_ERROR);
+    public NotificationException(String message) {
+        super(ResultCode.NOTIFICATION_ERROR, message);
     }
 }

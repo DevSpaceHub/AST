@@ -9,6 +9,7 @@
 package com.devspacehub.ast.domain.my.dto.orderConclusion;
 
 import com.devspacehub.ast.common.constant.OpenApiType;
+import com.devspacehub.ast.common.utils.NumberUtils;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -35,23 +36,48 @@ public class OrderConclusionDto {
     /**
      * 팩토리 메서드
      * @param responseBodies 주문 체결 조회 응답 DTO
-     * @return
+     * @return 국내 체결 결과 Dto 묶음
      */
-    public static List<OrderConclusionDto> of (List<OrderConclusionFindExternalResDto.Output1> responseBodies) {
+    public static List<OrderConclusionDto> domesticOf(List<DomesticOrderConclusionFindExternalResDto.Output1> responseBodies) {
         List<OrderConclusionDto> orderTradingResults = new ArrayList<>();
-        for (OrderConclusionFindExternalResDto.Output1 output1 : responseBodies) {
+        for (DomesticOrderConclusionFindExternalResDto.Output1 output1 : responseBodies) {
             orderTradingResults.add(OrderConclusionDto.builder()
-                            .itemCode(output1.getItemCode())
-                            .itemNameKor(output1.getItemNameKor())
-                            .orderNumber(output1.getOrderNumber())
-                            .concludedPrice(new BigDecimal(output1.getTotalConcludedPrice()))
-                            .concludedQuantity(Integer.parseInt(output1.getTotalConcludedQuantity()))
-                            .orderType(OpenApiType.DOMESTIC_ORDER_CONCLUSION_FIND)
-                            .orderQuantity(Integer.parseInt(output1.getOrderQuantity()))
-                            .orderPrice(new BigDecimal(output1.getOrderPrice()))
-                            .orderTime(output1.getOrderTime())
+                    .itemCode(output1.getItemCode())
+                    .itemNameKor(output1.getItemNameKor())
+                    .orderNumber(NumberUtils.padLeftValueWithZeros(output1.getOrderNumber(), "0", 10))
+                    .concludedPrice(new BigDecimal(output1.getTotalConcludedPrice()))
+                    .concludedQuantity(Integer.parseInt(output1.getTotalConcludedQuantity()))
+                    .orderType(OpenApiType.DOMESTIC_ORDER_CONCLUSION_FIND)
+                    .orderQuantity(Integer.parseInt(output1.getOrderQuantity()))
+                    .orderPrice(new BigDecimal(output1.getOrderPrice()))
+                    .orderTime(output1.getOrderTime())
                     .build());
         }
         return orderTradingResults;
     }
+
+    /**
+     * 팩토리 메서드
+     * @param responseBodies 주문 체결 조회 응답 DTO
+     * @return 해외 체결 결과 Dto 묶음
+     */
+    public static List<OrderConclusionDto> overseasOf(List<OverseasOrderConclusionFindExternalResDto.Output> responseBodies) {
+        List<OrderConclusionDto> orderTradingResults = new ArrayList<>();
+        for (OverseasOrderConclusionFindExternalResDto.Output output : responseBodies) {
+            orderTradingResults.add(OrderConclusionDto.builder()
+                    .itemCode(output.getItemCode())
+                    .itemNameKor(output.getItemNameKor())
+                    .orderNumber(NumberUtils.padLeftValueWithZeros(output.getOrderNumber(), "0", 10))
+                    .concludedPrice(new BigDecimal(output.getTotalConcludedPrice()))
+                    .concludedQuantity(Integer.parseInt(output.getTotalConcludedQuantity()))
+                    .orderType(OpenApiType.OVERSEAS_ORDER_CONCLUSION_FIND)
+                    .orderQuantity(Integer.parseInt(output.getOrderQuantity()))
+                    .orderPrice(new BigDecimal(output.getOrderPrice()))
+                    .orderTime(output.getOrderTime())
+                    .build());
+
+        }
+        return orderTradingResults;
+    }
 }
+

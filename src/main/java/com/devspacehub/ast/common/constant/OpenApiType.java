@@ -37,7 +37,8 @@ public enum OpenApiType {
 
     OVERSEAS_BUY_ORDER_POSSIBLE_CASH("/uapi/overseas-stock/v1/trading/inquire-psamount", "OV004", "해외 매수 가능 금액 조회"),
     OVERSEAS_STOCK_BALANCE("/uapi/overseas-stock/v1/trading/inquire-balance", "OV005", "해외 주식 잔고 조회"),
-    OVERSEAS_STOCK_CONDITION_SEARCH("/uapi/overseas-price/v1/quotations/inquire-search", "OV006", "해외주식 조건검색")
+    OVERSEAS_STOCK_CONDITION_SEARCH("/uapi/overseas-price/v1/quotations/inquire-search", "OV006", "해외주식 조건검색"),
+    OVERSEAS_ORDER_CONCLUSION_FIND("/uapi/overseas-stock/v1/trading/inquire-ccnl", "OV007", "해외주식 주문체결내역")
     ;
 
     private final String uri;

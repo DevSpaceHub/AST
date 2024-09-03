@@ -8,6 +8,7 @@
 
 package com.devspacehub.ast.domain.orderTrading;
 
+import com.devspacehub.ast.common.utils.NumberUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import jakarta.persistence.*;
@@ -80,7 +81,7 @@ public class OrderTrading extends BaseEntity {
                 .orderResultCode(result.getResultCode())
                 .orderMessageCode(result.getMessageCode())
                 .orderMessage(result.getMessage())
-                .orderNumber(result.isSuccess() ? result.getOutput().getOrderNumber() : null)
+                .orderNumber(result.isSuccess() ? NumberUtils.padLeftValueWithZeros(result.getOutput().getOrderNumber(), "0", 10) : null)
                 .orderTime(result.isSuccess() ? result.getOutput().getOrderTime() : null)
                 .build();
     }

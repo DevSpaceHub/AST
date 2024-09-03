@@ -48,4 +48,24 @@ class ReservationOrderInfoTest {
         // then
         assertThat(reservationOrderInfo.getOrderQuantity()).isEqualTo(7);
     }
+
+    @Test
+    @DisplayName("주문 희망 수량이 체결 수량과 동일한지 확인한다.")
+    void return_true_when_orderQuantity_is_equal_to_conclusionQuantity() {
+        ReservationOrderInfo given = ReservationOrderInfo.builder().orderQuantity(5).conclusionQuantity(5).build();
+
+        boolean result = given.checkTotalConcluded();
+
+        assertThat(result).isTrue();
+    }
+
+    @DisplayName("예약 매수 종목을 비활성화 처리한다.")
+    @Test
+    void disable_entity_by_setting_useYn_as_N() {
+        ReservationOrderInfo given = ReservationOrderInfo.builder().useYn('Y').build();
+
+        given.disable();
+
+        assertThat(given.getUseYn()).isEqualTo('N');
+    }
 }

@@ -11,6 +11,7 @@ package com.devspacehub.ast.domain.my.dto.orderConclusion;
 import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.micrometer.common.util.StringUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,17 +23,18 @@ import java.util.Objects;
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 
 /**
- * 주식 일별 주문 체결 조회 응답 DTO.
+ * 국내 주식 일별 주문 체결 조회 응답 DTO.
  */
 @Setter
-public class OrderConclusionFindExternalResDto extends WebClientCommonResDto {
+@Getter
+public class DomesticOrderConclusionFindExternalResDto extends WebClientCommonResDto {
 
     @JsonProperty("ctx_area_fk100")
     private String ctxAreaFk100;
 
     @JsonProperty("ctx_area_nk100")
     private String ctxAreaNk100;
-    @Getter
+
     @JsonProperty("output1")
     private List<Output1> output1;
 
@@ -163,5 +165,21 @@ public class OrderConclusionFindExternalResDto extends WebClientCommonResDto {
     @Override
     public boolean isSuccess() {
         return !Objects.isNull(output1) && !Objects.isNull(output2) && OPENAPI_SUCCESS_RESULT_CODE.equals(this.resultCode);
+    }
+
+    /**
+     * 응답 필드 ctxAreaFk100 Getter
+     * @return 값의 양옆 공백 제거된 숫자
+     */
+    public String getCtxAreaFk100() {
+        return StringUtils.isBlank(this.ctxAreaFk100) ? "" : this.ctxAreaFk100.trim();
+    }
+
+    /**
+     * 응답 필드 ctxAreaNk100 Getter
+     * @return 값의 양옆 공백 제거된 숫자
+     */
+    public String getCtxAreaNk100() {
+        return StringUtils.isBlank(this.ctxAreaNk100) ? "" : this.ctxAreaNk100.trim();
     }
 }
