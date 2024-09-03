@@ -120,7 +120,7 @@ public class OverseasMyServiceImpl extends MyService {
     public List<OrderConclusionDto> getConcludedStock(LocalDate today) {
         HttpHeaders headers = OrderConclusionFindExternalReqDto.setHeaders(openApiProperties.getOauth(), txIdOrderConclusionFind);
         MultiValueMap<String, String> queryParams = OrderConclusionFindExternalReqDto.Overseas.createParameter(
-                openApiProperties.getAccntNumber(), openApiProperties.getAccntProductCode(), today.format(DateTimeFormatter.ofPattern("YYYYMMdd")));
+                openApiProperties.getAccntNumber(), openApiProperties.getAccntProductCode(), today.format(DateTimeFormatter.ofPattern("yyyyMMdd")));
 
         return OrderConclusionDto.overseasOf(this.callOrderConclusionGetApi(OVERSEAS_ORDER_CONCLUSION_FIND, headers, queryParams));
     }

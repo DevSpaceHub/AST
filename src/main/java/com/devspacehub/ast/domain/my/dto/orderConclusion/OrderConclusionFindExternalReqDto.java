@@ -77,7 +77,7 @@ public class OrderConclusionFindExternalReqDto {
             queryParams.add("PDNO", "");              // 전 종목코드
             queryParams.add("ORD_STRT_DT", todayStr);
             queryParams.add("ORD_END_DT", todayStr);
-            queryParams.add("SLL_BUY_DVSNS", "03");    // 매도매수구분코드 (02:매수)
+            queryParams.add("SLL_BUY_DVSN", "02");    // 매도매수구분코드 (02:매수)
             queryParams.add("CCLD_NCCS_DVSN", "01");  // 체결 구분 (01:체결)
             queryParams.add("OVRS_EXCG_CD", "%");     // 해외 거래소 코드. 모의에서는 전체조회("")만 가능. 실전에서는?
             queryParams.add("SORT_SQN", "DS");        // 정렬 순서 (DS:정순)
