@@ -75,6 +75,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
      * @param openApiType
      * @return
      */
+    @Transactional
     @Override
     public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType) {
         // 1. 예약 종목들 조회
@@ -112,6 +113,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
      * @param result 주문 OpenApi 응답 Dto
      * @param reservationItemSeq 예약 종목 Seq
      */
+    @Transactional
     public void updateLatestOrderNumber(StockOrderApiResDto result, Long reservationItemSeq) {
         if (result.isFailed()) {
             return;

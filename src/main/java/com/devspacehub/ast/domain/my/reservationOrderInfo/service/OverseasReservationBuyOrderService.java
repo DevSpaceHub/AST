@@ -36,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
@@ -54,6 +55,7 @@ import static com.devspacehub.ast.common.constant.ProfileType.getAccountStatus;
  * TradingService 구현체인, 해외 예약 주문 서비스
  */
 @Slf4j
+@Transactional(readOnly = true)
 @Service
 public class OverseasReservationBuyOrderService extends TradingService {
     private final ReservationOrderInfoRepository reservationOrderInfoRepository;
@@ -78,6 +80,7 @@ public class OverseasReservationBuyOrderService extends TradingService {
      * @param openApiType OpenApi 타입
      * @return 주문 완료한 종목 정보 List
      */
+    @Transactional
     @Override
     public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType) {
         List<ReservationStockItem> reservations = getValidReservationsForToday();
@@ -222,6 +225,7 @@ public class OverseasReservationBuyOrderService extends TradingService {
      * @param orderTradingInfos List 타입의 주문 완료된 OrderTrading Entity
      * @return 테이브에 저장 완료된 List 타입의 OrderTrading Entity
      */
+    @Transactional
     @Override
     public List<OrderTrading> saveOrderInfos(List<OrderTrading> orderTradingInfos) {
         if (orderTradingInfos.isEmpty()) {
@@ -252,6 +256,7 @@ public class OverseasReservationBuyOrderService extends TradingService {
      * @param result 주문 OpenApi 응답 Dto
      * @param reservationItemSeq 예약 종목 Seq
      */
+    @Transactional
     public void updateLatestOrderNumber(StockOrderApiResDto result, Long reservationItemSeq) {
         if (result.isFailed()) {
             return;
