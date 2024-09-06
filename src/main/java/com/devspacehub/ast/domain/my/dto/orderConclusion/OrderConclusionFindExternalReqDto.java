@@ -13,6 +13,9 @@ import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 /**
  * 주식 일별 주문 체결 조회 요청 DTO.
  */
@@ -67,19 +70,21 @@ public class OrderConclusionFindExternalReqDto {
          * 매수 주문의 체결 결과 조회 위해 파라미터 생성한다.
          * @param accntNumber 계좌번호 앞 8자리
          * @param accntProductCode 계좌번호 뒤 2자리
-         * @param todayStr 조회 일자 (YYYYMMDD)
+         * @param today 거래 종료 후 당일 일자
          * @return 파라미터
          */
-        public static MultiValueMap<String, String> createParameter(String accntNumber, String accntProductCode, String todayStr) {
+        public static MultiValueMap<String, String> createParameter(String accntNumber, String accntProductCode, LocalDate today) {
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+
             MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
             queryParams.add("CANO", accntNumber);
             queryParams.add("ACNT_PRDT_CD", accntProductCode);
             queryParams.add("PDNO", "");              // 전 종목코드
-            queryParams.add("ORD_STRT_DT", todayStr);
-            queryParams.add("ORD_END_DT", todayStr);
+            queryParams.add("ORD_STRT_DT", today.minusDays(1).format(dateTimeFormatter));
+            queryParams.add("ORD_END_DT", today.format(dateTimeFormatter));
             queryParams.add("SLL_BUY_DVSN", "02");    // 매도매수구분코드 (02:매수)
             queryParams.add("CCLD_NCCS_DVSN", "01");  // 체결 구분 (01:체결)
-            queryParams.add("OVRS_EXCG_CD", "%");     // 해외 거래소 코드. 모의에서는 전체조회("")만 가능. 실전에서는?
+            queryParams.add("OVRS_EXCG_CD", "%");     // 해외 거래소 코드
             queryParams.add("SORT_SQN", "DS");        // 정렬 순서 (DS:정순)
             queryParams.add("ORD_DT", "");
             queryParams.add("ORD_GNO_BRNO", "");
