@@ -138,15 +138,10 @@ class ReservationBuyOrderServiceIntegrationTest {
                 .orderNumber(givenOldOrderNumber)
                 .build();
         ReservationOrderInfo save = reservationOrderInfoRepository.save(given);
-
-        StockOrderApiResDto givenApiResult = new StockOrderApiResDto();
-        StockOrderApiResDto.Output givenOutput = new StockOrderApiResDto.Output();
-        givenApiResult.setResultCode(OPENAPI_SUCCESS_RESULT_CODE);
-        givenOutput.setOrderNumber(givenNewOrderNumber);
-        givenApiResult.setOutput(givenOutput);
+        OrderTrading givenOrderEntity = OrderTrading.builder().orderNumber(givenNewOrderNumber).build();
 
         // when
-        reservationBuyOrderService.updateLatestOrderNumber(givenApiResult, save.getSeq());
+        reservationBuyOrderService.updateLatestOrderNumber(givenOrderEntity, save.getSeq());
         // then
         ReservationOrderInfo result = reservationOrderInfoRepository.findById(save.getSeq()).orElseThrow();
         assertThat(result.getOrderNumber()).isEqualTo(givenNewOrderNumber);

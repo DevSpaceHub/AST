@@ -54,12 +54,9 @@ public abstract class TradingService {
 
     /**
      * OpenAPI 매수/매도 주문 요청의 응답에 대한 결과 처리<br>
-     * - 성공 -> 메세지 발송<br>
-     * - 실패 -> 에러 로그
-     * @param result 매수/매도 주문 응답 Dto
      * @param orderTrading 종목 정보 Dto
      */
-    public abstract <T extends WebClientCommonResDto> void orderApiResultProcess(T result, OrderTrading orderTrading);
+    public abstract void orderApiResultProcess(OrderTrading orderTrading);
 
 
     /**

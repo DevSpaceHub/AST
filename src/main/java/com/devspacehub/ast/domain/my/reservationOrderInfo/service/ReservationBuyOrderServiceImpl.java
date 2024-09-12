@@ -13,7 +13,6 @@ import com.devspacehub.ast.common.constant.MarketType;
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.constant.StockPriceUnit;
 import com.devspacehub.ast.common.utils.BigDecimalUtil;
-import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
@@ -30,6 +29,8 @@ import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
+import com.devspacehub.ast.exception.error.BusinessException;
+import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
 import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -88,16 +89,37 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
 
         // 2. 매수 종목 선택 및 주문
         List<OrderTrading> orderTradings = new ArrayList<>();
+        OrderTrading orderTrading;
         for (ReservationStockItem reservationItem : pickStockItems(reservationOrderInfos)) {
-            StockOrderApiResDto result = callOrderApi(openApiProperties, reservationItem.getStockItem(), DOMESTIC_STOCK_RESERVATION_BUY_ORDER, transactionId);
-            OrderTrading orderTrading = OrderTrading.from(reservationItem.getStockItem(), result, transactionId);
-            orderTradings.add(orderTrading);
+            try {
+                orderTrading = this.buy(reservationItem, openApiProperties, openApiType);
+            } catch(BusinessException ex) {
+                log.warn("code = {}, message = '{}'", ex.getResultCode(), ex.getMessage());
+                continue;
+            }
 
-            updateLatestOrderNumber(result, reservationItem.getReservationSeq());
-            orderApiResultProcess(result, orderTrading);
+            this.updateLatestOrderNumber(orderTrading, reservationItem.getReservationSeq());
+            this.orderApiResultProcess(orderTrading);
+            orderTradings.add(orderTrading);
+        }
+        return orderTradings;
+    }
+
+    /**
+     * 매수 주문하고 결과 값을 Entity로 변환하여 반환한다.
+     * @param reservationItem 요청 파라미터
+     * @param openApiProperties OpenApi 요청 프로퍼티
+     * @param openApiType  OpenApi 요청 타입
+     * @return OrderTrading 타입의 주문 데이터
+     * @throws OpenApiFailedResponseException OpenApi 실패 응답인 경우
+     */
+    private OrderTrading buy(ReservationStockItem reservationItem, OpenApiProperties openApiProperties, OpenApiType openApiType) {
+        StockOrderApiResDto apiResponse = callOrderApi(openApiProperties, reservationItem.getStockItem(), openApiType, transactionId);
+        if (apiResponse.isFailed()) {
+            throw new OpenApiFailedResponseException(openApiType, apiResponse.getMessage());
         }
 
-        return orderTradings;
+        return OrderTrading.from(reservationItem.getStockItem(), apiResponse, transactionId);
     }
 
     /**
@@ -110,14 +132,11 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
 
     /**
      * 최신 주문번호로 업데이트한다.
-     * @param result 주문 OpenApi 응답 Dto
+     * @param orderResult 주문 OpenApi 응답 Dto
      * @param reservationItemSeq 예약 종목 Seq
      */
     @Transactional
-    public void updateLatestOrderNumber(StockOrderApiResDto result, Long reservationItemSeq) {
-        if (result.isFailed()) {
-            return;
-        }
+    public void updateLatestOrderNumber(OrderTrading orderResult, Long reservationItemSeq) {
         Optional<ReservationOrderInfo> optionalReservationOrderInfo = reservationOrderInfoRepository.findById(reservationItemSeq);
         if (optionalReservationOrderInfo.isEmpty()) {
             LogUtils.notFoundDataError(String.format("예약 매수 seq (%d)에 해당하는 데이터", reservationItemSeq));
@@ -125,7 +144,7 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
         }
 
         ReservationOrderInfo reservationOrderInfo = optionalReservationOrderInfo.get();
-        reservationOrderInfo.updateOrderNumber(result.getOutput().getOrderNumber());
+        reservationOrderInfo.updateOrderNumber(orderResult.getOrderNumber());
         reservationOrderInfo.updateMetaData(LocalDateTime.now());
     }
 
@@ -195,13 +214,8 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
     }
 
     @Override
-    public <T extends WebClientCommonResDto> void orderApiResultProcess(T result, OrderTrading orderTrading) {
-        if (result.isSuccess()) {
-            LogUtils.tradingOrderSuccess(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, orderTrading.getItemNameKor());
-            notificator.sendMessage(MessageContentDto.OrderResult.fromOne(
-                    DOMESTIC_STOCK_RESERVATION_BUY_ORDER, getAccountStatus(), orderTrading));
-        } else {
-            LogUtils.openApiFailedResponseMessage(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, result.getMessage(), result.getMessageCode());
-        }
+    public void orderApiResultProcess(OrderTrading orderTrading) {
+        LogUtils.tradingOrderSuccess(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, orderTrading.getItemNameKor());
+        notificator.sendMessage(MessageContentDto.OrderResult.fromOne(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, getAccountStatus(), orderTrading));
     }
 }
