@@ -10,7 +10,7 @@ package com.devspacehub.ast.domain.orderTrading.dto;
 
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.domain.my.dto.orderConclusion.OrderConclusionDto;
-import com.devspacehub.ast.domain.my.dto.orderConclusion.OrderConclusionFindExternalResDto;
+import com.devspacehub.ast.domain.my.dto.orderConclusion.DomesticOrderConclusionFindExternalResDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -27,27 +27,27 @@ class OrderConclusionDtoTest {
     void of() {
         // given
         OpenApiType givenOrderType = OpenApiType.DOMESTIC_ORDER_CONCLUSION_FIND;
-        OrderConclusionFindExternalResDto.Output1 firstGivenOutput1 = OrderConclusionFindExternalResDto.Output1.builder()
+        DomesticOrderConclusionFindExternalResDto.Output1 firstGivenOutput1 = DomesticOrderConclusionFindExternalResDto.Output1.builder()
                 .itemCode("00000")
                 .itemNameKor("테스트1")
-                .orderNumber("00000001")
+                .orderNumber("0000000001")
                 .totalConcludedPrice("1000")
                 .totalConcludedQuantity("1")
                 .orderQuantity("2")
                 .orderPrice("1000")
                 .build();
-        OrderConclusionFindExternalResDto.Output1 secondGivenOutput1 = OrderConclusionFindExternalResDto.Output1.builder()
+        DomesticOrderConclusionFindExternalResDto.Output1 secondGivenOutput1 = DomesticOrderConclusionFindExternalResDto.Output1.builder()
                 .itemCode("00001")
                 .itemNameKor("테스트2")
-                .orderNumber("00000002")
+                .orderNumber("0000000002")
                 .totalConcludedPrice("2000")
                 .totalConcludedQuantity("2")
                 .orderQuantity("3")
                 .orderPrice("2000")
                 .build();
-        List<OrderConclusionFindExternalResDto.Output1> givenOutput1s = List.of(firstGivenOutput1, secondGivenOutput1);
+        List<DomesticOrderConclusionFindExternalResDto.Output1> givenOutput1s = List.of(firstGivenOutput1, secondGivenOutput1);
         // when
-        List<OrderConclusionDto> results = OrderConclusionDto.of(givenOutput1s);
+        List<OrderConclusionDto> results = OrderConclusionDto.domesticOf(givenOutput1s);
         // then
         assertThat(results).hasSize(2)
                 .extracting(

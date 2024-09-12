@@ -14,7 +14,8 @@ import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
 import com.devspacehub.ast.domain.marketStatus.dto.OverseasStockConditionSearchResDto;
-import com.devspacehub.ast.domain.my.dto.orderConclusion.OrderConclusionFindExternalResDto;
+import com.devspacehub.ast.domain.my.dto.orderConclusion.DomesticOrderConclusionFindExternalResDto;
+import com.devspacehub.ast.domain.my.dto.orderConclusion.OverseasOrderConclusionFindExternalResDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.BuyPossibleCashApiResDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.StockBalanceApiResDto;
 import com.devspacehub.ast.domain.my.stockBalance.dto.response.overseas.OverseasBuyPossibleCashApiResDto;
@@ -26,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -110,6 +112,35 @@ public class OpenApiRequest {
     }
 
     /**
+     * OpenApi 호출 (Get) 뒤 응답 header, body 함께 반환한다.
+     * @param openApiType the open api type
+     * @param headers     the headers
+     * @param queryParams the query params
+     * @return the web client common res dto
+     */
+    public ResponseEntity<? extends WebClientCommonResDto> httpGetRequestWithExecute(OpenApiType openApiType, HttpHeaders headers, MultiValueMap<String, String> queryParams) {
+        RequestUtil.timeDelay();
+
+        Class<? extends WebClientCommonResDto> implResDtoClass = implyReturnType(openApiType);
+        try {
+            return webClient
+                    .get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path(openApiType.getUri())
+                            .queryParams(queryParams).build()
+                    )
+                    .headers(httpHeaders -> httpHeaders.addAll(headers))
+                    .retrieve()
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                            clientResponse -> clientResponse.bodyToMono(String.class)
+                                    .map(RuntimeException::new))
+                    .toEntity(implResDtoClass).block();
+        } catch (Exception ex) {
+            throw new OpenApiFailedResponseException(openApiType, ex.getMessage());
+        }
+    }
+
+    /**
      * OpenApi 호출 (Post)
      * @param <T>         the type parameter
      * @param openApiType the open api type
@@ -176,7 +207,10 @@ public class OpenApiRequest {
                 return CurrentStockPriceExternalResDto.class;
             }
             case DOMESTIC_ORDER_CONCLUSION_FIND -> {
-                return OrderConclusionFindExternalResDto.class;
+                return DomesticOrderConclusionFindExternalResDto.class;
+            }
+            case OVERSEAS_ORDER_CONCLUSION_FIND -> {
+                return OverseasOrderConclusionFindExternalResDto.class;
             }
             default -> throw new IllegalArgumentException("적절한 응답 DTO가 없습니다.");
         }
@@ -187,7 +221,7 @@ public class OpenApiRequest {
      * @param openApiType OpenApi 타입
      * @param response 응답 Dto
      */
-    private void checkResponseIsNull(OpenApiType openApiType, Object response) {
+    public void checkResponseIsNull(OpenApiType openApiType, Object response) {
         if (Objects.isNull(response)) {
             throw new OpenApiFailedResponseException(String.format("[%s] OpenApi 응답값이 Null입니다.", openApiType.getDiscription()));
         }

@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.devspacehub'
-version = '0.3.3'
+version = '0.3.5'
 
 java {
 	sourceCompatibility = '17'
@@ -28,7 +28,7 @@ clean.doLast {
 
 test {
 	// 테스트에 사용할 환경 변수 설정
-	systemProperty "DB_URL", "jdbc:mysql://34.69.203.91:3306/astDB_BETA?serverTimezone=Asia/Seoul&characterEncoding=UTF-8"
+	systemProperty "DB_URL", "jdbc:mysql://34.31.120.3:3306/astDB_BETA?serverTimezone=Asia/Seoul&characterEncoding=UTF-8"
 	systemProperty "DB_USERNAME", "devSpaceHub_BETA"
 	systemProperty "DB_PASSWORD", "devSpaceHub_BETA123"
 	systemProperty "COMPREHENSIVE_ACCOUNTNUMBER", "50099723"

@@ -14,10 +14,10 @@
         <!-- file output -->
         <RollingFile name="baseRollingAppender"
                      fileName="${BASE_DIR}/${LOG_FILE_NAME}.log"
-                     filePattern="${BASE_DIR}/${LOG_FILE_NAME}.%d{yyyyMMdd}.log">
+                     filePattern="${BASE_DIR}/${LOG_FILE_NAME}.%d{yyyyMMdd}-%i.log">
             <PatternLayout pattern="${LOG_FORMAT}"/>
             <Policies>
-                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="500KB"/>
             </Policies>
             <DefaultRolloverStrategy>
                 <Delete basePath="${BASE_DIR}">
