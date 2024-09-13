@@ -30,6 +30,7 @@ import com.devspacehub.ast.domain.orderTrading.service.TradingService;
 import com.devspacehub.ast.exception.error.BusinessException;
 import com.devspacehub.ast.exception.error.InsufficientMoneyException;
 import com.devspacehub.ast.exception.error.InvalidValueException;
+import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
 import com.devspacehub.ast.util.OpenApiRequest;
 import io.micrometer.common.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -86,29 +87,48 @@ public class OverseasReservationBuyOrderService extends TradingService {
         List<ReservationStockItem> reservations = getValidReservationsForToday();
 
         if (reservations.isEmpty()) {
+            LogUtils.notFoundDataError("금일 예약 매수할 종목 데이터");
             return Collections.emptyList();
         }
 
         List<OrderTrading> orderedItems = new ArrayList<>();
+        OrderTrading orderTrading;
         for (ReservationStockItem reservation : reservations) {
             try {
                 this.validateValue(reservation);
                 this.sufficientDepositCheck(reservation, getMyDeposit(reservation));
+
+                orderTrading = this.buy(reservation, openApiProperties, openApiType);
             } catch(BusinessException ex) {
                 log.warn("code = {}, message = '{}'", ex.getResultCode(), ex.getMessage());
                 continue;
             }
-            StockItemDto.Overseas orderRequestStockItem = this.prepareOrderRequestInfo(reservation);
 
-            StockOrderApiResDto apiResponse = (StockOrderApiResDto) this.callOrderApi(openApiProperties, orderRequestStockItem, openApiType, txIdBuyOrder);
-            OrderTrading orderTrading = OrderTrading.from(orderRequestStockItem, apiResponse, txIdBuyOrder);
-
-            this.updateLatestOrderNumber(apiResponse, reservation.getReservationSeq());
-            this.orderApiResultProcess(apiResponse, orderTrading);
+            this.updateLatestOrderNumber(orderTrading, reservation.getReservationSeq());
+            this.orderApiResultProcess(orderTrading);
             orderedItems.add(orderTrading);
         }
 
         return orderedItems;
+    }
+
+    /**
+     * 매수 주문하고 결과 값을 Entity로 변환하여 반환한다.
+     * @param reservationItem 요청 파라미터
+     * @param openApiProperties OpenApi 요청 프로퍼티
+     * @param openApiType  OpenApi 요청 타입
+     * @return OrderTrading 타입의 주문 데이터
+     * @throws OpenApiFailedResponseException OpenApi 실패 응답인 경우
+     */
+    private OrderTrading buy(ReservationStockItem reservationItem, OpenApiProperties openApiProperties, OpenApiType openApiType) {
+        StockItemDto.Overseas orderRequestStockItem = this.prepareOrderRequestInfo(reservationItem);
+        StockOrderApiResDto apiResponse = (StockOrderApiResDto) this.callOrderApi(openApiProperties, orderRequestStockItem, openApiType, txIdBuyOrder);
+
+        if (apiResponse.isFailed()) {
+            throw new OpenApiFailedResponseException(openApiType, apiResponse.getMessage());
+        }
+
+        return OrderTrading.from(orderRequestStockItem, apiResponse, txIdBuyOrder);
     }
 
     /**
@@ -236,31 +256,21 @@ public class OverseasReservationBuyOrderService extends TradingService {
 
     /**
      * 주문 거래 후 결과를 처리한다.
-     * @param result       매수/매도 주문 응답 Dto
      * @param orderTrading 종목 정보 Dto
-     * @param <T> WebClientCommonResDto 구현체
      */
     @Override
-    public <T extends WebClientCommonResDto> void orderApiResultProcess(T result, OrderTrading orderTrading) {
-        if (result.isSuccess()) {
-            LogUtils.tradingOrderSuccess(OVERSEAS_STOCK_RESERVATION_BUY_ORDER, orderTrading.getItemNameKor());
-            notificator.sendMessage(MessageContentDto.OrderResult.fromOne(
-                    OVERSEAS_STOCK_RESERVATION_BUY_ORDER, getAccountStatus(), orderTrading));
-        } else {
-            LogUtils.openApiFailedResponseMessage(OVERSEAS_STOCK_RESERVATION_BUY_ORDER, result.getMessage(), result.getMessageCode());
-        }
+    public void orderApiResultProcess(OrderTrading orderTrading) {
+        LogUtils.tradingOrderSuccess(OVERSEAS_STOCK_RESERVATION_BUY_ORDER, orderTrading.getItemNameKor());
+        notificator.sendMessage(MessageContentDto.OrderResult.fromOne(OVERSEAS_STOCK_RESERVATION_BUY_ORDER, getAccountStatus(), orderTrading));
     }
 
     /**
      * 최신 주문번호로 업데이트한다.
-     * @param result 주문 OpenApi 응답 Dto
+     * @param orderResult 주문 OpenApi 응답 Dto
      * @param reservationItemSeq 예약 종목 Seq
      */
     @Transactional
-    public void updateLatestOrderNumber(StockOrderApiResDto result, Long reservationItemSeq) {
-        if (result.isFailed()) {
-            return;
-        }
+    public void updateLatestOrderNumber(OrderTrading orderResult, Long reservationItemSeq) {
         Optional<ReservationOrderInfo> optionalReservationOrderInfo = reservationOrderInfoRepository.findById(reservationItemSeq);
         if (optionalReservationOrderInfo.isEmpty()) {
             LogUtils.notFoundDataError(String.format("예약 매수 seq (%d)에 해당하는 데이터", reservationItemSeq));
@@ -268,7 +278,7 @@ public class OverseasReservationBuyOrderService extends TradingService {
         }
 
         ReservationOrderInfo reservationOrderInfo = optionalReservationOrderInfo.get();
-        reservationOrderInfo.updateOrderNumber(result.getOutput().getOrderNumber());
+        reservationOrderInfo.updateOrderNumber(orderResult.getOrderNumber());
         reservationOrderInfo.updateMetaData(LocalDateTime.now());
     }
 }
