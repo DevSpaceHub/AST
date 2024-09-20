@@ -43,9 +43,7 @@ import java.util.function.Consumer;
 import static com.devspacehub.ast.common.constant.CommonConstants.OPENAPI_SUCCESS_RESULT_CODE;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willDoNothing;
-import static org.mockito.Mockito.*;
+import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OverseasReservationBuyOrderServiceTest {
@@ -62,15 +60,15 @@ class OverseasReservationBuyOrderServiceTest {
     @Mock
     Notificator notificator;
 
-
     @DisplayName("DB에 유효한 예약 종목이 없으면 빈 값을 반환한다.")
     @Test
     void return_empty_list_when_validate_reservationItems_are_empty() {
+        given(reservationOrderInfoRepository.findValidAllByExchangeCodes(any(LocalDate.class), anyList())).willReturn(Collections.emptyList());
+
         List<OrderTrading> results = overseasReservationBuyOrderService.order(openApiProperties, OpenApiType.OVERSEAS_STOCK_RESERVATION_BUY_ORDER);
 
         assertThat(results).isEmpty();
     }
-
 
     @DisplayName("원하는 종목과 그 종목의 주문, 수량 데이터를 포함하여 매수 주문을 요청한 뒤 응답받은 DTO를 반환한다.")
     @Test
@@ -194,32 +192,16 @@ class OverseasReservationBuyOrderServiceTest {
                                 givenOrderPrice.multiply(BigDecimal.valueOf(orderQuantity))));
     }
 
-    @DisplayName("응답 데이터가 성공일 때 알림 발송 객체에게 알림 발송 요청한다.")
+    @DisplayName("알림 발송 객체에게 알림 발송 요청한다.")
     @Test
     void call_notificator_when_orderResult_is_success() {
-        StockOrderApiResDto response = new StockOrderApiResDto();
-        response.setResultCode(OPENAPI_SUCCESS_RESULT_CODE);
-        response.setOutput(new StockOrderApiResDto.Output());
         OrderTrading orderTrading = OrderTrading.builder().itemCode("AAPL").itemNameKor("애플").orderQuantity(1).orderPrice(new BigDecimal("29.000"))
                 .orderNumber("193284932").orderTime("090018").build();
         willDoNothing().given(notificator).sendMessage(any(MessageContentDto.OrderResult.class));
 
-        overseasReservationBuyOrderService.orderApiResultProcess(response, orderTrading);
+        overseasReservationBuyOrderService.orderApiResultProcess(orderTrading);
 
         verify(notificator).sendMessage(any(MessageContentDto.OrderResult.class));
-    }
-
-    @DisplayName("응답 데이터가 실패일 때 알림 발송 객체에게 알림 발송 요청하지 않는다.")
-    @Test
-    void not_call_notificator_when_orderResult_is_failed() {
-        StockOrderApiResDto response = new StockOrderApiResDto();
-        response.setResultCode("1");
-        OrderTrading orderTrading = OrderTrading.builder().itemCode("AAPL").itemNameKor("애플").orderQuantity(1).orderPrice(new BigDecimal("29.000"))
-                .orderNumber("193284932").orderTime("090018").build();
-
-        overseasReservationBuyOrderService.orderApiResultProcess(response, orderTrading);
-
-        verify(notificator, never()).sendMessage(any(MessageContentDto.OrderResult.class));
     }
 
     @DisplayName("주문가가 0원일 때 InvalidValueException이 발생한다.")

@@ -29,6 +29,8 @@ import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import com.devspacehub.ast.domain.orderTrading.dto.SplitBuyPercents;
+import com.devspacehub.ast.exception.error.BusinessException;
+import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
 import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -40,7 +42,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -96,14 +97,36 @@ public class BuyOrderServiceImpl extends TradingService {
 
         // 매수 가능한 종목들에 대해 매수 주문
         List<OrderTrading> orderTradings = new ArrayList<>();
+        OrderTrading orderTrading;
         for (StockItemDto item : pickStockItems(items, transactionId)) {
-            StockOrderApiResDto result = callOrderApi(openApiProperties, item, openApiType, transactionId);
-            OrderTrading orderTrading = OrderTrading.from(item, result, transactionId);
-            orderTradings.add(orderTrading);
+            try {
+                orderTrading = this.buy(item, openApiProperties, openApiType);
 
-            orderApiResultProcess(result, orderTrading);
+            } catch (BusinessException ex) {
+                log.warn("code = {}, message = '{}'", ex.getResultCode(), ex.getMessage());
+                continue;
+            }
+            this.orderApiResultProcess(orderTrading);
+            orderTradings.add(orderTrading);
         }
         return orderTradings;
+    }
+
+    /**
+     * 매수 주문하고 결과 값을 Entity로 변환하여 반환한다.
+     * @param item 요청 파라미터
+     * @param openApiProperties OpenApi 요청 프로퍼티
+     * @param openApiType  OpenApi 요청 타입
+     * @return OrderTrading 타입의 주문 데이터
+     * @throws OpenApiFailedResponseException OpenApi 실패 응답인 경우
+     */
+    private OrderTrading buy(StockItemDto item, OpenApiProperties openApiProperties, OpenApiType openApiType) {
+        StockOrderApiResDto apiResponse = callOrderApi(openApiProperties, item, openApiType, transactionId);
+
+        if (apiResponse.isFailed()) {
+            throw new OpenApiFailedResponseException(openApiType, apiResponse.getMessage());
+        }
+        return OrderTrading.from(item, apiResponse, transactionId);
     }
 
     /**
@@ -267,18 +290,12 @@ public class BuyOrderServiceImpl extends TradingService {
 
     /**
      * 매수 주문 후 로그 출력 및 메세지 전송 요청
-     * @param result 주문 OpenApi 응답 Dto
      * @param orderTrading 주문 정보
      */
     @Override
-    public <T extends WebClientCommonResDto> void orderApiResultProcess(T result, OrderTrading orderTrading) {
-        if (result.isSuccess()) {
-            LogUtils.tradingOrderSuccess(DOMESTIC_STOCK_BUY_ORDER, orderTrading.getItemNameKor());
-            notificator.sendMessage(MessageContentDto.OrderResult.fromOne(
-                    DOMESTIC_STOCK_BUY_ORDER, getAccountStatus(), orderTrading));
-        } else {
-            LogUtils.openApiFailedResponseMessage(DOMESTIC_STOCK_BUY_ORDER, result.getMessage(), result.getMessageCode());
-        }
+    public void orderApiResultProcess(OrderTrading orderTrading) {
+        LogUtils.tradingOrderSuccess(DOMESTIC_STOCK_BUY_ORDER, orderTrading.getItemNameKor());
+        notificator.sendMessage(MessageContentDto.OrderResult.fromOne(DOMESTIC_STOCK_BUY_ORDER, getAccountStatus(), orderTrading));
     }
 
     /**

@@ -10,7 +10,6 @@ package com.devspacehub.ast.domain.orderTrading.service.overseas;
 
 import com.devspacehub.ast.common.config.OpenApiProperties;
 import com.devspacehub.ast.common.constant.*;
-import com.devspacehub.ast.common.dto.WebClientCommonResDto;
 import com.devspacehub.ast.common.utils.BigDecimalUtil;
 import com.devspacehub.ast.common.utils.LogUtils;
 import com.devspacehub.ast.domain.marketStatus.dto.OverseasStockConditionSearchResDto;
@@ -25,6 +24,8 @@ import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
+import com.devspacehub.ast.exception.error.BusinessException;
+import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
 import com.devspacehub.ast.util.OpenApiRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -81,15 +82,35 @@ public class OverseasBuyOrderServiceImpl extends TradingService {
     public List<OrderTrading> order(OpenApiProperties openApiProperties, OpenApiType openApiType) {
         List<OrderTrading> orderTradings = new ArrayList<>();
 
+        OrderTrading orderTrading;
         for (StockItemDto.Overseas item : pickStockItems()) {
-            StockOrderApiResDto result = callOrderApi(openApiProperties, item, openApiType, transactionId);
+            try {
+                orderTrading = this.buy(item, openApiProperties, openApiType);
 
-            OrderTrading orderTrading = OrderTrading.from(item, result, transactionId);
+            } catch(BusinessException ex) {
+                log.warn("code = {}, message = '{}'", ex.getResultCode(), ex.getMessage());
+                continue;
+            }
+            this.orderApiResultProcess(orderTrading);
             orderTradings.add(orderTrading);
-
-            orderApiResultProcess(result, orderTrading);
         }
         return orderTradings;
+    }
+    /**
+     * 매수 주문하고 결과 값을 Entity로 변환하여 반환한다.
+     * @param item 요청 파라미터
+     * @param openApiProperties OpenApi 요청 프로퍼티
+     * @param openApiType  OpenApi 요청 타입
+     * @return OrderTrading 타입의 주문 데이터
+     * @throws OpenApiFailedResponseException OpenApi 실패 응답인 경우
+     */
+    private OrderTrading buy(StockItemDto.Overseas item, OpenApiProperties openApiProperties, OpenApiType openApiType) {
+        StockOrderApiResDto apiResponse = callOrderApi(openApiProperties, item, openApiType, transactionId);
+        if (apiResponse.isFailed()) {
+            throw new OpenApiFailedResponseException(openApiType, apiResponse.getMessage());
+        }
+
+        return OrderTrading.from(item, apiResponse, transactionId);
     }
 
     /**
@@ -193,18 +214,11 @@ public class OverseasBuyOrderServiceImpl extends TradingService {
 
     /**
      * OpenAPI 매수 주문 요청의 응답에 대한 결과 처리
-     * @param result 매수 주문 API의 응답 Response
      * @param orderTrading 주문 정보 Entity
      */
-    @Override
-    public <T extends WebClientCommonResDto> void orderApiResultProcess(T result, OrderTrading orderTrading) {
-        if (result.isSuccess()) {
-            LogUtils.tradingOrderSuccess(OVERSEAS_STOCK_BUY_ORDER, orderTrading.getItemNameKor());
-            notificator.sendMessage(MessageContentDto.OrderResult.fromOne(
-                    OVERSEAS_STOCK_BUY_ORDER, getAccountStatus(), orderTrading));
-        } else {
-            LogUtils.openApiFailedResponseMessage(OVERSEAS_STOCK_BUY_ORDER, result.getMessage(), result.getMessageCode());
-        }
+    public void orderApiResultProcess(OrderTrading orderTrading) {
+        LogUtils.tradingOrderSuccess(OVERSEAS_STOCK_BUY_ORDER, orderTrading.getItemNameKor());
+        notificator.sendMessage(MessageContentDto.OrderResult.fromOne(OVERSEAS_STOCK_BUY_ORDER, getAccountStatus(), orderTrading));
     }
 
 
