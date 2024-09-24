@@ -21,12 +21,12 @@ import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfoRe
 import com.devspacehub.ast.domain.my.service.MyServiceFactory;
 import com.devspacehub.ast.domain.my.service.MyServiceImpl;
 import com.devspacehub.ast.domain.notification.Notificator;
-import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import com.devspacehub.ast.domain.orderTrading.service.CurrentStockPriceInfoBuilder;
+import com.devspacehub.ast.kafka.dto.MessageDto;
 import com.devspacehub.ast.util.OpenApiRequest;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
@@ -118,7 +118,7 @@ class ReservationBuyOrderServiceIntegrationTest {
         given(myService.getBuyOrderPossibleCash(any(MyServiceRequestDto.Domestic.class))).willReturn(BigDecimal.valueOf(10000));
         given(marketStatusService.getCurrentStockPrice(givenEntity.getItemCode())).willReturn(currentStockPriceResponseOutput);
 
-        doNothing().when(notificator).sendMessage(any(MessageContentDto.class));
+        doNothing().when(notificator).sendStockResultMessage(any(MessageDto.class));
         // when
         reservationBuyOrderService.order(openApiProperties, openApiType);
 

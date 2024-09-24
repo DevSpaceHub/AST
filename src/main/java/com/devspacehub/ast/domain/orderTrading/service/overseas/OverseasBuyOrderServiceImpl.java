@@ -21,7 +21,6 @@ import com.devspacehub.ast.domain.orderTrading.dto.*;
 import com.devspacehub.ast.domain.marketStatus.service.OverseasMarketStatusService;
 import com.devspacehub.ast.domain.my.dto.MyServiceRequestDto;
 import com.devspacehub.ast.domain.my.service.MyService;
-import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.service.TradingService;
 import com.devspacehub.ast.exception.error.BusinessException;
@@ -46,6 +45,7 @@ import static com.devspacehub.ast.common.constant.DecimalScale.*;
 import static com.devspacehub.ast.common.constant.OpenApiType.OVERSEAS_STOCK_BUY_ORDER;
 import static com.devspacehub.ast.common.constant.ProfileType.getAccountStatus;
 import static com.devspacehub.ast.domain.marketStatus.dto.OverseasStockConditionSearchResDto.*;
+import static com.devspacehub.ast.domain.notification.dto.DefaultItemInfoDto.*;
 
 /**
  * 해외 주식 주문 서비스 구현체 - 매수
@@ -218,7 +218,7 @@ public class OverseasBuyOrderServiceImpl extends TradingService {
      */
     public void orderApiResultProcess(OrderTrading orderTrading) {
         LogUtils.tradingOrderSuccess(OVERSEAS_STOCK_BUY_ORDER, orderTrading.getItemNameKor());
-        notificator.sendMessage(MessageContentDto.OrderResult.fromOne(OVERSEAS_STOCK_BUY_ORDER, getAccountStatus(), orderTrading));
+        notificator.sendStockResultMessage(ItemOrderResultDto.from(OVERSEAS_STOCK_BUY_ORDER, getAccountStatus(), orderTrading));
     }
 
 

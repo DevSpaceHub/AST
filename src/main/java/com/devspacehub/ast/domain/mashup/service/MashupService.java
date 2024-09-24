@@ -15,7 +15,7 @@ import com.devspacehub.ast.common.constant.TokenType;
 import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.my.service.MyServiceFactory;
 import com.devspacehub.ast.domain.notification.Notificator;
-import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
+import com.devspacehub.ast.domain.notification.dto.ItemConclusionResultDto;
 import com.devspacehub.ast.domain.oauth.service.OAuthService;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingServiceFactory;
@@ -78,7 +78,7 @@ public class MashupService {
             myServiceImpl.updateMyReservationOrderUseYn(orderConclusion, today);
 
             // 체결된 종목들에 대해 디스코드 메시지 전달
-            notificator.sendMessage(MessageContentDto.ConclusionResult.fromOne(openApiType, getAccountStatus(), orderConclusion));
+            notificator.sendStockResultMessage(ItemConclusionResultDto.from(openApiType, getAccountStatus(), orderConclusion));
             RequestUtil.timeDelay();
         }
     }

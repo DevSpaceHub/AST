@@ -16,7 +16,7 @@ import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.ReservationOrderInfoRepository;
 import com.devspacehub.ast.domain.my.reservationOrderInfo.dto.ReservationStockItem;
 import com.devspacehub.ast.domain.notification.Notificator;
-import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
+import com.devspacehub.ast.domain.notification.dto.DefaultItemInfoDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.OverseasStockOrderApiReqDto;
@@ -197,11 +197,11 @@ class OverseasReservationBuyOrderServiceTest {
     void call_notificator_when_orderResult_is_success() {
         OrderTrading orderTrading = OrderTrading.builder().itemCode("AAPL").itemNameKor("애플").orderQuantity(1).orderPrice(new BigDecimal("29.000"))
                 .orderNumber("193284932").orderTime("090018").build();
-        willDoNothing().given(notificator).sendMessage(any(MessageContentDto.OrderResult.class));
+        willDoNothing().given(notificator).sendStockResultMessage(any(DefaultItemInfoDto.ItemOrderResultDto.class));
 
         overseasReservationBuyOrderService.orderApiResultProcess(orderTrading);
 
-        verify(notificator).sendMessage(any(MessageContentDto.OrderResult.class));
+        verify(notificator).sendStockResultMessage(any(DefaultItemInfoDto.ItemOrderResultDto.class));
     }
 
     @DisplayName("주문가가 0원일 때 InvalidValueException이 발생한다.")

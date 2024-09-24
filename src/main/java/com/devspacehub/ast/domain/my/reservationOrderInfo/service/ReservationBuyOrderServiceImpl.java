@@ -23,7 +23,7 @@ import com.devspacehub.ast.domain.my.reservationOrderInfo.dto.ReservationStockIt
 import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.my.service.MyServiceFactory;
 import com.devspacehub.ast.domain.notification.Notificator;
-import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
+import com.devspacehub.ast.domain.notification.dto.DefaultItemInfoDto.ItemOrderResultDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
@@ -216,6 +216,6 @@ public class ReservationBuyOrderServiceImpl extends TradingService {
     @Override
     public void orderApiResultProcess(OrderTrading orderTrading) {
         LogUtils.tradingOrderSuccess(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, orderTrading.getItemNameKor());
-        notificator.sendMessage(MessageContentDto.OrderResult.fromOne(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, getAccountStatus(), orderTrading));
+        notificator.sendStockResultMessage(ItemOrderResultDto.from(DOMESTIC_STOCK_RESERVATION_BUY_ORDER, getAccountStatus(), orderTrading));
     }
 }
