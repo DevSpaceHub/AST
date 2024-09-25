@@ -9,13 +9,11 @@
 package com.devspacehub.ast.infra.kafka.config;
 
 import com.devspacehub.ast.common.constant.ProfileType;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
  * Kafka Topic Type Enum
  */
-@Getter
 @RequiredArgsConstructor
 public enum KafkaTopicType {
     STOCK_RESULT_NOTI_TOPIC("Stock-Result-Notification", "Stock-Result-Notification_TEST");

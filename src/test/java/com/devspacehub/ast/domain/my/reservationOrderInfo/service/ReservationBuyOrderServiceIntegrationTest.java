@@ -26,7 +26,7 @@ import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
 import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
 import com.devspacehub.ast.domain.orderTrading.service.CurrentStockPriceInfoBuilder;
-import com.devspacehub.ast.kafka.dto.MessageDto;
+import com.devspacehub.ast.infra.kafka.dto.MessageDto;
 import com.devspacehub.ast.util.OpenApiRequest;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;

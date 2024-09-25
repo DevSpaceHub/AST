@@ -24,9 +24,20 @@ public enum ProfileType {
     private final String code;
     private final String accountStatus;
 
-
+    /**
+     * 실행 환경 별 계좌 상태를 반환한다.
+     * @return 계좌 상태
+     */
     public static String getAccountStatus() {
         return PROD.code.equals(getActiveProfile()) ? PROD.accountStatus : TEST.accountStatus;
+    }
+
+    /**
+     * 실행 환경 별 코드를 반환한다.
+     * @return 코드
+     */
+    public static ProfileType getActiveProfileType() {
+        return PROD.code.equals(getActiveProfile()) ? PROD : TEST;
     }
 
     /**
@@ -44,7 +55,7 @@ public enum ProfileType {
      * 현재 동작 중인 애플리케이션의 Profile을 반환한다.
      * @return 애플리케이션의 profile
      */
-    static String getActiveProfile() {
+    private static String getActiveProfile() {
         return System.getProperty("spring.profiles.active");
     }
 }
