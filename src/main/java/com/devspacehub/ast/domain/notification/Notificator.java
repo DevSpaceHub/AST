@@ -7,80 +7,36 @@
  */
 package com.devspacehub.ast.domain.notification;
 
-import com.devspacehub.ast.common.constant.OpenApiType;
-import com.devspacehub.ast.common.constant.ResultCode;
-import com.devspacehub.ast.domain.notification.dto.DiscordWebhookNotifyRequestDto;
-import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
-import com.devspacehub.ast.exception.error.NotificationException;
-import com.devspacehub.ast.exception.error.InvalidValueException;
+import com.devspacehub.ast.common.constant.ProfileType;
+import com.devspacehub.ast.infra.kafka.config.KafkaTopicType;
+import com.devspacehub.ast.infra.kafka.dto.MessageDto;
+import com.devspacehub.ast.infra.kafka.producer.MessageProducer;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-import java.util.function.Consumer;
-
 
 /**
- * Discord Webhook 이용한 알림 서비스
+ * 알림 클래스
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class Notificator {
-    @Value("${notify.discord-webhook.url}")
-    private String discordWebhookUrl;
-    private static final String DOMESTIC_ORDER_NOTI_SENDER_NAME = "국내 주문 봇";
-    private static final String DOMESTIC_CONCLUSION_NOTI_SENDER_NAME = "국내 체결 봇";
-
-    private static final String OVERSEAS_ORDER_NOTI_SENDER_NAME = "해외 주문 봇";
-    private static final String OVERSEAS_CONCLUSION_NOTI_SENDER_NAME = "해외 체결 봇";
+    private final MessageProducer messageProducer;
 
     /**
-     * 단일 메시지 발송 요청
-     * @param content 메세지 내용 DTO
+     * 주식 결과 알림 메세지 발송 요청한다.
+     * @param content MessageDto 상속하는 메세지 Dto 클래스
      */
-    public <T extends MessageContentDto> void sendMessage(T content) {
-        String senderName = getSenderName(content.getOpenApiType());
-        String msg = content.createMessage(content);
-        Consumer<HttpHeaders> headers = DiscordWebhookNotifyRequestDto.setHeaders();
-        DiscordWebhookNotifyRequestDto requestBody = DiscordWebhookNotifyRequestDto.builder()
-                .senderName(senderName)
-                .message(msg)
-                .build();
-
-        try {
-            WebClient.builder()
-                    .baseUrl(discordWebhookUrl)
-                    .build()
-                    .post()
-                    .headers(headers)
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .toBodilessEntity()
-                    .block();
-
-        } catch (Exception ex) {
-            if (ex instanceof WebClientResponseException webClientResponseException && HttpStatus.NO_CONTENT.equals(webClientResponseException.getStatusCode())) {
-                return;
-            }
-            throw new NotificationException(ex.getMessage());
-        }
+    public <T extends MessageDto> void sendStockResultMessage(T content) {
+        messageProducer.produce(this.createTopic(KafkaTopicType.STOCK_RESULT_NOTI_TOPIC), content);
     }
+
     /**
-     * 알림 봇 이름 지정
-     * @param openApiType OpenApiType
-     * @return 알림 봇 이름
+     * 환경 별 토픽을 생성한다.
+     * @return 토픽
      */
-    private String getSenderName(OpenApiType openApiType) {
-        return switch (openApiType) {
-            case DOMESTIC_STOCK_BUY_ORDER, DOMESTIC_STOCK_SELL_ORDER, DOMESTIC_STOCK_RESERVATION_BUY_ORDER -> DOMESTIC_ORDER_NOTI_SENDER_NAME;
-            case DOMESTIC_ORDER_CONCLUSION_FIND -> DOMESTIC_CONCLUSION_NOTI_SENDER_NAME;
-            case OVERSEAS_STOCK_BUY_ORDER, OVERSEAS_STOCK_SELL_ORDER, OVERSEAS_STOCK_RESERVATION_BUY_ORDER -> OVERSEAS_ORDER_NOTI_SENDER_NAME;
-            case OVERSEAS_ORDER_CONCLUSION_FIND -> OVERSEAS_CONCLUSION_NOTI_SENDER_NAME;
-            default -> throw new InvalidValueException(ResultCode.INVALID_OPENAPI_TYPE_ERROR);
-        };
+    private String createTopic(KafkaTopicType topicType) {
+        return topicType.getValue(ProfileType.getActiveProfileType());
     }
-
 }
