@@ -1,17 +1,16 @@
 /*
  © 2024 devspacehub, Inc. All rights reserved.
 
- name : MessageProducerTest
+ name : MessageProducerIntegrationTest
  creation : 2024.9.20
  author : Yoonji Moon
  */
 
-package com.devspacehub.ast.kafka.producer;
+package com.devspacehub.ast.infra.kafka.producer;
 
 import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.domain.notification.dto.DefaultItemInfoDto;
 import com.devspacehub.ast.infra.kafka.dto.MessageDto;
-import com.devspacehub.ast.infra.kafka.producer.MessageProducer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

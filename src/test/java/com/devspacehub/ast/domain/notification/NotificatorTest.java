@@ -20,9 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 
@@ -33,11 +30,10 @@ class NotificatorTest {
     @Mock
     MessageProducer messageProducer;
 
-    @DisplayName("환경에 따른 토픽명을 지정하여 메세지 발송을 요청한다.")
+    @DisplayName("토픽명과 메세지 데이터를 전달하여 메세지 발송을 요청한다.")
     @Test
     void sendStockResultMessage() {
         System.setProperty("spring.profiles.active", "test");
-        willDoNothing().given(messageProducer).produce(anyString(), any(ItemConclusionResultDto.class));
         ItemConclusionResultDto given = ItemConclusionResultDto.builder()
                 .openApiType(OpenApiType.OVERSEAS_ORDER_CONCLUSION_FIND)
                 .itemCode("AAPL")
@@ -50,6 +46,6 @@ class NotificatorTest {
 
         notificator.sendStockResultMessage(given);
 
-        verify(messageProducer, only()).produce("Stock Result Notification_TEST", given);
+        verify(messageProducer, only()).produce("Stock-Result-Notification_TEST", given);
     }
 }
