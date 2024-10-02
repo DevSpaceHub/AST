@@ -21,7 +21,7 @@ import com.devspacehub.ast.domain.my.reservationOrderInfo.dto.ReservationStockIt
 import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.my.service.MyServiceFactory;
 import com.devspacehub.ast.domain.notification.Notificator;
-import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
+import com.devspacehub.ast.domain.notification.dto.DefaultItemInfoDto.ItemOrderResultDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.OverseasStockOrderApiReqDto;
@@ -134,7 +134,7 @@ public class OverseasReservationBuyOrderService extends TradingService {
     /**
      * 예약 종목 데이터 validation check
      * @param reservation 예약 종목 데이터
-     * @return 유효하면 True
+     * @throws InvalidValueException 값이 유효하지 않은 경우
      */
     protected void validateValue(ReservationStockItem reservation) {
         if (StringUtils.isBlank(reservation.getItemCode())) {
@@ -197,7 +197,7 @@ public class OverseasReservationBuyOrderService extends TradingService {
     /**
      * 예수금과 주문할 총 가격을 비교하여 주문 가능한지 체크한다.
      * @param reservation 해외 예약 종목 정보 Dto
-     * @return 주문 가능한지 여부 boolean 값
+     * @throws InsufficientMoneyException 잔고가 부족한 경우
      */
     protected void sufficientDepositCheck(ReservationStockItem reservation, BigDecimal myDeposit) {
         StockItemDto overseasStockItem = reservation.getStockItem();
@@ -261,7 +261,7 @@ public class OverseasReservationBuyOrderService extends TradingService {
     @Override
     public void orderApiResultProcess(OrderTrading orderTrading) {
         LogUtils.tradingOrderSuccess(OVERSEAS_STOCK_RESERVATION_BUY_ORDER, orderTrading.getItemNameKor());
-        notificator.sendMessage(MessageContentDto.OrderResult.fromOne(OVERSEAS_STOCK_RESERVATION_BUY_ORDER, getAccountStatus(), orderTrading));
+        notificator.sendStockResultMessage(ItemOrderResultDto.from(OVERSEAS_STOCK_RESERVATION_BUY_ORDER, getAccountStatus(), orderTrading));
     }
 
     /**
