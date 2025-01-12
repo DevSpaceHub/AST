@@ -23,7 +23,6 @@ import com.devspacehub.ast.domain.my.dto.MyServiceRequestDto;
 import com.devspacehub.ast.domain.my.service.MyService;
 import com.devspacehub.ast.domain.my.service.MyServiceFactory;
 import com.devspacehub.ast.domain.notification.Notificator;
-import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
 import com.devspacehub.ast.domain.orderTrading.OrderTrading;
 import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
 import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
@@ -53,6 +52,7 @@ import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_BUY
 import static com.devspacehub.ast.common.constant.ProfileType.*;
 import static com.devspacehub.ast.common.constant.YesNoStatus.YES;
 import static com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto.*;
+import static com.devspacehub.ast.domain.notification.dto.DefaultItemInfoDto.*;
 
 /**
  * 국내 주식 주문 서비스 구현체 - 매수
@@ -295,7 +295,7 @@ public class BuyOrderServiceImpl extends TradingService {
     @Override
     public void orderApiResultProcess(OrderTrading orderTrading) {
         LogUtils.tradingOrderSuccess(DOMESTIC_STOCK_BUY_ORDER, orderTrading.getItemNameKor());
-        notificator.sendMessage(MessageContentDto.OrderResult.fromOne(DOMESTIC_STOCK_BUY_ORDER, getAccountStatus(), orderTrading));
+        notificator.sendStockResultMessage(ItemOrderResultDto.from(DOMESTIC_STOCK_BUY_ORDER, getAccountStatus(), orderTrading));
     }
 
     /**

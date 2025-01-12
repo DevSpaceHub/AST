@@ -11,6 +11,9 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
 server:
   port: 8081
@@ -22,17 +25,18 @@ notify:
   discord-webhook:
     url: https://discord.com/api/webhooks/1200783808279101572/58SyrsR6ZnWmbPCBDll6ONWAqY7AMZIV15V5L3g2Grb_KQtNkkJrZSaTuNqOBWLlUv3d
 
+kafka:
+  producer:
+    bootstrap-server:
+      host: localhost
+      port: 9092
+
 ---
 spring:
   config:
     activate:
       on-profile: local
-
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-
     properties:
       hibernate:
         format_sql: true
@@ -59,11 +63,6 @@ spring:
     activate:
       on-profile: beta
 
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-
     properties:
       hibernate:
         format_sql: true
@@ -85,11 +84,6 @@ spring:
     activate:
       on-profile: prod
 
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-
     properties:
       hibernate:
         show_sql: false
@@ -106,7 +100,3 @@ logging:
   level:
     org.hibernate:
       SQL: error
-
-notify:
-  discord-webhook:
-    url: https://discord.com/api/webhooks/1207310185216081960/kMoNygVLXY-0Gth4gz1LP8Nobkt9aa50z0CENUCHKw9jDEFNZmJXev8VVYwUzibfbRmQ
