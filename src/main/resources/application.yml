@@ -20,7 +20,7 @@ logging:
 
 notify:
   discord-webhook:
-    url: https://discord.com/api/webhooks/1200783808279101572/58SyrsR6ZnWmbPCBDll6ONWAqY7AMZIV15V5L3g2Grb_KQtNkkJrZSaTuNqOBWLlUv3d
+    url: https://discord.com/api/webhooks/1327825023863357512/6LjBWHyWk69CTbzzXBXRXvM92kfnx369pwzvLB7af01qfhUH6enHsaXfZ5fKc5v1J9xD
 
 ---
 spring:
@@ -109,4 +109,4 @@ logging:
 
 notify:
   discord-webhook:
-    url: https://discord.com/api/webhooks/1207310185216081960/kMoNygVLXY-0Gth4gz1LP8Nobkt9aa50z0CENUCHKw9jDEFNZmJXev8VVYwUzibfbRmQ
+    url: https://discord.com/api/webhooks/1327824987930755082/0c2okKWAOgOT8bm9Eo1aF7HrB2AmmKSm4wxqdlegGDa8dnHwCGekatrPDdJQ9prS4LLq
