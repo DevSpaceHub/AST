@@ -20,7 +20,7 @@ logging:
 
 notify:
   discord-webhook:
-    url: https://discord.com/api/webhooks/1327825023863357512/6LjBWHyWk69CTbzzXBXRXvM92kfnx369pwzvLB7af01qfhUH6enHsaXfZ5fKc5v1J9xD
+    url: ${TEST_DISCD_WEBHOOK_URL}
 
 ---
 spring:
@@ -109,4 +109,4 @@ logging:
 
 notify:
   discord-webhook:
-    url: https://discord.com/api/webhooks/1327824987930755082/0c2okKWAOgOT8bm9Eo1aF7HrB2AmmKSm4wxqdlegGDa8dnHwCGekatrPDdJQ9prS4LLq
+    url: ${PROD_DISCD_WEBHOOK_URL}
