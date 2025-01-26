@@ -11,15 +11,12 @@ import com.devspacehub.ast.common.constant.OpenApiType;
 import com.devspacehub.ast.common.constant.ResultCode;
 import com.devspacehub.ast.domain.notification.dto.DiscordWebhookNotifyRequestDto;
 import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
-import com.devspacehub.ast.exception.error.NotificationException;
 import com.devspacehub.ast.exception.error.InvalidValueException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import java.util.function.Consumer;
 
 
@@ -62,10 +59,7 @@ public class Notificator {
                     .block();
 
         } catch (Exception ex) {
-            if (ex instanceof WebClientResponseException webClientResponseException && HttpStatus.NO_CONTENT.equals(webClientResponseException.getStatusCode())) {
-                return;
-            }
-            throw new NotificationException(ex.getMessage());
+            log.error("알림 발송 요청에 실패하였습니다. (ERROR : {})", ex.getMessage());
         }
     }
     /**
