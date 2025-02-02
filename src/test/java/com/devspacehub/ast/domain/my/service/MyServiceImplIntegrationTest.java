@@ -39,7 +39,7 @@ class MyServiceImplIntegrationTest {
     @Autowired
     JPAQueryFactory queryFactory;
 
-    @DisplayName("체결 결과 정보에 해당하는 나의 예약 매수 종목을 조회하여 모두 체결 완료됐다면 비사용 처리하고 체결 수량을 업데이트한다.")
+    @DisplayName("체결 결과 정보에 해당하는 나의 예약 매수 종목을 조회하여 모두 체결 완료됐다면 미사용 처리하고 체결 수량을 업데이트한다.")
     @Test
     void updateMyReservationOrderUseYn() {
         // given
