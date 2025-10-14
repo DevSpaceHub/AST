@@ -1,105 +1,142 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.2.0'
-	id 'io.spring.dependency-management' version '1.1.4'
+    id 'java'
+    id 'org.springframework.boot' version '3.5.6'
+    id 'io.spring.dependency-management' version '1.1.4'
 }
 
 group = 'com.devspacehub'
-version = '0.3.9'
+version = '0.4.0'
 
 java {
-	sourceCompatibility = '17'
+    sourceCompatibility = '21'
+    targetCompatibility = '21'
 }
 
 // Querydsl option
 def querydslDir = "${project.buildDir}/generated/querydsl"
 
 sourceSets {
-	main.java.srcDirs += [ querydslDir ]
+    main.java.srcDirs += [querydslDir]
 }
 
 tasks.withType(JavaCompile) {
-	options.generatedSourceOutputDirectory = file(querydslDir)
+    options.generatedSourceOutputDirectory = file(querydslDir)
 }
 
 clean.doLast {
-	file(querydslDir).deleteDir()
+    file(querydslDir).deleteDir()
 }
 
 test {
-	systemProperty "DB_URL", "jdbc:mysql://35.222.95.13:3306/astDB_BETA?serverTimezone=Asia/Seoul&characterEncoding=UTF-8"
-	systemProperty "DB_USERNAME", "devSpaceHub_BETA"
-	systemProperty "DB_PASSWORD", "devSpaceHub_BETA123"
-	systemProperty "COMPREHENSIVE_ACCOUNTNUMBER", "50099723"
-	systemProperty "ACCOUNTNUMBER_PRODUCT_CODE", "01"
-	systemProperty "APP_KEY", "TEST"
-	systemProperty "APP_SECRET", "TEST"
-	systemProperty "MAX_PBR", "5.0"
-	systemProperty "MAX_PER", "100.0"
-	systemProperty "MIN_MARKET_CAPITAL", "300000000000"
-	systemProperty "MIN_ACCUMULATION_TRADING_VOLUME", "100000"
-	systemProperty "CASH_BUY_ORDER_AMOUNT_PERCENT", "10"
-	systemProperty "SPLIT_BUY_PERCENTS_BY_COMMA", "5,8,10"
-	systemProperty "SPLIT_BUY_COUNT", "3"
-	systemProperty "STOP_LOSS_SELL_RATIO", "-5.0"
-	systemProperty "PROFIT_SELL_RATIO", "5.0"
-	systemProperty "OVERSEAS_SPLIT_BUY_PERCENTS_BY_COMMA", "10,12,15"
-	systemProperty "OVERSEAS_SPLIT_BUY_COUNT", "3"
-	systemProperty "OVERSEAS_CASH_BUY_ORDER_AMOUNT_PERCENT", "10"
-	systemProperty "OVERSEAS_MINIMUM_LOSS_FIGURE_RATIO", "-5.0"
-	systemProperty "OVERSEAS_MINIMUM_PROFIT_FIGURE_RATIO", "10.0"
-	systemProperty "OVERSEAS_MIN_TRADING_VOLUME", "1000000"
-	systemProperty "OVERSEAS_MIN_PER", "1"
-	systemProperty "OVERSEAS_MAX_PER", "1000"
-	systemProperty "OVERSEAS_MIN_MARKET_CAPITAL", "100000000"
-
-	systemProperty "openapi.rest.transaction-id.domestic.sell-order", "VTTC0801U"
-	systemProperty "openapi.rest.transaction-id.overseas.stock-balance-find", "VTTS3012R"
-
-	systemProperty "TEST_DISCD_WEBHOOK_URL", "https://discord.com/api/webhooks/33333333333333/test"
+    systemProperty "DB_URL", "jdbc:mysql://35.222.95.13:3306/astDB_BETA?serverTimezone=Asia/Seoul&characterEncoding=UTF-8"
+    systemProperty "DB_USERNAME", "devSpaceHub_BETA"
+    systemProperty "DB_PASSWORD", "devSpaceHub_BETA123"
+    systemProperty "COMPREHENSIVE_ACCOUNTNUMBER", "50099723"
+    systemProperty "ACCOUNTNUMBER_PRODUCT_CODE", "01"
+    systemProperty "APP_KEY", "TEST"
+    systemProperty "APP_SECRET", "TEST"
+    systemProperty "MAX_PBR", "5.0"
+    systemProperty "MAX_PER", "100.0"
+    systemProperty "MIN_MARKET_CAPITAL", "300000000000"
+    systemProperty "MIN_ACCUMULATION_TRADING_VOLUME", "100000"
+    systemProperty "CASH_BUY_ORDER_AMOUNT_PERCENT", "10"
+    systemProperty "SPLIT_BUY_PERCENTS_BY_COMMA", "5,8,10"
+    systemProperty "SPLIT_BUY_COUNT", "3"
+    systemProperty "STOP_LOSS_SELL_RATIO", "-5.0"
+    systemProperty "PROFIT_SELL_RATIO", "5.0"
+    systemProperty "OVERSEAS_SPLIT_BUY_PERCENTS_BY_COMMA", "10,12,15"
+    systemProperty "OVERSEAS_SPLIT_BUY_COUNT", "3"
+    systemProperty "OVERSEAS_CASH_BUY_ORDER_AMOUNT_PERCENT", "10"
+    systemProperty "OVERSEAS_MINIMUM_LOSS_FIGURE_RATIO", "-5.0"
+    systemProperty "OVERSEAS_MINIMUM_PROFIT_FIGURE_RATIO", "10.0"
+    systemProperty "OVERSEAS_MIN_TRADING_VOLUME", "1000000"
+    systemProperty "OVERSEAS_MIN_PER", "1"
+    systemProperty "OVERSEAS_MAX_PER", "1000"
+    systemProperty "OVERSEAS_MIN_MARKET_CAPITAL", "100000000"
+    systemProperty "openapi.rest.transaction-id.domestic.sell-order", "VTTC0801U"
+    systemProperty "openapi.rest.transaction-id.overseas.stock-balance-find", "VTTS3012R"
+    systemProperty "TEST_DISCD_WEBHOOK_URL", "https://discord.com/api/webhooks/33333333333333/test"
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
-	// 내부 Logback 제외
-	all {
-		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    // 내부 Logback 제외
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+    // Spring Boot Web & WebFlux
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
-	implementation 'org.springframework.boot:spring-boot-starter-webflux'
-	if (System.getProperty("os.name") == "Mac OS X" && System.getProperty("os.arch") == "aarch64") {
-		runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.94.Final:osx-aarch_64")
-	}
-	// test
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly("com.h2database:h2")
-	testAnnotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.projectlombok:lombok'
+    // OS별 Netty dependency
+    if (System.getProperty("os.name") == "Mac OS X" && System.getProperty("os.arch") == "aarch64") {
+        runtimeOnly "io.netty:netty-resolver-dns-native-macos:4.1.94.Final:osx-aarch_64"
+    }
 
-	// db
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	runtimeOnly 'com.mysql:mysql-connector-j'
-	// Querydsl (setting for more than spring boot version 3)
-	implementation "com.querydsl:querydsl-jpa:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
-	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
-	annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
-	annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'com.h2database:h2'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.projectlombok:lombok'
+
+    // Database
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // Querydsl (Spring Boot 3.x + Jakarta)
+    implementation "com.querydsl:querydsl-jpa:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
+}
+
+tasks.named('bootRun') {
+    jvmArgs = ['-Dspring.profiles.active=local']  // 필요 시 profile 설정
+
+    environment "DB_URL", "jdbc:mysql://35.222.95.13:3306/astDB_BETA?serverTimezone=Asia/Seoul&characterEncoding=UTF-8"
+    environment "DB_USERNAME", "devSpaceHub_BETA"
+    environment "DB_PASSWORD", "devSpaceHub_BETA123"
+    environment "COMPREHENSIVE_ACCOUNTNUMBER", "50099723"
+    environment "ACCOUNTNUMBER_PRODUCT_CODE", "01"
+    environment "APP_KEY", "TEST"
+    environment "APP_SECRET", "TEST"
+    environment "MAX_PBR", "5.0"
+    environment "MAX_PER", "100.0"
+    environment "MIN_MARKET_CAPITAL", "300000000000"
+    environment "MIN_ACCUMULATION_TRADING_VOLUME", "100000"
+    environment "CASH_BUY_ORDER_AMOUNT_PERCENT", "10"
+    environment "SPLIT_BUY_PERCENTS_BY_COMMA", "5,8,10"
+    environment "SPLIT_BUY_COUNT", "3"
+    environment "STOP_LOSS_SELL_RATIO", "-5.0"
+    environment "PROFIT_SELL_RATIO", "5.0"
+    environment "OVERSEAS_SPLIT_BUY_PERCENTS_BY_COMMA", "10,12,15"
+    environment "OVERSEAS_SPLIT_BUY_COUNT", "3"
+    environment "OVERSEAS_CASH_BUY_ORDER_AMOUNT_PERCENT", "10"
+    environment "OVERSEAS_MINIMUM_LOSS_FIGURE_RATIO", "-5.0"
+    environment "OVERSEAS_MINIMUM_PROFIT_FIGURE_RATIO", "10.0"
+    environment "OVERSEAS_MIN_TRADING_VOLUME", "1000000"
+    environment "OVERSEAS_MIN_PER", "1"
+    environment "OVERSEAS_MAX_PER", "1000"
+    environment "OVERSEAS_MIN_MARKET_CAPITAL", "100000000"
+    environment "openapi.rest.transaction-id.domestic.sell-order", "VTTC0801U"
+    environment "openapi.rest.transaction-id.overseas.stock-balance-find", "VTTS3012R"
+    environment "TEST_DISCD_WEBHOOK_URL", "https://discord.com/api/webhooks/33333333333333/test"
 }
