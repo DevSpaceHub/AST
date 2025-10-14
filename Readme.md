@@ -20,7 +20,7 @@
 ### 중심 기술
 - Cloud : GCP (인스턴스 OS : Debian GNU/Linux 11)
 - DB : MySQL 8.0
-- Application : Spring Boot 3.2, JPA, Querydsl, WebClient, Java 17, Gradle
+- Application : Spring Boot 3.5.6, JPA, Querydsl, WebClient, Java 21, Gradle8.5
 
 ### ERD
 <img src="https://github.com/DevSpaceHub/portfolio/blob/main/AST%20DB%20ERD.png" width="2000" height="600"/>
@@ -43,7 +43,8 @@
 | 0.3.4　　(24.08.30) | 해외 체결 결과 기반 후처리 기능(예약 매수 종목의 체결 수량에 따라 예약 매수 사용 여부 업데이트, 체결 결과 알림 발송) 도입, 체결 결과 조회 API 연쇄 호출하도록 기능 개선 |
 | 0.3.5　　(24.09.05) | 해외 체결내역 조회 API 요청 필드 값 버그 해결 |
 | 0.3.6　　(24.09.12) | 트랜잭션 ReadOnly 설정으로 인한 업데이트 불가 이슈 버그 해결 |
-| 0.4.1　　(예정) | 메세지 발송 기능 개선 목적의 Kafka 도입 |
+| 0.4.0　　(25.10.14) | Java 17 -> 21, Spring Boot 3.2.0 -> 3.5.6 업그레이드 |
+| 0.5.1　　(예정) | 메세지 발송 기능 개선 목적의 Kafka 도입 |
 
 <br>
 
