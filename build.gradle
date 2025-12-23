@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.devspacehub'
-version = '0.4.0'
+version = '0.4.1'
 
 java {
     sourceCompatibility = '21'
@@ -139,4 +139,5 @@ tasks.named('bootRun') {
     environment "openapi.rest.transaction-id.domestic.sell-order", "VTTC0801U"
     environment "openapi.rest.transaction-id.overseas.stock-balance-find", "VTTS3012R"
     environment "TEST_DISCD_WEBHOOK_URL", "https://discord.com/api/webhooks/33333333333333/test"
+    environment "NEW_STOCK_SPLIT_BUY_PERCENTS_BY_COMMA", "18,20,22"
 }
