@@ -8,36 +8,10 @@
 
 package com.devspacehub.ast.domain.orderTrading.service;
 
-import com.devspacehub.ast.common.config.OpenApiProperties;
-import com.devspacehub.ast.common.constant.MarketType;
-import com.devspacehub.ast.common.constant.OpenApiType;
-import com.devspacehub.ast.common.constant.StockPriceUnit;
-import com.devspacehub.ast.common.dto.WebClientCommonResDto;
-import com.devspacehub.ast.common.utils.BigDecimalUtil;
-import com.devspacehub.ast.common.utils.LogUtils;
-import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto.CurrentStockPriceInfo;
-import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
-import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
-import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
-import com.devspacehub.ast.domain.my.dto.MyServiceRequestDto;
-import com.devspacehub.ast.domain.my.service.MyService;
-import com.devspacehub.ast.domain.my.service.MyServiceFactory;
-import com.devspacehub.ast.domain.notification.Notificator;
-import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
-import com.devspacehub.ast.domain.orderTrading.OrderTrading;
-import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
-import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
-import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
-import com.devspacehub.ast.domain.orderTrading.dto.SplitBuyPercents;
-import com.devspacehub.ast.exception.error.BusinessException;
-import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
-import com.devspacehub.ast.util.OpenApiRequest;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import static com.devspacehub.ast.common.constant.CommonConstants.*;
+import static com.devspacehub.ast.common.constant.OpenApiType.*;
+import static com.devspacehub.ast.common.constant.ProfileType.*;
+import static com.devspacehub.ast.common.constant.YesNoStatus.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -48,11 +22,40 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import static com.devspacehub.ast.common.constant.CommonConstants.*;
-import static com.devspacehub.ast.common.constant.OpenApiType.DOMESTIC_STOCK_BUY_ORDER;
-import static com.devspacehub.ast.common.constant.ProfileType.*;
-import static com.devspacehub.ast.common.constant.YesNoStatus.YES;
-import static com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto.*;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import com.devspacehub.ast.common.config.OpenApiProperties;
+import com.devspacehub.ast.common.constant.MarketType;
+import com.devspacehub.ast.common.constant.OpenApiType;
+import com.devspacehub.ast.common.constant.StockPriceUnit;
+import com.devspacehub.ast.common.dto.WebClientCommonResDto;
+import com.devspacehub.ast.common.utils.BigDecimalUtil;
+import com.devspacehub.ast.common.utils.LogUtils;
+import com.devspacehub.ast.domain.marketStatus.dto.CurrentStockPriceExternalResDto.CurrentStockPriceInfo;
+import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto;
+import com.devspacehub.ast.domain.marketStatus.dto.DomStockTradingVolumeRankingExternalResDto.StockInfo;
+import com.devspacehub.ast.domain.marketStatus.dto.StockItemDto;
+import com.devspacehub.ast.domain.marketStatus.service.MarketStatusService;
+import com.devspacehub.ast.domain.my.dto.MyServiceRequestDto;
+import com.devspacehub.ast.domain.my.service.MyService;
+import com.devspacehub.ast.domain.my.service.MyServiceFactory;
+import com.devspacehub.ast.domain.notification.Notificator;
+import com.devspacehub.ast.domain.notification.dto.MessageContentDto;
+import com.devspacehub.ast.domain.orderTrading.OrderTrading;
+import com.devspacehub.ast.domain.orderTrading.OrderTradingRepository;
+import com.devspacehub.ast.domain.orderTrading.dto.DomesticStockOrderExternalReqDto;
+import com.devspacehub.ast.domain.orderTrading.dto.SplitBuyPercents;
+import com.devspacehub.ast.domain.orderTrading.dto.StockOrderApiResDto;
+import com.devspacehub.ast.exception.error.BusinessException;
+import com.devspacehub.ast.exception.error.OpenApiFailedResponseException;
+import com.devspacehub.ast.util.OpenApiRequest;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 국내 주식 주문 서비스 구현체 - 매수
@@ -78,6 +81,8 @@ public class BuyOrderServiceImpl extends TradingService {
     private BigDecimal splitBuyCount;
     @Value("${openapi.rest.header.transaction-id.domestic.buy-order}")
     private String transactionId;
+    @Value("${trading.domestic.new-stock-split-buy-percents-by-comma}")
+    private String newStockSplitBuyPercentsByComma;
 
     public BuyOrderServiceImpl(OpenApiRequest openApiRequest, Notificator notificator, OrderTradingRepository orderTradingRepository,
                                MyServiceFactory myServiceFactory, MarketStatusService marketStatusService) {
@@ -168,6 +173,15 @@ public class BuyOrderServiceImpl extends TradingService {
     }
 
     /**
+     * 신규상장 종목 여부 확인
+     * @param prdyVol 전일 거래량
+     * @return 신규상장 종목이면 True, 아니면 False
+     */
+    private boolean isNewStock(String prdyVol) {
+        return !StringUtils.hasText(prdyVol) || "0".equals(prdyVol);
+    }
+
+    /**
      * 알고리즘에 따라 매수할 종목 선택
      * 1. 거래량 순위 종목 조회하여 상위 10개 순회
      * 2. valid check : table에 없는 종목 매수 X (파생상품)
@@ -204,7 +218,7 @@ public class BuyOrderServiceImpl extends TradingService {
 
             log.info(
                     "=================================================[국내 매수 주문] " +
-                            "종목: {}({}) / 현재가: {} / HTS 시가 총액: {} / 누적 거래량: {} / PER: {} / PBR: {} / 투자유의 여부: {} / 정리매매 여부: {} / 단기과열 여부: {}",
+                            "종목: {}({}) / 현재가: {} / HTS 시가 총액: {} / 누적 거래량: {} / PER: {} / PBR: {} / 투자유의 여부: {} / 정리매매 여부: {} / 단기과열 여부: {} / 전일 거래량 : {}",
                     stockInfo.getItemCode(), stockInfo.getHtsStockNameKor(),
                     currentPrice, currentStockPriceInfo.getHtsMarketCapitalization(),
                     currentStockPriceInfo.getAccumulationVolume(),
@@ -212,7 +226,8 @@ public class BuyOrderServiceImpl extends TradingService {
                     Objects.isNull(currentStockPriceInfo.getPbr()) ? "Null" : currentStockPriceInfo.getPbr(),
                     currentStockPriceInfo.getInvtCarefulYn(),
                     currentStockPriceInfo.getDelistingYn(),
-                    currentStockPriceInfo.getShortOverYn());
+                    currentStockPriceInfo.getShortOverYn(),
+                    stockInfo.getPrdyVol());
 
             // 4. 지표 체크
             if (!checkAccordingWithIndicators(currentStockPriceInfo)) {
@@ -222,7 +237,9 @@ public class BuyOrderServiceImpl extends TradingService {
             BigDecimal myDeposit = myServiceImpl().getBuyOrderPossibleCash(MyServiceRequestDto.Domestic.from(stockInfo.getItemCode(), currentPrice, ORDER_DIVISION));
 
             // 6. 매수 금액 + 매수 수량 결정 (분할 매수 Case)
-            SplitBuyPercents splitBuyPercents = SplitBuyPercents.of(splitBuyPercentsByComma);
+            boolean isNewStock = isNewStock(stockInfo.getPrdyVol());
+            String splitBuyPercentsConfig = isNewStock ? newStockSplitBuyPercentsByComma : splitBuyPercentsByComma;
+            SplitBuyPercents splitBuyPercents = SplitBuyPercents.of(splitBuyPercentsConfig);
 
             for (int idx = 0; idx < splitBuyPercents.getPercents().size(); idx++) {
                 int priceUnit = StockPriceUnit.getDomesticPriceUnitBy(currentPrice);
